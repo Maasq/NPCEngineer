@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="author" content="Maasq">
+    <meta name="description" content="A tool for creating and managing NPCs.">
+    <meta name="version" content="0.01.01">
+    <meta name="date" content="2025-10-03">
+
+    <title>NPC Engineer</title>
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* A simple style for our application font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styles for the card collapse/expand transition */
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .card-body.open {
+            /* A large max-height to allow content to expand fully */
+            max-height: 40rem; /* Corresponds to 640px */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        /* Custom shadow style */
+        .custom-shadow {
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-[#E2E1E8]">
+
+    <!-- 
+      Background circle for the graphic
+      - Positioned absolutely.
+      - 'z-10' places it behind the header bar.
+    -->
+    <div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 52px;"></div>
+    
+    <!-- 
+      Graphic Image
+      - Positioned absolutely relative to the viewport.
+      - 'z-30' places it on top of everything else.
+    -->
+    <img src="graphics/npc engineer.webp" 
+         alt="NPC Engineer Logo" 
+         class="absolute w-32 h-32 rounded-full z-30"
+         style="top: 16px; left: 52px;">
+    
+    <!-- 
+      Persistent Header Bar
+      - It's fixed to be positioned relative to the main content area.
+      - 'z-20' ensures it stays in front of the circle and behind the graphic.
+      - 'flex' and 'items-center' are used for alignment.
+    -->
+    <header class="fixed left-6 right-6 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center px-4" style="top: 44px;">
+        <!-- App Title -->
+        <h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
+    </header>
+
+    <!-- Main application content area -->
+    <div class="relative w-full pt-40">
+        <!-- 
+          This is the main container that holds both columns.
+          It uses flexbox for the two-column layout.
+          'pt-40' adds padding at the top to prevent content from being hidden by the fixed graphic and header.
+        -->
+        <main class="w-full pr-[560px]">
+            
+            <!-- Left Column: Contains the cards, this column will scroll -->
+            <div class="px-6 pb-6 space-y-6">
+                
+                <!-- Card: NPC Information -->
+                <div class="bg-white border border-black/20 rounded-xl custom-shadow overflow-hidden">
+                    <!-- Card Header: Clickable to toggle visibility of the card body -->
+                    <div class="card-header bg-white px-3 py-2 border-b border-black/20 cursor-pointer select-none">
+                        <h2 class="font-bold text-[11pt] text-slate-700">NPC Information</h2>
+                    </div>
+                    <!-- Card Body: Content area that collapses. Starts open. -->
+                    <div class="card-body open px-4">
+                        <div class="min-h-[20rem]"><!-- Placeholder space for 8 input lines --></div>
+                    </div>
+                </div>
+
+                <!-- Card: Statistics -->
+                <div class="bg-white border border-black/20 rounded-xl custom-shadow overflow-hidden">
+                     <!-- Card Header: Clickable -->
+                    <div class="card-header bg-white px-3 py-2 border-b border-black/20 cursor-pointer select-none">
+                        <h2 class="font-bold text-[11pt] text-slate-700">Statistics</h2>
+                    </div>
+                    <!-- Card Body: Content area that collapses. Starts open. -->
+                    <div class="card-body open px-4">
+                         <div class="min-h-[20rem]"><!-- Placeholder space for 8 input lines --></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: The Viewport, this column is fixed and will not scroll -->
+            <aside class="fixed right-6 top-40">
+                <!-- 
+                  The viewport itself.
+                  - It's a container with a fixed position.
+                  - 'overflow-auto' will create scrollbars if the inner content is larger than the container.
+                  - The background image is applied here. Replace the URL with your local file: 'graphics/viewport.jpg'.
+                -->
+                <div id="viewport" 
+                     class="w-[500px] h-[800px] bg-cover bg-center border border-black/20 rounded-xl shadow-inner custom-shadow overflow-auto" 
+                     style="background-image: url('graphics/viewport.jpg');
+					 background-repeat: repeat;
+					 background-position: top left;
+					 background-size: auto;">
+                    <!-- The generated HTML will eventually be injected here -->
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+    <script>
+        // JavaScript to handle the collapsible cards
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardHeaders = document.querySelectorAll('.card-header');
+
+            cardHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    // Find the card body associated with the clicked header
+                    const cardBody = header.nextElementSibling;
+                    
+                    // Toggle the 'open' class to trigger the CSS transition
+                    if (cardBody) {
+                        cardBody.classList.toggle('open');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
+
