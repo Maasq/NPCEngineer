@@ -6,7 +6,7 @@
 
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.1.08" />
+		<meta name="version" content="0.1.10" />
 		<meta name="date" content="2025-10-5" />
 
 		<title>NPC Engineer</title>
@@ -533,12 +533,24 @@
 															<label for="npc-hp" class="label-text w-28 text-right pr-2">Hit Points</label>
 															<input type="text" id="npc-hp" class="info-input" style="width: 200px; height: 23px;" tabindex="7" title="Enter the NPC's hit points, followed by its hit dice in brackets.&#10;Example: 16 (3d6 + 6)&#10;Double-click to open a window that will help build a correct expression." />
 														</div>
+														<!-- Challenge -->
+														<div class="flex items-center" style="padding-top: 3px;">
+															<label for="npc-challenge" class="label-text w-28 text-right pr-2">Challenge</label>
+															<select id="npc-challenge" class="info-select" style="width: 70px; height: 23px;" tabindex="8"></select>
+														</div>
+														<!-- XP and Proficiency Bonus -->
+														<div class="flex items-center" style="margin-top: -1px;">
+															<label class="label-text w-28 text-right pr-2">XP</label>
+															<span id="npc-experience-display" class="font-medium text-gray-800" style="width: 80px;"></span>
+															<label class="label-text pr-2 ml-2">Proficiency Bonus</label>
+															<span id="npc-proficiency-bonus-display" class="font-medium text-gray-800"></span>
+														</div>
 													</div>
 													<!-- Right Column: Token -->
 													<div class="flex">
 														<label class="label-text w-28 text-right pr-2">Token</label>
 														<div class="w-[130px]">
-															<div id="npc-token" class="w-[100px] h-[100px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
+															<div id="npc-token" class="w-[130px] h-[130px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
 																<span>Click to upload NPC token</span>
 															</div>
 															<input type="file" id="token-upload" class="hidden" accept="image/png, image/webp">
@@ -565,7 +577,44 @@
 								<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Statistics</h2>
 							</div>
 							<div class="card-body">
-								<div class="p-4 min-h-[20rem]"><!-- Placeholder space --></div>
+								<div class="p-4">
+									<div class="flex">
+										<!-- Ability, Score, Bonus Columns -->
+										<div class="flex space-x-4">
+											<!-- Ability Column -->
+											<div class="flex flex-col items-end space-y-1">
+												<label class="label-text font-semibold h-6 mb-1">Ability</label>
+												<label for="npc-strength" class="label-text h-6 flex items-center">Strength</label>
+												<label for="npc-dexterity" class="label-text h-6 flex items-center">Dexterity</label>
+												<label for="npc-constitution" class="label-text h-6 flex items-center">Constitution</label>
+												<label for="npc-intelligence" class="label-text h-6 flex items-center">Intelligence</label>
+												<label for="npc-wisdom" class="label-text h-6 flex items-center">Wisdom</label>
+												<label for="npc-charisma" class="label-text h-6 flex items-center">Charisma</label>
+											</div>
+											<!-- Score Column -->
+											<div class="flex flex-col items-center space-y-1">
+												<label class="label-text font-semibold h-6 mb-1">Score</label>
+												<input type="number" id="npc-strength" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-dexterity" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-constitution" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-intelligence" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-wisdom" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-charisma" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+											</div>
+											<!-- Bonus Column -->
+											<div class="flex flex-col items-center space-y-1">
+												<label class="label-text font-semibold h-6 mb-1">Bonus</label>
+												<span id="npc-strength-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-dexterity-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-constitution-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-intelligence-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-wisdom-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-charisma-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+											</div>
+										</div>
+										<!-- Other stat columns will go here -->
+									</div>
+								</div>
 							</div>
 						</div>
 
@@ -603,11 +652,61 @@
 			</div>
 		</div>
 
+		<!-- Hit Dice Calculator Modal -->
+		<div id="hp-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+			<div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-64">
+				<div class="flex justify-between items-center mb-2">
+					<h3 class="font-bold text-slate-700">Hit Dice Calculator</h3>
+					<button id="hp-modal-close" class="text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+				</div>
+				<div class="space-y-2">
+						<div>
+						<label for="hp-num-dice" class="label-text">Number of Dice</label>
+						<input type="number" id="hp-num-dice" class="info-input w-full" value="1" min="1">
+					</div>
+						<div>
+						<label for="hp-die-type" class="label-text">Die Type</label>
+						<select id="hp-die-type" class="info-select w-full">
+							<option value="4">d4</option>
+							<option value="6">d6</option>
+							<option value="8" selected>d8</option>
+							<option value="10">d10</option>
+							<option value="12">d12</option>
+							<option value="20">d20</option>
+						</select>
+					</div>
+						<div>
+						<label for="hp-bonus" class="label-text">Bonus</label>
+						<input type="number" id="hp-bonus" class="info-input w-full" value="0">
+					</div>
+				</div>
+					<div class="text-right pt-2">
+					<button id="hp-apply-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Apply</button>
+				</div>
+			</div>
+		</div>
+
 		<script>
 			document.addEventListener("DOMContentLoaded", () => {
 				// --- DATA ---
 				let NPC = {};
 				let currentFileHandle = null;
+
+				const crToXpMap = {
+						'0': '10', '1/8': '25', '1/4': '50', '1/2': '100', '1': '200',
+						'2': '450', '3': '700', '4': '1,100', '5': '1,800', '6': '2,300',
+						'7': '2,900', '8': '3,900', '9': '5,000', '10': '5,900', '11': '7,200',
+						'12': '8,400', '13': '10,000', '14': '11,500', '15': '13,000', '16': '15,000',
+						'17': '18,000', '18': '20,000', '19': '22,000', '20': '25,000', '21': '33,000',
+						'22': '41,000', '23': '50,000', '24': '62,000', '25': '75,000', '26': '90,000',
+						'27': '105,000', '28': '120,000', '29': '135,000', '30': '155,000'
+				};
+
+				const crOrder = [
+					'0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+					'11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22',
+					'23', '24', '25', '26', '27', '28', '29', '30'
+				];
 
 				// --- UI ELEMENTS ---
 				const cardHeaders = document.querySelectorAll(".card-header");
@@ -621,6 +720,14 @@
 				const tokenUpload = document.getElementById("token-upload");
 				const imageBox = document.getElementById("npc-image");
 				const imageUpload = document.getElementById("image-upload");
+				const hpModalOverlay = document.getElementById("hp-modal-overlay");
+				const hpModalCloseBtn = document.getElementById("hp-modal-close");
+				const hpApplyBtn = document.getElementById("hp-apply-btn");
+				const numDiceInput = document.getElementById("hp-num-dice");
+				const dieTypeSelect = document.getElementById("hp-die-type");
+				const bonusInput = document.getElementById("hp-bonus");
+				const experienceDisplay = document.getElementById("npc-experience-display");
+				const proficiencyBonusDisplay = document.getElementById("npc-proficiency-bonus-display");
 				
 
 				// --- FORM INPUTS ---
@@ -632,6 +739,13 @@
 					alignment: document.getElementById("npc-alignment"),
 					armorClass: document.getElementById("npc-ac"),
 					hitPoints: document.getElementById("npc-hp"),
+					challenge: document.getElementById("npc-challenge"),
+					strength: document.getElementById("npc-strength"),
+					dexterity: document.getElementById("npc-dexterity"),
+					constitution: document.getElementById("npc-constitution"),
+					intelligence: document.getElementById("npc-intelligence"),
+					wisdom: document.getElementById("npc-wisdom"),
+					charisma: document.getElementById("npc-charisma"),
 					gender: document.getElementById("npc-gender"),
 					isUnique: document.getElementById("npc-unique"),
 					isProperName: document.getElementById("npc-proper"),
@@ -649,6 +763,21 @@
 						alignment: "",
 						armorClass: "",
 						hitPoints: "",
+						challenge: "1",
+						experience: "200",
+						proficiencyBonus: 2,
+						strength: 10,
+						strengthBonus: 0,
+						dexterity: 10,
+						dexterityBonus: 0,
+						constitution: 10,
+						constitutionBonus: 0,
+						intelligence: 10,
+						intelligenceBonus: 0,
+						wisdom: 10,
+						wisdomBonus: 0,
+						charisma: 10,
+						charismaBonus: 0,
 						gender: "neutral",
 						isUnique: false,
 						isProperName: false,
@@ -657,13 +786,48 @@
 						image: ""
 					};
 					updateFormFromNPC();
-					updateViewport();
+				}
+
+				function calculateAbilityBonus(score) {
+						return Math.floor((parseInt(score, 10) - 10) / 2);
+				}
+
+				function calculateProficiencyBonus(cr) {
+						const crValue = Number(String(cr).replace(/[^0-9.]/g, ''));
+						if (crValue <= 4) return 2;
+						if (crValue <= 8) return 3;
+						if (crValue <= 12) return 4;
+						if (crValue <= 16) return 5;
+						if (crValue <= 20) return 6;
+						if (crValue <= 24) return 7;
+						if (crValue <= 28) return 8;
+						return 9; // for CR 29-30
+				}
+
+				function updateAbilityBonuses() {
+						const abilities = ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'];
+						abilities.forEach(ability => {
+								const score = parseInt(inputs[ability].value, 10) || 10;
+								const bonus = calculateAbilityBonus(score);
+								const bonusEl = document.getElementById(`npc-${ability}-bonus`);
+								if (bonusEl) {
+										bonusEl.textContent = bonus >= 0 ? `+${bonus}` : bonus;
+								}
+								// Also update the NPC object
+								NPC[ability] = score; // Make sure the score is updated in NPC object too
+								NPC[`${ability}Bonus`] = bonus;
+						});
 				}
 				
 				// Generates and displays the HTML for the viewport
 				function updateViewport() {
 					// Gather all known properties from the NPC object, defaulting to "" if not present
-					const { name, size, type, species, alignment, armorClass, hitPoints, description } = NPC;
+					const { 
+						name, size, type, species, alignment, armorClass, hitPoints, description,
+						strength, dexterity, constitution, intelligence, wisdom, charisma,
+						strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus
+					} = NPC;
+					
 					const NPCName = name || "New NPC";
 					const NPCac = armorClass || "";
 					const NPChp = hitPoints || "";
@@ -680,12 +844,20 @@
 
 					// Treat all other placeholders as empty strings for now
 					const NPCspeed = "";
-					const NPCstr = ""; const NPCstrbo = "";
-					const NPCdex = ""; const NPCdexbo = "";
-					const NPCcon = ""; const NPCconbo = "";
-					const NPCint = ""; const NPCintbo = "";
-					const NPCwis = ""; const NPCwisbo = "";
-					const NPCcha = ""; const NPCchabo = "";
+					
+					const NPCstr = strength || "10"; 
+					const NPCstrbo = strengthBonus !== undefined ? (strengthBonus >= 0 ? `+${strengthBonus}` : strengthBonus) : "+0";
+					const NPCdex = dexterity || "10"; 
+					const NPCdexbo = dexterityBonus !== undefined ? (dexterityBonus >= 0 ? `+${dexterityBonus}` : dexterityBonus) : "+0";
+					const NPCcon = constitution || "10"; 
+					const NPCconbo = constitutionBonus !== undefined ? (constitutionBonus >= 0 ? `+${constitutionBonus}` : constitutionBonus) : "+0";
+					const NPCint = intelligence || "10"; 
+					const NPCintbo = intelligenceBonus !== undefined ? (intelligenceBonus >= 0 ? `+${intelligenceBonus}` : intelligenceBonus) : "+0";
+					const NPCwis = wisdom || "10"; 
+					const NPCwisbo = wisdomBonus !== undefined ? (wisdomBonus >= 0 ? `+${wisdomBonus}` : wisdomBonus) : "+0";
+					const NPCcha = charisma || "10"; 
+					const NPCchabo = charismaBonus !== undefined ? (charismaBonus >= 0 ? `+${charismaBonus}` : charismaBonus) : "+0";
+
 
 					const generatedHtml = `
 						<div class="container">
@@ -826,8 +998,12 @@
 							element.value = NPC[key] || "";
 						}
 					}
+					
+					experienceDisplay.textContent = NPC.experience || '';
+					proficiencyBonusDisplay.textContent = `+${NPC.proficiencyBonus}` || '+2';
 					updateTokenDisplay();
 					updateImageDisplay();
+					updateAbilityBonuses(); // Calculate and display bonuses based on loaded scores
 					updateViewport(); // Also update the view when loading from a file
 				}
 
@@ -856,6 +1032,9 @@
 							NPC[key] = element.value;
 						}
 					}
+					NPC.experience = experienceDisplay.textContent;
+					NPC.proficiencyBonus = parseInt(proficiencyBonusDisplay.textContent.replace('+', ''), 10);
+					updateAbilityBonuses(); // Recalculate and display bonuses whenever a form field changes.
 					updateViewport(); // Update the preview on every input change
 				}
 				
@@ -885,6 +1064,16 @@
 							customInput.addEventListener('input', updateNPCFromForm);
 						}
 					});
+				}
+
+				function populateChallengeDropdown() {
+						const challengeSelect = inputs.challenge;
+						crOrder.forEach(cr => {
+								const option = document.createElement('option');
+								option.value = cr;
+								option.textContent = cr;
+								challengeSelect.appendChild(option);
+						});
 				}
 
 				// --- FILE SYSTEM API LOGIC ---
@@ -978,6 +1167,16 @@
 					}
 				});
 
+				// Challenge Dropdown -> update Experience
+				inputs.challenge.addEventListener('change', () => {
+					const selectedCr = inputs.challenge.value;
+					experienceDisplay.textContent = crToXpMap[selectedCr] || '';
+					const profBonus = calculateProficiencyBonus(selectedCr);
+					proficiencyBonusDisplay.textContent = `+${profBonus}`;
+					// We need to call this manually to update the experience in the NPC object
+					updateNPCFromForm(); 
+				});
+
 				// Trix editor event listener
 				const trixEditorElement = document.querySelector("trix-editor");
 				if (trixEditorElement) {
@@ -1028,6 +1227,48 @@
 					}
 				});
 
+				// HP Modal Listeners
+				function hideHpModal() {
+					hpModalOverlay.classList.add('hidden');
+				}
+
+				inputs.hitPoints.addEventListener('dblclick', () => {
+					hpModalOverlay.classList.remove('hidden');
+				});
+				
+				hpModalCloseBtn.addEventListener('click', hideHpModal);
+				
+				hpModalOverlay.addEventListener('click', (event) => {
+					// Only close if the click is on the overlay itself, not the modal content
+					if (event.target === hpModalOverlay) {
+						hideHpModal();
+					}
+				});
+
+				hpApplyBtn.addEventListener('click', () => {
+					const numDice = parseInt(numDiceInput.value, 10) || 0;
+					const dieType = parseInt(dieTypeSelect.value, 10) || 0;
+					const bonus = parseInt(bonusInput.value, 10) || 0;
+
+					if (numDice > 0 && dieType > 0) {
+						const avgRoll = (dieType / 2) + 0.5;
+						const totalHp = Math.floor(numDice * avgRoll) + bonus;
+						
+						let bonusString = "";
+						if (bonus > 0) {
+							bonusString = ` + ${bonus}`;
+						} else if (bonus < 0) {
+							bonusString = ` - ${Math.abs(bonus)}`; 
+						}
+
+						const hpString = `${totalHp} (${numDice}d${dieType}${bonusString})`;
+						
+						inputs.hitPoints.value = hpString;
+						updateNPCFromForm(); // Sync with the main NPC object and update viewport
+						hideHpModal();
+					}
+				});
+
 
 				// File buttons
 				newNpcBtn.addEventListener("click", createNewNpc);
@@ -1047,6 +1288,7 @@
 				}
 	 
 				 // --- INITIALIZATION ---
+				 populateChallengeDropdown();
 				 initializeNPC();
 				 setupCustomToggles(); // Set up the new checkbox functionality
 	 
@@ -1060,5 +1302,13 @@
 		</script>
 	</body>
 </html>
+
+
+
+
+
+
+
+
 
 
