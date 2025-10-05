@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+      <meta name="author" content="Maasq" />
+      <meta name="description" content="A tool for creating and managing NPCs." />
+      <meta name="version" content="0.1.04" />
+      <meta name="date" content="2025-10-4" />
+
+      <title>NPC Engineer</title>
+
+      <!-- Tailwind CSS for styling -->
+      <script src="https://cdn.tailwindcss.com"></script>
+
+      <!-- Google Fonts -->
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+
+      <style>
+         body {
+            /* A simple style for our application font */
+            font-family: "Lexend", sans-serif;
+         }
+
+         .card-body {
+            /* Custom styles for the card collapse/expand transition */
+            max-height: 0;
+            overflow: hidden;
+            transition:
+               max-height 0.5s ease-in-out,
+               padding 0.5s ease-in-out;
+            padding-top: 0;
+            padding-bottom: 0;
+         }
+         .card-body.open {
+            /* A large max-height to allow content to expand fully */
+            max-height: 40rem; /* Corresponds to 640px */
+         }
+         .card-font-style { /* Sets font size for card content */
+            font-size: 11pt;
+         }
+         .custom-shadow {
+            /* Custom shadow style */
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+         }
+         .input-field {
+            @apply w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+         }
+         .label-text {
+            @apply block text-sm font-medium text-gray-700;
+         }
+         .bordered-container { /* A reusable class for black borders */
+            border: 1px solid black;
+         }
+         .info-input, .info-select { /* Custom style for specific input boxes and dropdowns */
+            background-color: #F8FAFC; /* Lighter input background */
+            border: 1px solid #CBD5E1; /* Adjusted darker shade for the border */
+            border-radius: 2px;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            font-size: 10pt; /* Set font size for input fields */
+         }
+      </style>
+   </head>
+   <body class="bg-[#E2E8F0]">
+      <!-- Centering Container with a max-width. This will also constrain the header. -->
+      <div class="max-w-screen-2xl mx-auto relative px-6 pb-6">
+         <!-- Graphic and Header Area -->
+         <div class="relative h-[94px]">
+            <!-- Background circle for the graphic -->
+            <div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
+
+            <!-- Graphic Image -->
+            <img
+               src="graphics/npc engineer.webp"
+               alt="NPC Engineer Logo"
+               class="absolute w-32 h-32 rounded-full z-30"
+               style="top: 16px; left: 28px" />
+            
+            <!-- File Management Buttons -->
+            <div class="absolute right-0 top-[18px] z-30 flex items-center space-x-2">
+               <span id="file-status" class="text-xs text-gray-500 mr-2">No file loaded</span>
+               <!-- New NPC Button with SVG Icon -->
+               <button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+                  <svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-4 w-4" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 502 502" xml:space="preserve">
+                     <g>
+                        <g>
+                           <path d="M405.889,348.576V105.273c0-2.652-1.054-5.196-2.929-7.071L307.688,2.929C305.812,1.054,303.269,0,300.617,0H70.783
+                              c-5.523,0-10,4.477-10,10v445.916c0,5.523,4.477,10,10,10h216.442C303.083,488.611,328.615,502,356.57,502
+                              c46.674,0,84.646-37.972,84.646-84.646C441.217,389.827,428.102,364.485,405.889,348.576z M80.783,20h215.691l76.158,76.158
+                              h-51.151c-5.522,0-10,4.477-10,10s4.478,10,10,10h64.408v221.789c-9.334-3.451-19.247-5.241-29.319-5.241
+                              c-46.675,0-84.647,37.973-84.647,84.647c0,9.793,1.692,19.45,4.955,28.562H80.783V20z M356.57,482
+                              c-22.766,0-43.43-11.629-55.277-31.107c-6.13-10.077-9.37-21.675-9.37-33.539c0-35.646,29.001-64.647,64.647-64.647
+                              c11.785,0,23.28,3.21,33.334,9.278c0.474,0.355,0.979,0.67,1.513,0.938c18.668,11.975,29.799,32.278,29.799,54.431
+                              C421.217,453,392.217,482,356.57,482z"/>
+                           <path d="M394.345,407.354h-27.776v-27.776c0-5.523-4.478-10-10-10s-10,4.477-10,10v27.776h-27.776c-5.522,0-10,4.477-10,10
+                              s4.478,10,10,10h27.776v27.776c0,5.523,4.478,10,10,10s10-4.477,10-10v-27.776h27.776c5.522,0,10-4.477,10-10
+                              S399.868,407.354,394.345,407.354z"/>
+                           <path d="M292.56,106.158c0-5.523-4.478-10-10-10h-11.447c-5.522,0-10,4.477-10,10s4.478,10,10,10h11.447
+                              C288.083,116.158,292.56,111.681,292.56,106.158z"/>
+                        </g>
+                     </g>
+                  </svg>
+               </button>
+               <!-- Open File Button with SVG Icon -->
+               <button id="openFileBtn" title="Open File" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black disabled:opacity-25 disabled:cursor-not-allowed">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
+                     <path d="M21 5h-8.8L11 3H4L2.8 5H1v16h20l2.902-12H21zM2 6h1.366l1.2-2h5.868l1.2 2H20v3h-5.6l-2 2H4.35L2 18.015zm20.632 4l-2.42 10H2.39l2.68-8h7.744l2-2z"/>
+                  </svg>
+               </button>
+               <!-- Save File Button with SVG Icon -->
+               <button id="saveFileBtn" title="Save File" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black disabled:opacity-25 disabled:cursor-not-allowed">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
+                     <path d="M16.765 2c1.187 0 1.363.06 1.51.168L21.662 4.7a.845.845 0 0 1 .339.677v15.78a.844.844 0 0 1-.844.844H2.844A.844.844 0 0 1 2 21.156V2.844A.844.844 0 0 1 2.844 2zM17 21v-7H7v7zM14 3v3h1V3zM7 3v6h10V3h-1v4h-3V3zM3 21h3v-8h12v8h3V5.452l-3-2.278v6.17a.769.769 0 0 1-.844.656H6.844A.769.769 0 0 1 6 9.344V3H3z"/>
+                  </svg>
+               </button>
+               <!-- Download Copy Button with SVG Icon -->
+               <button id="downloadBtn" title="Download Copy" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
+                     <path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.206 2.206 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-1h-1v10.292l-2.646-2.646-.707.707 3.854 3.854 3.853-3.852-.707-.707L13 21.294z"/>
+                  </svg>
+               </button>
+            </div>
+
+            <!-- Persistent Header Bar -->
+            <header
+               class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center px-4">
+               <!-- App Title -->
+               <h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
+            </header>
+         </div>
+
+         <!-- Main application content area -->
+         <div class="relative w-full pt-16">
+            <!-- This is the main container that holds both columns. -->
+            <main class="flex flex-wrap justify-center gap-6">
+               <!-- Left Column: Contains the cards, this column is NOT fixed width -->
+               <div class="w-[900px] space-y-6 flex-shrink-0">
+                  <!-- Card: NPC Information -->
+                  <div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+                     <div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+                        <h2 class="font-bold text-slate-700 relative" style="top: 0px;">NPC Information</h2>
+                     </div>
+                     <div class="card-body open">
+                        <div class="px-4 pt-2 pb-2 flex justify-start gap-x-5">
+                           <!-- Left Column for core stats -->
+                           <div class="space-y-1">
+                              <div class="flex items-center mb-2">
+                                 <label for="npc-name" class="label-text w-28 text-right pr-2">Name</label>
+                                 <input type="text" id="npc-name" class="info-input" style="width: 250px; height: 23px;" />
+                              </div>
+                              
+                              <div class="flex items-center">
+                                 <label for="npc-size" class="label-text w-28 text-right pr-2">Size</label>
+                                 <select id="npc-size" class="info-select" style="width: 170px; height: 23px;">
+                                    <option value="" disabled selected hidden></option>
+                                    <option>Tiny</option>
+                                    <option>Small</option>
+                                    <option>Medium</option>
+                                    <option>Large</option>
+                                    <option>Huge</option>
+                                    <option>Gargantuan</option>
+                                 </select>
+                              </div>
+                              
+                              <div class="flex items-center">
+                                 <label for="npc-type" class="label-text w-28 text-right pr-2">Type</label>
+                                 <select id="npc-type" class="info-select" style="width: 170px; height: 23px;">
+                                     <option value="" disabled selected hidden></option>
+                                     <option>aberration</option>
+                                     <option>beast</option>
+                                     <option>celestial</option>
+                                     <option>construct</option>
+                                     <option>dragon</option>
+                                     <option>elemental</option>
+                                     <option>fey</option>
+                                     <option>fiend</option>
+                                     <option>giant</option>
+                                     <option>humanoid</option>
+                                     <option>monstrosity</option>
+                                     <option>ooze</option>
+                                     <option>plant</option>
+                                     <option>undead</option>
+                                     <option disabled>──────────</option>
+                                     <option>swarm of tiny aberrations</option>
+                                     <option>swarm of tiny beasts</option>
+                                     <option>swarm of tiny constructs</option>
+                                     <option>swarm of tiny elementals</option>
+                                     <option>swarm of tiny monstrosities</option>
+                                     <option>swarm of tiny oozes</option>
+                                     <option>swarm of tiny plants</option>
+                                     <option disabled>──────────</option>
+                                     <option>trap</option>
+                                 </select>
+                              </div>
+                              
+                              <div class="flex items-center">
+                                 <label for="npc-species" class="label-text w-28 text-right pr-2">Species</label>
+                                 <select id="npc-species" class="info-select" style="width: 170px; height: 23px;">
+                                    <option value="" disabled selected hidden></option>
+                                    <option>aarakocra</option>
+                                    <option>any species</option>
+                                    <option>bullywug</option>
+                                    <option>demon</option>
+                                    <option>derro</option>
+                                    <option>devil</option>
+                                    <option>dragonborn</option>
+                                    <option>dwarf</option>
+                                    <option>elf</option>
+                                    <option>firenewt</option>
+                                    <option>genasi</option>
+                                    <option>gith</option>
+                                    <option>gnoll</option>
+                                    <option>gnome</option>
+                                    <option>goblinoid</option>
+                                    <option>grimlock</option>
+                                    <option>grung</option>
+                                    <option>half-elf</option>
+                                    <option>half-orc</option>
+                                    <option>halfling</option>
+                                    <option>human</option>
+                                    <option>kenku</option>
+                                    <option>kobold</option>
+                                    <option>kuo-toa</option>
+                                    <option>lizardfolk</option>
+                                    <option>merfolk</option>
+                                    <option>orc</option>
+                                    <option>quaggoth</option>
+                                    <option>ratfolk</option>
+                                    <option>sahuagin</option>
+                                    <option>shapechanger</option>
+                                    <option>thri-kreen</option>
+                                    <option>tiefling</option>
+                                    <option>titan</option>
+                                    <option>troglodyte</option>
+                                    <option>xvart</option>
+                                    <option>yuan-ti</option>
+                                    <option>yugoloth</option>
+                                 </select>
+                              </div>
+
+                              <div class="flex items-center">
+                                 <label for="npc-alignment" class="label-text w-28 text-right pr-2">Alignment</label>
+                                 <select id="npc-alignment" class="info-select" style="width: 170px; height: 23px;">
+                                     <option value="" disabled selected hidden></option>
+                                     <option>unaligned</option>
+                                     <option disabled>──────────</option>
+                                     <option>lawful good</option>
+                                     <option>lawful neutral</option>
+                                     <option>lawful evil</option>
+                                     <option disabled>──────────</option>
+                                     <option>neutral good</option>
+                                     <option>true neutral</option>
+                                     <option>neutral evil</option>
+                                     <option disabled>──────────</option>
+                                     <option>chaotic good</option>
+                                     <option>chaotic neutral</option>
+                                     <option>chaotic evil</option>
+                                 </select>
+                              </div>
+                              <div class="flex items-center">
+                                 <label for="npc-ac" class="label-text w-28 text-right pr-2">Armor Class</label>
+                                 <input type="number" id="npc-ac" class="info-input" style="width: 170px; height: 23px;" />
+                              </div>
+                              <div class="flex items-center">
+                                 <label for="npc-hp" class="label-text w-28 text-right pr-2">Hit Points</label>
+                                 <input type="number" id="npc-hp" class="info-input" style="width: 170px; height: 23px;" />
+                              </div>
+                           </div>
+                           <!-- Right Column for other details -->
+                           <div class="space-y-1">
+                               <div style="height: 31px;"></div> <!-- Spacer to align with Name field -->
+                              <div class="flex items-center">
+                                 <label for="npc-gender" class="label-text w-28 text-right pr-2">Gender</label>
+                                 <select id="npc-gender" class="info-select" style="width: 130px; height: 23px;">
+                                    <option>neutral</option>
+                                    <option>male</option>
+                                    <option>female</option>
+                                 </select>
+                              </div>
+                              <div class="flex items-center h-[27px]">
+                                 <label for="npc-unique" class="label-text w-28 text-right pr-2">Unique</label>
+                                 <div class="w-[130px] flex items-center">
+                                    <input
+                                       type="checkbox"
+                                       id="npc-unique"
+                                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                 </div>
+                              </div>
+                              <div class="flex items-center h-[27px]">
+                                 <label for="npc-proper" class="label-text w-28 text-right pr-2">Proper Name</label>
+                                 <div class="w-[130px] flex items-center">
+                                    <input
+                                       type="checkbox"
+                                       id="npc-proper"
+                                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <!-- Card: Statistics -->
+                  <div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+                     <div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+                        <h2 class="font-bold text-slate-700 relative" style="top: 0px;">Statistics</h2>
+                     </div>
+                     <div class="card-body open">
+                        <div class="p-4 min-h-[20rem]"><!-- Placeholder space --></div>
+                     </div>
+                  </div>
+               </div>
+
+               <!-- Right Column: The Viewport, not fixed position anymore -->
+               <aside class="flex-shrink-0">
+                  <div
+                     id="viewport"
+                     class="w-[500px] h-[800px] bg-cover bg-center rounded-xl shadow-inner custom-shadow overflow-auto bordered-container"
+                     style="
+                         background-image: url(&quot;graphics/viewport.jpg&quot;);
+                         background-repeat: repeat;
+                         background-position: top left;
+                         background-size: auto;
+                     ">
+                     <!-- The generated HTML will eventually be injected here -->
+                  </div>
+               </aside>
+            </main>
+         </div>
+      </div>
+
+      <script>
+         document.addEventListener("DOMContentLoaded", () => {
+            // --- DATA ---
+            let NPC = {};
+            let currentFileHandle = null;
+
+            // --- UI ELEMENTS ---
+            const cardHeaders = document.querySelectorAll(".card-header");
+            const newNpcBtn = document.getElementById("newNpcBtn");
+            const openFileBtn = document.getElementById("openFileBtn");
+            const saveFileBtn = document.getElementById("saveFileBtn");
+            const downloadBtn = document.getElementById("downloadBtn");
+            const fileStatusEl = document.getElementById("file-status");
+
+            // --- FORM INPUTS ---
+            const inputs = {
+               name: document.getElementById("npc-name"),
+               size: document.getElementById("npc-size"),
+               type: document.getElementById("npc-type"),
+               species: document.getElementById("npc-species"),
+               alignment: document.getElementById("npc-alignment"),
+               armorClass: document.getElementById("npc-ac"),
+               hitPoints: document.getElementById("npc-hp"),
+               gender: document.getElementById("npc-gender"),
+               isUnique: document.getElementById("npc-unique"),
+               isProperName: document.getElementById("npc-proper")
+            };
+
+            // --- FUNCTIONS ---
+
+            function initializeNPC() {
+               NPC = {
+                  name: "",
+                  size: "",
+                  type: "",
+                  species: "",
+                  alignment: "",
+                  armorClass: "",
+                  hitPoints: "",
+                  gender: "neutral",
+                  isUnique: false,
+                  isProperName: false
+               };
+               updateFormFromNPC();
+            }
+
+            // Resets the entire form and state for a new NPC
+            function createNewNpc() {
+               initializeNPC();
+               currentFileHandle = null; // Clear the file handle
+               fileStatusEl.textContent = "New NPC"; // Update status
+            }
+
+            // Updates the form fields with data from the global NPC object
+            function updateFormFromNPC() {
+               for (const key in inputs) {
+                  const element = inputs[key];
+                  if (element.type === "checkbox") {
+                     element.checked = NPC[key] || false;
+                  } else {
+                     element.value = NPC[key] || "";
+                  }
+               }
+            }
+
+            // Updates the global NPC object with data from the form fields
+            function updateNPCFromForm() {
+               for (const key in inputs) {
+                  const element = inputs[key];
+                  if (element.type === "checkbox") {
+                     NPC[key] = element.checked;
+                  } else if (element.type === "number") {
+                     NPC[key] = element.value === "" ? "" : Number(element.value);
+                  } else {
+                     NPC[key] = element.value;
+                  }
+               }
+                // console.log("NPC Data Updated:", NPC); // For debugging
+            }
+
+            // --- FILE SYSTEM API LOGIC ---
+
+            async function openFile() {
+               try {
+                  const [handle] = await window.showOpenFilePicker({
+                     types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
+                  });
+                  currentFileHandle = handle;
+                  const file = await handle.getFile();
+                  const content = await file.text();
+                  NPC = JSON.parse(content);
+                  updateFormFromNPC();
+                  fileStatusEl.textContent = `Editing: ${file.name}`;
+               } catch (err) {
+                  if (err.name !== "AbortError") console.error("Error opening file:", err);
+               }
+            }
+
+            async function saveFile() {
+               updateNPCFromForm();
+               const jsonString = JSON.stringify(NPC, null, 2);
+
+               if (!currentFileHandle) {
+                  // "Save As" if no file is open
+                  try {
+                     const handle = await window.showSaveFilePicker({
+                        types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
+                     });
+                     currentFileHandle = handle;
+                  } catch (err) {
+                     if (err.name !== "AbortError") console.error("Error saving file:", err);
+                     return; // Exit if user cancels "Save As"
+                  }
+               }
+
+               try {
+                  const writable = await currentFileHandle.createWritable();
+                  await writable.write(jsonString);
+                  await writable.close();
+                  fileStatusEl.textContent = `Saved: ${currentFileHandle.name}`;
+               } catch (err) {
+                  console.error("Error saving file:", err);
+               }
+            }
+
+            function downloadCopy() {
+               updateNPCFromForm();
+               const jsonString = JSON.stringify(NPC, null, 2);
+               const blob = new Blob([jsonString], { type: "application/json" });
+               const url = URL.createObjectURL(blob);
+               const a = document.createElement("a");
+               a.href = url;
+               a.download = `${NPC.name || "unnamed-npc"}.json`;
+               document.body.appendChild(a);
+               a.click();
+               document.body.removeChild(a);
+               URL.revokeObjectURL(url);
+            }
+
+            // --- EVENT LISTENERS ---
+ 
+             // Card collapsers
+            cardHeaders.forEach((header) => {
+               header.addEventListener("click", () => {
+                  const cardBody = header.nextElementSibling;
+                  if (cardBody) {
+                      // This part controls the open/close animation
+                      if (cardBody.classList.contains('open')) {
+                          cardBody.classList.remove('open');
+                          // We also remove the padding during the transition
+                          cardBody.style.paddingTop = '0';
+                          cardBody.style.paddingBottom = '0';
+
+                      } else {
+                          cardBody.classList.add('open');
+                          // We add the padding back when it opens
+                          cardBody.style.paddingTop = '0.5rem';
+                          cardBody.style.paddingBottom = '0.5rem';
+                      }
+                  }
+               });
+            });
+
+            // Form inputs -> update NPC object on any change
+            Object.values(inputs).forEach((input) => {
+               input.addEventListener("input", updateNPCFromForm);
+            });
+
+            // File buttons
+            newNpcBtn.addEventListener("click", createNewNpc);
+            openFileBtn.addEventListener("click", openFile);
+            saveFileBtn.addEventListener("click", saveFile);
+            downloadBtn.addEventListener("click", downloadCopy);
+
+            // Check for API support and disable buttons if needed
+            const isApiSupported = "showOpenFilePicker" in window;
+            const isBlocked = window.self !== window.top;
+            if (!isApiSupported || isBlocked) {
+               openFileBtn.disabled = true;
+               saveFileBtn.disabled = true;
+               const reason = isBlocked ? "in this frame" : "by your browser";
+               fileStatusEl.textContent = `File System API disabled ${reason}.`;
+               fileStatusEl.classList.add("text-yellow-400");
+            }
+ 
+             // --- INITIALIZATION ---
+             initializeNPC();
+ 
+             // Manually open the first card on load for better UX
+             const firstCardBody = document.querySelector('.card-body');
+            if (firstCardBody) {
+                firstCardBody.classList.add('open');
+                firstCardBody.style.paddingTop = '0.5rem';
+                firstCardBody.style.paddingBottom = '0.5rem';
+            }
+         });
+      </script>
+   </body>
+</html>
+

@@ -19,6 +19,8 @@
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet" />
 		<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+		<link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet" />
+		<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet" />
 
 		<style>
 			body {
@@ -63,6 +65,199 @@
 				padding-left: 0.5rem;
 				padding-right: 0.5rem;
 				font-size: 10pt; /* Set font size for input fields */
+			}
+
+			/* --- Viewport Styles --- */
+			div.container {
+				margin: auto;
+				width: 10.2cm;
+				box-shadow: 8px 8px 20px #472737;
+				background-image: url("graphics/statblock texture.jpg");
+				background-color: #FDF1E6; /* Pale yellow fallback */
+			}
+			div.cap {
+				margin: auto;
+				height: 0.2cm;
+				width: 10.2cm;
+				background: #872020; /* App title green color */
+				border-style: solid;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-top-width: 1px;
+				border-bottom-width: 1px;
+				border-right-color: #000000;
+				border-left-color: #000000;
+				border-top-color: #000000;
+				border-bottom-color: #000000;
+				background-image: url("graphics/statblock cap.jpg");
+			}
+			div.npcname {
+				margin: auto;
+				width: 10.2cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-family: "Cormorant SC", serif;
+				font-size: 21pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npctype {
+				margin: auto;
+				width: 10.2cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 9pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npctop {
+				margin: auto;
+				width: 10.2cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-family: "Questrial", sans-serif;
+				font-size: 10.5pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npcbottom {
+				margin: auto;
+				width: 10.2cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 10pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npcdescrip {
+				margin: auto;
+				background: rgba(255, 255, 255, 0.0);
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 10.2pt;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			.heading {
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-size: 16pt;
+				font-weight: bold;
+			}
+			.post-container {
+				margin: 20px 20px 0 0;
+				overflow: auto;
+				padding: 0cm 0.15cm 0cm 0cm;
+			}
+			.post-thumb {
+				float: left;
+			}
+			.post-thumb img {
+				display: block;
+			}
+			.post-content {
+				background: #FDF1E6;
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 10pt;
+				border: 1px solid #7A200D;
+				margin-left: 1cm;
+				padding: 0.15cm 0.15cm 0cm 0.15cm;
+				box-shadow: 4px 4px 8px #472737;
+			}
+
+			div.npcdiv {
+				margin: auto;
+				width: 10.2cm;
+				background: rgba(0, 0, 0, 0.0);
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			.whoosh {
+				/* This class is now used on an SVG polyline, styled via attributes */
+			}
+			table.attr {
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-family: "Lato", sans-serif;
+				font-size: 11pt;
+				border-style: none;
+				border-collapse: collapse;
+				text-align: center;
+				padding: 0cm 0cm 0cm 0cm;
+			}
+			div.npcdiv2 {
+				margin: auto;
+				width: 10.2cm;
+				background: rgba(0, 0, 0, 0.0);
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0.2cm 0.15cm;
+			}
+			table.spell {
+				background: #FDF1E6;
+				color: #000000;
+				font-family: "Lato", sans-serif;
+				font-size: 11pt;
+				border: 1px solid #7A200D;
+				border-collapse: collapse;
+				text-align: left;
+				padding: 0.2cm 0.2cm 0.2cm 0.2cm;
+				box-shadow: 3px 3px #DDDDDD;
+			}
+			table.spell th {
+				background-color: #7A200D;
+				color: #FFFFFF;
+				padding: 0.1cm;
+				border: 1px solid #7A200D;
+				border-collapse: collapse;
+			}
+			table.spell td {
+				padding: 0.1cm;
+				border: 1px solid #7A200D;
+				border-collapse: collapse;
 			}
 		</style>
 	</head>
@@ -151,14 +346,14 @@
 										<!-- Name -->
 										<div class="flex items-center mb-2">
 											<label for="npc-name" class="label-text w-28 text-right pr-2">Name</label>
-											<input type="text" id="npc-name" class="info-input" style="width: 250px; height: 23px; background-color: #fef2f2; border-color: #b91c1c;" />
+											<input type="text" id="npc-name" class="info-input" style="width: 250px; height: 23px; background-color: #fef2f2; border-color: #b91c1c;" tabindex="1" title="Enter the NPC's name.&#10;This will also set the main image name and token name, and default save name." />
 										</div>
 
 										<!-- Size and Gender -->
 										<div class="flex items-center">
 											<label for="npc-size" class="label-text w-28 text-right pr-2">Size</label>
 											<div class="relative" style="width: 200px; height: 23px;">
-												<select id="npc-size" class="info-select absolute top-0 left-0 w-full h-full">
+												<select id="npc-size" class="info-select absolute top-0 left-0 w-full h-full" tabindex="2" title="Select from the standard size categories or enter your own by clicking the checkbox.">
 													<option value="" disabled selected hidden></option>
 													<option>Tiny</option>
 													<option>Small</option>
@@ -167,11 +362,11 @@
 													<option>Huge</option>
 													<option>Gargantuan</option>
 												</select>
-												<input type="text" id="npc-size-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" />
+												<input type="text" id="npc-size-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="2" title="Select from the standard size categories or enter your own by clicking the checkbox." />
 											</div>
-											<input type="checkbox" id="toggle-custom-size" title="enter a custom size" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+											<input type="checkbox" id="toggle-custom-size" title="enter a custom size" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
 											<label for="npc-gender" class="label-text w-28 text-right pr-2">Gender</label>
-											<select id="npc-gender" class="info-select" style="width: 130px; height: 23px;">
+											<select id="npc-gender" class="info-select" style="width: 130px; height: 23px;" tabindex="8" title="Select the NPC's gender.&#10;This will insert gender-specific pronouns in the descriptive text.">
 												<option value="neutral">neutral</option>
 												<option value="male">male</option>
 												<option value="female">female</option>
@@ -182,7 +377,7 @@
 										<div class="flex items-center">
 											<label for="npc-type" class="label-text w-28 text-right pr-2">Type</label>
 											<div class="relative" style="width: 200px; height: 23px;">
-												<select id="npc-type" class="info-select absolute top-0 left-0 w-full h-full">
+												<select id="npc-type" class="info-select absolute top-0 left-0 w-full h-full" tabindex="3" title="Select from the standard creature types or enter your own by clicking the checkbox.">
 													<option value="" disabled selected hidden></option>
 													<option>aberration</option>
 													<option>beast</option>
@@ -209,12 +404,12 @@
 													<option disabled>──────────</option>
 													<option>trap</option>
 												</select>
-												<input type="text" id="npc-type-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" />
+												<input type="text" id="npc-type-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="3" title="Select from the standard creature types or enter your own by clicking the checkbox." />
 											</div>
-											<input type="checkbox" id="toggle-custom-type" title="enter a custom type" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+											<input type="checkbox" id="toggle-custom-type" title="enter a custom type" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
 											<label for="npc-unique" class="label-text w-28 text-right pr-2">Unique</label>
 											<div class="w-[130px] flex items-center">
-												<input type="checkbox" id="npc-unique" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+												<input type="checkbox" id="npc-unique" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="9" title="Check if the NPC is unique for any reason.&#10;This will capitalise its name in the descriptive text." />
 											</div>
 										</div>
 
@@ -222,7 +417,7 @@
 										<div class="flex items-center">
 											<label for="npc-species" class="label-text w-28 text-right pr-2">Species</label>
 											<div class="relative" style="width: 200px; height: 23px;">
-												<select id="npc-species" class="info-select absolute top-0 left-0 w-full h-full">
+												<select id="npc-species" class="info-select absolute top-0 left-0 w-full h-full" tabindex="4" title="Select a specific species or enter your own by clicking the checkbox.&#10;Example: a species of humanoid may be half-elf.&#10;You can leave this box blank if desired.">
 													<option value="" disabled selected hidden></option>
 													<option>aarakocra</option>
 													<option>any species</option>
@@ -263,12 +458,12 @@
 													<option>yuan-ti</option>
 													<option>yugoloth</option>
 												</select>
-												<input type="text" id="npc-species-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" />
+												<input type="text" id="npc-species-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="4" title="Select a specific species or enter your own by clicking the checkbox.&#10;Example: a species of humanoid may be half-elf.&#10;You can leave this box blank if desired." />
 											</div>
-											<input type="checkbox" id="toggle-custom-species" title="enter a custom species" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+											<input type="checkbox" id="toggle-custom-species" title="enter a custom species" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
 											<label for="npc-proper" class="label-text w-28 text-right pr-2">Proper Name</label>
 											<div class="w-[130px] flex items-center">
-												<input type="checkbox" id="npc-proper" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+												<input type="checkbox" id="npc-proper" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="10" title="Check if the name entered is a proper name.&#10;This will use just the first word of the name in the descriptive text.&#10;('Maasq Hammerheart' will be referred to as 'Maasq' throughout; 'Ironbane, Destroyer of Worlds' as 'Ironbane') " />
 											</div>
 										</div>
 
@@ -276,7 +471,7 @@
 										<div class="flex items-center">
 											<label for="npc-alignment" class="label-text w-28 text-right pr-2">Alignment</label>
 											<div class="relative" style="width: 200px; height: 23px;">
-												<select id="npc-alignment" class="info-select absolute top-0 left-0 w-full h-full">
+												<select id="npc-alignment" class="info-select absolute top-0 left-0 w-full h-full" tabindex="5" title="Select from the standard alignments or enter your own by clicking the checkbox.">
 													<option value="" disabled selected hidden></option>
 													<option>unaligned</option>
 													<option disabled>──────────</option>
@@ -292,19 +487,19 @@
 													<option>chaotic neutral</option>
 													<option>chaotic evil</option>
 												</select>
-												<input type="text" id="npc-alignment-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" />
+												<input type="text" id="npc-alignment-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="5" title="Select from the standard alignments or enter your own by clicking the checkbox." />
 											</div>
-											<input type="checkbox" id="toggle-custom-alignment" title="enter a custom alignment" class="ml-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+											<input type="checkbox" id="toggle-custom-alignment" title="enter a custom alignment" class="ml-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
 										</div>
 										<!-- Armor Class -->
 										<div class="flex items-center">
 											<label for="npc-ac" class="label-text w-28 text-right pr-2">Armor Class</label>
-											<input type="number" id="npc-ac" class="info-input" style="width: 200px; height: 23px;" />
+											<input type="text" id="npc-ac" class="info-input" style="width: 200px; height: 23px;" tabindex="6" title="Enter the NPC's armor class. You can also enter the type of armor in brackets.&#10;Example: 12 (leather armor)" />
 										</div>
 										<!-- Hit Points -->
 										<div class="flex items-center">
 											<label for="npc-hp" class="label-text w-28 text-right pr-2">Hit Points</label>
-											<input type="number" id="npc-hp" class="info-input" style="width: 200px; height: 23px;" />
+											<input type="text" id="npc-hp" class="info-input" style="width: 200px; height: 23px;" tabindex="7" title="Enter the NPC's hit points, followed by its hit dice in brackets.&#10;Example: 16 (3d6 + 6)&#10;Double-click to open a window that will help build a correct expression." />
 										</div>
 									</div>
 								</div>
@@ -326,8 +521,9 @@
 					<aside class="flex-shrink-0">
 						<div
 							id="viewport"
-							class="w-[500px] h-[800px] bg-cover bg-center rounded-xl shadow-inner custom-shadow overflow-auto bordered-container"
+							class="w-[500px] h-[800px] bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container"
 							style="
+								padding-top: 10px;
 								background-image: url(&quot;graphics/viewport.jpg&quot;);
 								background-repeat: repeat;
 								background-position: top left;
@@ -353,6 +549,7 @@
 				const saveFileBtn = document.getElementById("saveFileBtn");
 				const downloadBtn = document.getElementById("downloadBtn");
 				const fileStatusEl = document.getElementById("file-status");
+				const viewport = document.getElementById("viewport");
 
 				// --- FORM INPUTS ---
 				const inputs = {
@@ -384,6 +581,84 @@
 						isProperName: false
 					};
 					updateFormFromNPC();
+					updateViewport();
+				}
+				
+				// Generates and displays the HTML for the viewport
+				function updateViewport() {
+					// Gather all known properties from the NPC object, defaulting to "" if not present
+					const { name, size, type, species, alignment, armorClass, hitPoints } = NPC;
+					const NPCName = name || "New NPC";
+					const NPCac = armorClass || "";
+					const NPChp = hitPoints || "";
+
+					// Build the complex type string. The .trim() handles cases where size or type might be empty.
+					let NPCTypeString = `${size || ""} ${type || ""}`.trim();
+					if (species) {
+						NPCTypeString += ` (${species})`;
+					}
+					if (alignment) {
+						NPCTypeString += `, ${alignment}`;
+					}
+
+					// Treat all other placeholders as empty strings for now
+					const NPCspeed = "";
+					const NPCstr = ""; const NPCstrbo = "";
+					const NPCdex = ""; const NPCdexbo = "";
+					const NPCcon = ""; const NPCconbo = "";
+					const NPCint = ""; const NPCintbo = "";
+					const NPCwis = ""; const NPCwisbo = "";
+					const NPCcha = ""; const NPCchabo = "";
+
+					const generatedHtml = `
+						<div class="container">
+							<div class="cap"></div>
+							<div class="npcname"><b>${NPCName}</b></div>
+							<div class="npctype"><i>${NPCTypeString}</i></div>
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+							<div class="npctop"><b>Armor Class</b> ${NPCac}</div>
+							<div class="npctop"><b>Hit Points</b> ${NPChp}</div>
+							<div class="npctop"><b>Speed</b> ${NPCspeed}</div>
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+							<div class="npctop">
+								<table class="attr" width="100%">
+									<tbody>
+										<tr valign="middle">
+											<td><b>STR</b></td>
+											<td><b>DEX</b></td>
+											<td><b>CON</b></td>
+											<td><b>INT</b></td>
+											<td><b>WIS</b></td>
+											<td><b>CHA</b></td>
+										</tr>
+										<tr valign="middle">
+											<td>${NPCstr} (${NPCstrbo})</td>
+											<td>${NPCdex} (${NPCdexbo})</td>
+											<td>${NPCcon} (${NPCconbo})</td>
+											<td>${NPCint} (${NPCintbo})</td>
+											<td>${NPCwis} (${NPCwisbo})</td>
+											<td>${NPCcha} (${NPCchabo})</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+						</div>
+					`;
+
+					viewport.innerHTML = generatedHtml;
 				}
 
 				// Resets the entire form and state for a new NPC
@@ -428,6 +703,7 @@
 							element.value = NPC[key] || "";
 						}
 					}
+					updateViewport(); // Also update the view when loading from a file
 				}
 
 				// Updates the global NPC object with data from the form fields
@@ -451,7 +727,7 @@
 							NPC[key] = element.value;
 						}
 					}
-					// console.log("NPC Data Updated:", NPC); // For debugging
+					updateViewport(); // Update the preview on every input change
 				}
 				
 				// Sets up the behavior for custom input toggles
@@ -584,7 +860,7 @@
 					saveFileBtn.disabled = true;
 					const reason = isBlocked ? "in this frame" : "by your browser";
 					fileStatusEl.textContent = `File System API disabled ${reason}.`;
-					fileStatusEl.classList.add("text-yellow-400");
+					fileStatusEl.classList.add("text-black-400");
 				}
 	 
 				 // --- INITIALIZATION ---
@@ -602,4 +878,6 @@
 		</script>
 	</body>
 </html>
+
+
 
