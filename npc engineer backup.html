@@ -6,8 +6,8 @@
 
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.01.24" />
-		<meta name="date" content="2025-10-06" />
+		<meta name="version" content="0.1.10" />
+		<meta name="date" content="2025-10-5" />
 
 		<title>NPC Engineer</title>
 
@@ -69,15 +69,6 @@
 				padding-left: 0.5rem;
 				padding-right: 0.5rem;
 				font-size: 10pt; /* Set font size for input fields */
-			}
-
-			/* --- Hide Scrollbar --- */
-			.no-scrollbar::-webkit-scrollbar {
-				display: none;
-			}
-			.no-scrollbar {
-				-ms-overflow-style: none;  /* IE and Edge */
-				scrollbar-width: none;  /* Firefox */
 			}
 
 			/* --- Trix Editor Styles --- */
@@ -294,401 +285,359 @@
 			}
 		</style>
 	</head>
-	<body class="bg-[#E2E8F0] 2xl:h-screen 2xl:overflow-hidden">
-		<!-- Centering Container with a max-width and full height flex layout -->
-		<div class="max-w-screen-2xl mx-auto px-6 h-full flex flex-col">
-			<!-- Header Area -->
-			<header class="flex-shrink-0 bg-[#E2E8F0] pt-1 pb-8 sticky top-0 z-40">
-				<div class="relative h-24"> <!-- Height adjusted to contain the logo -->
-					<!-- Background circle for the graphic -->
-					<div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
+	<body class="bg-[#E2E8F0]">
+		<!-- Centering Container with a max-width. This will also constrain the header. -->
+		<div class="max-w-screen-2xl mx-auto relative px-6 pb-6">
+			<!-- Graphic and Header Area -->
+			<div class="relative h-[94px]">
+				<!-- Background circle for the graphic -->
+				<div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
 
-					<!-- Graphic Image -->
-					<img
-						src="graphics/npc engineer.webp"
-						alt="NPC Engineer Logo"
-						class="absolute w-32 h-32 rounded-full z-30"
-						style="top: 16px; left: 28px" />
-					
-					<!-- File Management Buttons -->
-					<div class="absolute right-0 top-[18px] z-30 flex items-center space-x-2">
-						<span id="file-status" class="text-xs text-gray-500 mr-2">No file loaded</span>
-						<!-- New NPC Button with SVG Icon -->
-						<button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-4 w-4" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 502 502" xml:space="preserve">
+				<!-- Graphic Image -->
+				<img
+					src="graphics/npc engineer.webp"
+					alt="NPC Engineer Logo"
+					class="absolute w-32 h-32 rounded-full z-30"
+					style="top: 16px; left: 28px" />
+				
+				<!-- File Management Buttons -->
+				<div class="absolute right-0 top-[18px] z-30 flex items-center space-x-2">
+					<span id="file-status" class="text-xs text-gray-500 mr-2">No file loaded</span>
+					<!-- New NPC Button with SVG Icon -->
+					<button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+						<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-4 w-4" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 502 502" xml:space="preserve">
+							<g>
 								<g>
-									<g>
-										<path d="M405.889,348.576V105.273c0-2.652-1.054-5.196-2.929-7.071L307.688,2.929C305.812,1.054,303.269,0,300.617,0H70.783
-											c-5.523,0-10,4.477-10,10v445.916c0,5.523,4.477,10,10,10h216.442C303.083,488.611,328.615,502,356.57,502
-											c46.674,0,84.646-37.972,84.646-84.646C441.217,389.827,428.102,364.485,405.889,348.576z M80.783,20h215.691l76.158,76.158
-											h-51.151c-5.522,0-10,4.477-10,10s4.478,10,10,10h64.408v221.789c-9.334-3.451-19.247-5.241-29.319-5.241
-											c-46.675,0-84.647,37.973-84.647,84.647c0,9.793,1.692,19.45,4.955,28.562H80.783V20z M356.57,482
-											c-22.766,0-43.43-11.629-55.277-31.107c-6.13-10.077-9.37-21.675-9.37-33.539c0-35.646,29.001-64.647,64.647-64.647
-											c11.785,0,23.28,3.21,33.334,9.278c0.474,0.355,0.979,0.67,1.513,0.938c18.668,11.975,29.799,32.278,29.799,54.431
-											C421.217,453,392.217,482,356.57,482z"/>
-										<path d="M394.345,407.354h-27.776v-27.776c0-5.523-4.478-10-10-10s-10,4.477-10,10v27.776h-27.776c-5.522,0-10,4.477-10,10
-											s4.478,10,10,10h27.776v27.776c0,5.523,4.478,10,10,10s10-4.477,10-10v-27.776h27.776c5.522,0,10-4.477,10-10
-											S399.868,407.354,394.345,407.354z"/>
-										<path d="M292.56,106.158c0-5.523-4.478-10-10-10h-11.447c-5.522,0-10,4.477-10,10s4.478,10,10,10h11.447
-											C288.083,116.158,292.56,111.681,292.56,106.158z"/>
-									</g>
+									<path d="M405.889,348.576V105.273c0-2.652-1.054-5.196-2.929-7.071L307.688,2.929C305.812,1.054,303.269,0,300.617,0H70.783
+										c-5.523,0-10,4.477-10,10v445.916c0,5.523,4.477,10,10,10h216.442C303.083,488.611,328.615,502,356.57,502
+										c46.674,0,84.646-37.972,84.646-84.646C441.217,389.827,428.102,364.485,405.889,348.576z M80.783,20h215.691l76.158,76.158
+										h-51.151c-5.522,0-10,4.477-10,10s4.478,10,10,10h64.408v221.789c-9.334-3.451-19.247-5.241-29.319-5.241
+										c-46.675,0-84.647,37.973-84.647,84.647c0,9.793,1.692,19.45,4.955,28.562H80.783V20z M356.57,482
+										c-22.766,0-43.43-11.629-55.277-31.107c-6.13-10.077-9.37-21.675-9.37-33.539c0-35.646,29.001-64.647,64.647-64.647
+										c11.785,0,23.28,3.21,33.334,9.278c0.474,0.355,0.979,0.67,1.513,0.938c18.668,11.975,29.799,32.278,29.799,54.431
+										C421.217,453,392.217,482,356.57,482z"/>
+									<path d="M394.345,407.354h-27.776v-27.776c0-5.523-4.478-10-10-10s-10,4.477-10,10v27.776h-27.776c-5.522,0-10,4.477-10,10
+										s4.478,10,10,10h27.776v27.776c0,5.523,4.478,10,10,10s10-4.477,10-10v-27.776h27.776c5.522,0,10-4.477,10-10
+										S399.868,407.354,394.345,407.354z"/>
+									<path d="M292.56,106.158c0-5.523-4.478-10-10-10h-11.447c-5.522,0-10,4.477-10,10s4.478,10,10,10h11.447
+										C288.083,116.158,292.56,111.681,292.56,106.158z"/>
 								</g>
-							</svg>
-						</button>
-						<!-- Open File Button with SVG Icon -->
-						<button id="openFileBtn" title="Open File" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black disabled:opacity-25 disabled:cursor-not-allowed">
-							<svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
-								<path d="M21 5h-8.8L11 3H4L2.8 5H1v16h20l2.902-12H21zM2 6h1.366l1.2-2h5.868l1.2 2H20v3h-5.6l-2 2H4.35L2 18.015zm20.632 4l-2.42 10H2.39l2.68-8h7.744l2-2z"/>
-							</svg>
-						</button>
-						<!-- Save File Button with SVG Icon -->
-						<button id="saveFileBtn" title="Save File" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black disabled:opacity-25 disabled:cursor-not-allowed">
-							<svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
-								<path d="M16.765 2c1.187 0 1.363.06 1.51.168L21.662 4.7a.845.845 0 0 1 .339.677v15.78a.844.844 0 0 1-.844.844H2.844A.844.844 0 0 1 2 21.156V2.844A.844.844 0 0 1 2.844 2zM17 21v-7H7v7zM14 3v3h1V3zM7 3v6h10V3h-1v4h-3V3zM3 21h3v-8h12v8h3V5.452l-3-2.278v6.17a.769.769 0 0 1-.844.656H6.844A.769.769 0 0 1 6 9.344V3H3z"/>
-							</svg>
-						</button>
-						<!-- Download Copy Button with SVG Icon -->
-						<button id="downloadBtn" title="Download Copy" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
-								<path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.206 2.206 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-1h-1v10.292l-2.646-2.646-.707.707 3.854 3.854 3.853-3.852-.707-.707L13 21.294z"/>
-							</svg>
-						</button>
-					</div>
-
-					<!-- Persistent Header Bar -->
-					<div
-						class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center px-4">
-						<!-- App Title -->
-						<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
-					</div>
+							</g>
+						</svg>
+					</button>
+					<!-- Open File Button with SVG Icon -->
+					<button id="openFileBtn" title="Open File" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black disabled:opacity-25 disabled:cursor-not-allowed">
+						<svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
+							<path d="M21 5h-8.8L11 3H4L2.8 5H1v16h20l2.902-12H21zM2 6h1.366l1.2-2h5.868l1.2 2H20v3h-5.6l-2 2H4.35L2 18.015zm20.632 4l-2.42 10H2.39l2.68-8h7.744l2-2z"/>
+						</svg>
+					</button>
+					<!-- Save File Button with SVG Icon -->
+					<button id="saveFileBtn" title="Save File" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black disabled:opacity-25 disabled:cursor-not-allowed">
+						<svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
+							<path d="M16.765 2c1.187 0 1.363.06 1.51.168L21.662 4.7a.845.845 0 0 1 .339.677v15.78a.844.844 0 0 1-.844.844H2.844A.844.844 0 0 1 2 21.156V2.844A.844.844 0 0 1 2.844 2zM17 21v-7H7v7zM14 3v3h1V3zM7 3v6h10V3h-1v4h-3V3zM3 21h3v-8h12v8h3V5.452l-3-2.278v6.17a.769.769 0 0 1-.844.656H6.844A.769.769 0 0 1 6 9.344V3H3z"/>
+						</svg>
+					</button>
+					<!-- Download Copy Button with SVG Icon -->
+					<button id="downloadBtn" title="Download Copy" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+						<svg class="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1">
+							<path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.206 2.206 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-1h-1v10.292l-2.646-2.646-.707.707 3.854 3.854 3.853-3.852-.707-.707L13 21.294z"/>
+						</svg>
+					</button>
 				</div>
-			</header>
 
-			<!-- Main Content Area: flex-wrap will stack columns on smaller screens -->
-			<main class="flex flex-wrap 2xl:flex-nowrap justify-center gap-6 pt-6 flex-grow 2xl:overflow-hidden">
-				<!-- Left Scrolling Column -->
-				<div class="w-[900px] flex-shrink-0 space-y-6 2xl:overflow-y-auto 2xl:pr-4 2xl:no-scrollbar">
-					<!-- Card: NPC Information -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">NPC Information</h2>
-						</div>
-						<div class="card-body">
-							<div class="px-4 pt-2 pb-2">
-								<div class="flex flex-wrap md:flex-nowrap space-x-4">
-									<!-- Main Info Column -->
-									<div class="flex-shrink-0">
-										<div class="space-y-1">
-											<!-- Name -->
-											<div class="flex items-center mb-2">
-												<label for="npc-name" class="label-text w-28 text-right pr-2">Name</label>
-												<input type="text" id="npc-name" class="info-input" style="width: 250px; height: 23px; background-color: #fef2f2; border-color: #b91c1c;" tabindex="1" title="Enter the NPC's name.&#10;This will also set the main image name and token name, and default save name." />
-											</div>
+				<!-- Persistent Header Bar -->
+				<header
+					class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center px-4">
+					<!-- App Title -->
+					<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
+				</header>
+			</div>
 
-											<!-- Size and Gender -->
-											<div class="flex items-center">
-												<label for="npc-size" class="label-text w-28 text-right pr-2">Size</label>
-												<div class="relative" style="width: 200px; height: 23px;">
-													<select id="npc-size" class="info-select absolute top-0 left-0 w-full h-full" tabindex="2" title="Select from the standard size categories or enter your own by clicking the checkbox.">
-														<option value="" disabled selected hidden></option>
-														<option>Tiny</option>
-														<option>Small</option>
-														<option>Medium</option>
-														<option>Large</option>
-														<option>Huge</option>
-														<option>Gargantuan</option>
-													</select>
-													<input type="text" id="npc-size-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="2" title="Select from the standard size categories or enter your own by clicking the checkbox." />
-												</div>
-												<input type="checkbox" id="toggle-custom-size" title="enter a custom size" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
-												<label for="npc-gender" class="label-text w-28 text-right pr-2">Gender</label>
-												<select id="npc-gender" class="info-select" style="width: 130px; height: 23px;" tabindex="8" title="Select the NPC's gender.&#10;This will insert gender-specific pronouns in the descriptive text.">
-													<option value="neutral">neutral</option>
-													<option value="male">male</option>
-													<option value="female">female</option>
-												</select>
-											</div>
-
-											<!-- Type and Unique -->
-											<div class="flex items-center">
-												<label for="npc-type" class="label-text w-28 text-right pr-2">Type</label>
-												<div class="relative" style="width: 200px; height: 23px;">
-													<select id="npc-type" class="info-select absolute top-0 left-0 w-full h-full" tabindex="3" title="Select from the standard creature types or enter your own by clicking the checkbox.">
-														<option value="" disabled selected hidden></option>
-														<option>aberration</option>
-														<option>beast</option>
-														<option>celestial</option>
-														<option>construct</option>
-														<option>dragon</option>
-														<option>elemental</option>
-														<option>fey</option>
-														<option>fiend</option>
-														<option>giant</option>
-														<option>humanoid</option>
-														<option>monstrosity</option>
-														<option>ooze</option>
-														<option>plant</option>
-														<option>undead</option>
-														<option disabled>──────────</option>
-														<option>swarm of tiny aberrations</option>
-														<option>swarm of tiny beasts</option>
-														<option>swarm of tiny constructs</option>
-														<option>swarm of tiny elementals</option>
-														<option>swarm of tiny monstrosities</option>
-														<option>swarm of tiny oozes</option>
-														<option>swarm of tiny plants</option>
-														<option disabled>──────────</option>
-														<option>trap</option>
-													</select>
-													<input type="text" id="npc-type-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="3" title="Select from the standard creature types or enter your own by clicking the checkbox." />
-												</div>
-												<input type="checkbox" id="toggle-custom-type" title="enter a custom type" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
-												<label for="npc-unique" class="label-text w-28 text-right pr-2">Unique</label>
-												<div class="w-[130px] flex items-center">
-													<input type="checkbox" id="npc-unique" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="9" title="Check if the NPC is unique for any reason.&#10;This will capitalise its name in the descriptive text." />
-												</div>
-											</div>
-
-											<!-- Species and Proper Name -->
-											<div class="flex items-center">
-												<label for="npc-species" class="label-text w-28 text-right pr-2">Species</label>
-												<div class="relative" style="width: 200px; height: 23px;">
-													<select id="npc-species" class="info-select absolute top-0 left-0 w-full h-full" tabindex="4" title="Select a specific species or enter your own by clicking the checkbox.&#10;Example: a species of humanoid may be half-elf.&#10;You can leave this box blank if desired.">
-														<option value="" disabled selected hidden></option>
-														<option>aarakocra</option>
-														<option>any species</option>
-														<option>bullywug</option>
-														<option>demon</option>
-														<option>derro</option>
-														<option>devil</option>
-														<option>dragonborn</option>
-														<option>dwarf</option>
-														<option>elf</option>
-														<option>firenewt</option>
-														<option>genasi</option>
-														<option>gith</option>
-														<option>gnoll</option>
-														<option>gnome</option>
-														<option>goblinoid</option>
-														<option>grimlock</option>
-														<option>grung</option>
-														<option>half-elf</option>
-														<option>half-orc</option>
-														<option>halfling</option>
-														<option>human</option>
-														<option>kenku</option>
-														<option>kobold</option>
-														<option>kuo-toa</option>
-														<option>lizardfolk</option>
-														<option>merfolk</option>
-														<option>orc</option>
-														<option>quaggoth</option>
-														<option>ratfolk</option>
-														<option>sahuagin</option>
-														<option>shapechanger</option>
-														<option>thri-kreen</option>
-														<option>tiefling</option>
-														<option>titan</option>
-														<option>troglodyte</option>
-														<option>xvart</option>
-														<option>yuan-ti</option>
-														<option>yugoloth</option>
-													</select>
-													<input type="text" id="npc-species-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="4" title="Select a specific species or enter your own by clicking the checkbox.&#10;Example: a species of humanoid may be half-elf.&#10;You can leave this box blank if desired." />
-												</div>
-												<input type="checkbox" id="toggle-custom-species" title="enter a custom species" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
-												<label for="npc-proper" class="label-text w-28 text-right pr-2">Proper Name</label>
-												<div class="w-[130px] flex items-center">
-													<input type="checkbox" id="npc-proper" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="10" title="Check if the name entered is a proper name.&#10;This will use just the first word of the name in the descriptive text.&#10;('Maasq Hammerheart' will be referred to as 'Maasq' throughout; 'Ironbane, Destroyer of Worlds' as 'Ironbane') " />
-												</div>
-											</div>
-
-											<!-- Flex container for the Alignment/AC/HP column and Token column -->
-											<div class="flex items-start">
-												<!-- Left Column: Alignment, AC, HP -->
-												<div class="space-y-1">
-													<!-- Alignment -->
-													<div class="flex items-center">
-														<label for="npc-alignment" class="label-text w-28 text-right pr-2">Alignment</label>
-														<div class="relative" style="width: 200px; height: 23px;">
-															<select id="npc-alignment" class="info-select absolute top-0 left-0 w-full h-full" tabindex="5" title="Select from the standard alignments or enter your own by clicking the checkbox.">
-																<option value="" disabled selected hidden></option>
-																<option>unaligned</option>
-																<option disabled>──────────</option>
-																<option>lawful good</option>
-																<option>lawful neutral</option>
-																<option>lawful evil</option>
-																<option disabled>──────────</option>
-																<option>neutral good</option>
-																<option>true neutral</option>
-																<option>neutral evil</option>
-																<option disabled>──────────</option>
-																<option>chaotic good</option>
-																<option>chaotic neutral</option>
-																<option>chaotic evil</option>
-															</select>
-															<input type="text" id="npc-alignment-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="5" title="Select from the standard alignments or enter your own by clicking the checkbox." />
-														</div>
-														<input type="checkbox" id="toggle-custom-alignment" title="enter a custom alignment" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
-													</div>
-
-													<!-- Armor Class -->
-													<div class="flex items-center">
-														<label for="npc-ac" class="label-text w-28 text-right pr-2">Armor Class</label>
-														<input type="text" id="npc-ac" class="info-input" style="width: 200px; height: 23px;" tabindex="6" title="Enter the NPC's armor class. You can also enter the type of armor in brackets.&#10;Example: 12 (leather armor)" />
-													</div>
-													<!-- Hit Points -->
-													<div class="flex items-center">
-														<label for="npc-hp" class="label-text w-28 text-right pr-2">Hit Points</label>
-														<input type="text" id="npc-hp" class="info-input" style="width: 200px; height: 23px;" tabindex="7" title="Enter the NPC's hit points, followed by its hit dice in brackets.&#10;Example: 16 (3d6 + 6)&#10;Double-click to open a window that will help build a correct expression." />
-													</div>
-													<!-- Challenge -->
-													<div class="flex items-center" style="padding-top: 3px;">
-														<label for="npc-challenge" class="label-text w-28 text-right pr-2">Challenge</label>
-														<select id="npc-challenge" class="info-select" style="width: 70px; height: 23px;" tabindex="8"></select>
-													</div>
-													<!-- XP and Proficiency Bonus -->
-													<div class="flex items-center" style="margin-top: -1px;">
-														<label class="label-text w-28 text-right pr-2">XP</label>
-														<span id="npc-experience-display" class="font-medium text-gray-800" style="width: 80px;"></span>
-														<label class="label-text pr-2 ml-2">Proficiency Bonus</label>
-														<span id="npc-proficiency-bonus-display" class="font-medium text-gray-800"></span>
-													</div>
-												</div>
-												<!-- Right Column: Token -->
-												<div class="flex">
-													<label class="label-text w-28 text-right pr-2">Token</label>
-													<div class="w-[130px]">
-														<div id="npc-token" class="w-[130px] h-[130px] bg-slate-50 border border-slate-300 rounded-[2px] cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden p-0">
-															<span>Click to upload NPC token</span>
-														</div>
-														<input type="file" id="token-upload" class="hidden" accept="image/png, image/webp">
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-											<!-- Image Column -->
-									<div class="flex-grow">
-										<div id="npc-image" class="w-full h-full bg-slate-50 border border-slate-300 rounded-[2px] cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden p-0">
-											<span>Click to upload NPC image</span>
-										</div>
-										<input type="file" id="image-upload" class="hidden" accept="image/png, image/webp, image/jpeg">
-									</div>
-								</div>
+			<!-- Main application content area -->
+			<div class="relative w-full pt-16">
+				<!-- This is the main container that holds both columns. -->
+				<main class="flex flex-wrap justify-center gap-6">
+					<!-- Left Column: Contains the cards, this column is NOT fixed width -->
+					<div class="w-[900px] space-y-6 flex-shrink-0">
+						<!-- Card: NPC Information -->
+						<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+							<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+								<h2 class="font-bold text-slate-700 relative" style="top: 0px;">NPC Information</h2>
 							</div>
-						</div>
-					</div>
-
-					<!-- Card: Statistics -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Statistics</h2>
-						</div>
-						<div class="card-body">
-							<div class="p-4">
-								<div class="flex">
-									<!-- Ability, Score, Bonus Columns -->
+							<div class="card-body">
+								<div class="px-4 pt-2 pb-2">
 									<div class="flex space-x-4">
-										<!-- Ability Column -->
-										<div class="flex flex-col items-end space-y-1">
-											<label class="label-text font-semibold h-6 mb-1">Ability</label>
-											<label for="npc-strength" class="label-text h-6 flex items-center">Strength</label>
-											<label for="npc-dexterity" class="label-text h-6 flex items-center">Dexterity</label>
-											<label for="npc-constitution" class="label-text h-6 flex items-center">Constitution</label>
-											<label for="npc-intelligence" class="label-text h-6 flex items-center">Intelligence</label>
-											<label for="npc-wisdom" class="label-text h-6 flex items-center">Wisdom</label>
-											<label for="npc-charisma" class="label-text h-6 flex items-center">Charisma</label>
+										<!-- Main Info Column -->
+										<div class="flex-shrink-0">
+											<div class="space-y-1">
+												<!-- Name -->
+												<div class="flex items-center mb-2">
+													<label for="npc-name" class="label-text w-28 text-right pr-2">Name</label>
+													<input type="text" id="npc-name" class="info-input" style="width: 250px; height: 23px; background-color: #fef2f2; border-color: #b91c1c;" tabindex="1" title="Enter the NPC's name.&#10;This will also set the main image name and token name, and default save name." />
+												</div>
+
+												<!-- Size and Gender -->
+												<div class="flex items-center">
+													<label for="npc-size" class="label-text w-28 text-right pr-2">Size</label>
+													<div class="relative" style="width: 200px; height: 23px;">
+														<select id="npc-size" class="info-select absolute top-0 left-0 w-full h-full" tabindex="2" title="Select from the standard size categories or enter your own by clicking the checkbox.">
+															<option value="" disabled selected hidden></option>
+															<option>Tiny</option>
+															<option>Small</option>
+															<option>Medium</option>
+															<option>Large</option>
+															<option>Huge</option>
+															<option>Gargantuan</option>
+														</select>
+														<input type="text" id="npc-size-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="2" title="Select from the standard size categories or enter your own by clicking the checkbox." />
+													</div>
+													<input type="checkbox" id="toggle-custom-size" title="enter a custom size" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
+													<label for="npc-gender" class="label-text w-28 text-right pr-2">Gender</label>
+													<select id="npc-gender" class="info-select" style="width: 130px; height: 23px;" tabindex="8" title="Select the NPC's gender.&#10;This will insert gender-specific pronouns in the descriptive text.">
+														<option value="neutral">neutral</option>
+														<option value="male">male</option>
+														<option value="female">female</option>
+													</select>
+												</div>
+
+												<!-- Type and Unique -->
+												<div class="flex items-center">
+													<label for="npc-type" class="label-text w-28 text-right pr-2">Type</label>
+													<div class="relative" style="width: 200px; height: 23px;">
+														<select id="npc-type" class="info-select absolute top-0 left-0 w-full h-full" tabindex="3" title="Select from the standard creature types or enter your own by clicking the checkbox.">
+															<option value="" disabled selected hidden></option>
+															<option>aberration</option>
+															<option>beast</option>
+															<option>celestial</option>
+															<option>construct</option>
+															<option>dragon</option>
+															<option>elemental</option>
+															<option>fey</option>
+															<option>fiend</option>
+															<option>giant</option>
+															<option>humanoid</option>
+															<option>monstrosity</option>
+															<option>ooze</option>
+															<option>plant</option>
+															<option>undead</option>
+															<option disabled>──────────</option>
+															<option>swarm of tiny aberrations</option>
+															<option>swarm of tiny beasts</option>
+															<option>swarm of tiny constructs</option>
+															<option>swarm of tiny elementals</option>
+															<option>swarm of tiny monstrosities</option>
+															<option>swarm of tiny oozes</option>
+															<option>swarm of tiny plants</option>
+															<option disabled>──────────</option>
+															<option>trap</option>
+														</select>
+														<input type="text" id="npc-type-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="3" title="Select from the standard creature types or enter your own by clicking the checkbox." />
+													</div>
+													<input type="checkbox" id="toggle-custom-type" title="enter a custom type" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
+													<label for="npc-unique" class="label-text w-28 text-right pr-2">Unique</label>
+													<div class="w-[130px] flex items-center">
+														<input type="checkbox" id="npc-unique" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="9" title="Check if the NPC is unique for any reason.&#10;This will capitalise its name in the descriptive text." />
+													</div>
+												</div>
+
+												<!-- Species and Proper Name -->
+												<div class="flex items-center">
+													<label for="npc-species" class="label-text w-28 text-right pr-2">Species</label>
+													<div class="relative" style="width: 200px; height: 23px;">
+														<select id="npc-species" class="info-select absolute top-0 left-0 w-full h-full" tabindex="4" title="Select a specific species or enter your own by clicking the checkbox.&#10;Example: a species of humanoid may be half-elf.&#10;You can leave this box blank if desired.">
+															<option value="" disabled selected hidden></option>
+															<option>aarakocra</option>
+															<option>any species</option>
+															<option>bullywug</option>
+															<option>demon</option>
+															<option>derro</option>
+															<option>devil</option>
+															<option>dragonborn</option>
+															<option>dwarf</option>
+															<option>elf</option>
+															<option>firenewt</option>
+															<option>genasi</option>
+															<option>gith</option>
+															<option>gnoll</option>
+															<option>gnome</option>
+															<option>goblinoid</option>
+															<option>grimlock</option>
+															<option>grung</option>
+															<option>half-elf</option>
+															<option>half-orc</option>
+															<option>halfling</option>
+															<option>human</option>
+															<option>kenku</option>
+															<option>kobold</option>
+															<option>kuo-toa</option>
+															<option>lizardfolk</option>
+															<option>merfolk</option>
+															<option>orc</option>
+															<option>quaggoth</option>
+															<option>ratfolk</option>
+															<option>sahuagin</option>
+															<option>shapechanger</option>
+															<option>thri-kreen</option>
+															<option>tiefling</option>
+															<option>titan</option>
+															<option>troglodyte</option>
+															<option>xvart</option>
+															<option>yuan-ti</option>
+															<option>yugoloth</option>
+														</select>
+														<input type="text" id="npc-species-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="4" title="Select a specific species or enter your own by clicking the checkbox.&#10;Example: a species of humanoid may be half-elf.&#10;You can leave this box blank if desired." />
+													</div>
+													<input type="checkbox" id="toggle-custom-species" title="enter a custom species" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
+													<label for="npc-proper" class="label-text w-28 text-right pr-2">Proper Name</label>
+													<div class="w-[130px] flex items-center">
+														<input type="checkbox" id="npc-proper" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="10" title="Check if the name entered is a proper name.&#10;This will use just the first word of the name in the descriptive text.&#10;('Maasq Hammerheart' will be referred to as 'Maasq' throughout; 'Ironbane, Destroyer of Worlds' as 'Ironbane') " />
+													</div>
+												</div>
+
+												<!-- Flex container for the Alignment/AC/HP column and Token column -->
+												<div class="flex items-start">
+													<!-- Left Column: Alignment, AC, HP -->
+													<div class="space-y-1">
+														<!-- Alignment -->
+														<div class="flex items-center">
+															<label for="npc-alignment" class="label-text w-28 text-right pr-2">Alignment</label>
+															<div class="relative" style="width: 200px; height: 23px;">
+																<select id="npc-alignment" class="info-select absolute top-0 left-0 w-full h-full" tabindex="5" title="Select from the standard alignments or enter your own by clicking the checkbox.">
+																	<option value="" disabled selected hidden></option>
+																	<option>unaligned</option>
+																	<option disabled>──────────</option>
+																	<option>lawful good</option>
+																	<option>lawful neutral</option>
+																	<option>lawful evil</option>
+																	<option disabled>──────────</option>
+																	<option>neutral good</option>
+																	<option>true neutral</option>
+																	<option>neutral evil</option>
+																	<option disabled>──────────</option>
+																	<option>chaotic good</option>
+																	<option>chaotic neutral</option>
+																	<option>chaotic evil</option>
+																</select>
+																<input type="text" id="npc-alignment-custom" class="info-input absolute top-0 left-0 w-full h-full hidden" tabindex="5" title="Select from the standard alignments or enter your own by clicking the checkbox." />
+															</div>
+															<input type="checkbox" id="toggle-custom-alignment" title="enter a custom alignment" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
+														</div>
+
+														<!-- Armor Class -->
+														<div class="flex items-center">
+															<label for="npc-ac" class="label-text w-28 text-right pr-2">Armor Class</label>
+															<input type="text" id="npc-ac" class="info-input" style="width: 200px; height: 23px;" tabindex="6" title="Enter the NPC's armor class. You can also enter the type of armor in brackets.&#10;Example: 12 (leather armor)" />
+														</div>
+														<!-- Hit Points -->
+														<div class="flex items-center">
+															<label for="npc-hp" class="label-text w-28 text-right pr-2">Hit Points</label>
+															<input type="text" id="npc-hp" class="info-input" style="width: 200px; height: 23px;" tabindex="7" title="Enter the NPC's hit points, followed by its hit dice in brackets.&#10;Example: 16 (3d6 + 6)&#10;Double-click to open a window that will help build a correct expression." />
+														</div>
+														<!-- Challenge -->
+														<div class="flex items-center" style="padding-top: 3px;">
+															<label for="npc-challenge" class="label-text w-28 text-right pr-2">Challenge</label>
+															<select id="npc-challenge" class="info-select" style="width: 70px; height: 23px;" tabindex="8"></select>
+														</div>
+														<!-- XP and Proficiency Bonus -->
+														<div class="flex items-center" style="margin-top: -1px;">
+															<label class="label-text w-28 text-right pr-2">XP</label>
+															<span id="npc-experience-display" class="font-medium text-gray-800" style="width: 80px;"></span>
+															<label class="label-text pr-2 ml-2">Proficiency Bonus</label>
+															<span id="npc-proficiency-bonus-display" class="font-medium text-gray-800"></span>
+														</div>
+													</div>
+													<!-- Right Column: Token -->
+													<div class="flex">
+														<label class="label-text w-28 text-right pr-2">Token</label>
+														<div class="w-[130px]">
+															<div id="npc-token" class="w-[130px] h-[130px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
+																<span>Click to upload NPC token</span>
+															</div>
+															<input type="file" id="token-upload" class="hidden" accept="image/png, image/webp">
+														</div>
+													</div>
+												</div>
+											</div>
 										</div>
-										<!-- Score Column -->
-										<div class="flex flex-col items-center space-y-1">
-											<label class="label-text font-semibold h-6 mb-1">Score</label>
-											<input type="number" id="npc-strength" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
-											<input type="number" id="npc-dexterity" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
-											<input type="number" id="npc-constitution" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
-											<input type="number" id="npc-intelligence" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
-											<input type="number" id="npc-wisdom" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
-											<input type="number" id="npc-charisma" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
-										</div>
-										<!-- Bonus Column -->
-										<div class="flex flex-col items-center space-y-1">
-											<label class="label-text font-semibold h-6 mb-1">Bonus</label>
-											<span id="npc-strength-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
-											<span id="npc-dexterity-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
-											<span id="npc-constitution-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
-											<span id="npc-intelligence-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
-											<span id="npc-wisdom-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
-											<span id="npc-charisma-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<!-- Image Column -->
+										<div class="flex-grow">
+											<div id="npc-image" class="w-full h-full info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
+												<span>Click to upload NPC image</span>
+											</div>
+											<input type="file" id="image-upload" class="hidden" accept="image/png, image/webp, image/jpeg">
 										</div>
 									</div>
-									<!-- Other stat columns will go here -->
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<!-- Card: Resistances -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Resistances</h2>
-						</div>
-						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
-						</div>
-					</div>
-
-					<!-- Card: Skills and Languages -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Skills and Languages</h2>
-						</div>
-						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
-						</div>
-					</div>
-
-					<!-- Card: Traits -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Traits</h2>
-						</div>
-						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
-						</div>
-					</div>
-
-					<!-- Card: Actions -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Actions</h2>
-						</div>
-						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
-						</div>
-					</div>
-
-
-					<!-- Card: Description -->
-					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Description</h2>
-						</div>
-						<div class="card-body">
-							<div class="p-2">
-								<input id="npc-description" type="hidden" name="content">
-									<trix-editor input="npc-description" class="trix-content"></trix-editor>
+						<!-- Card: Statistics -->
+						<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+							<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+								<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Statistics</h2>
+							</div>
+							<div class="card-body">
+								<div class="p-4">
+									<div class="flex">
+										<!-- Ability, Score, Bonus Columns -->
+										<div class="flex space-x-4">
+											<!-- Ability Column -->
+											<div class="flex flex-col items-end space-y-1">
+												<label class="label-text font-semibold h-6 mb-1">Ability</label>
+												<label for="npc-strength" class="label-text h-6 flex items-center">Strength</label>
+												<label for="npc-dexterity" class="label-text h-6 flex items-center">Dexterity</label>
+												<label for="npc-constitution" class="label-text h-6 flex items-center">Constitution</label>
+												<label for="npc-intelligence" class="label-text h-6 flex items-center">Intelligence</label>
+												<label for="npc-wisdom" class="label-text h-6 flex items-center">Wisdom</label>
+												<label for="npc-charisma" class="label-text h-6 flex items-center">Charisma</label>
+											</div>
+											<!-- Score Column -->
+											<div class="flex flex-col items-center space-y-1">
+												<label class="label-text font-semibold h-6 mb-1">Score</label>
+												<input type="number" id="npc-strength" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-dexterity" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-constitution" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-intelligence" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-wisdom" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+												<input type="number" id="npc-charisma" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
+											</div>
+											<!-- Bonus Column -->
+											<div class="flex flex-col items-center space-y-1">
+												<label class="label-text font-semibold h-6 mb-1">Bonus</label>
+												<span id="npc-strength-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-dexterity-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-constitution-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-intelligence-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-wisdom-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+												<span id="npc-charisma-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
+											</div>
+										</div>
+										<!-- Other stat columns will go here -->
+									</div>
+								</div>
 							</div>
 						</div>
+
+						<!-- Card: Description -->
+						<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+							<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+								<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Description</h2>
+							</div>
+							<div class="card-body">
+								<div class="p-2">
+									<input id="npc-description" type="hidden" name="content">
+  									<trix-editor input="npc-description" class="trix-content"></trix-editor>
+								</div>
+							</div>
+						</div>
+
 					</div>
 
-				</div>
-
-				<!-- Right Column -->
-				<aside class="w-full 2xl:w-[500px] flex-shrink-0">
-					<div class="2xl:sticky top-32">
+					<!-- Right Column: The Viewport, not fixed position anymore -->
+					<aside class="flex-shrink-0">
 						<div
 							id="viewport"
-							class="w-full 2xl:w-[500px] h-[800px] bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container"
+							class="w-[500px] h-[800px] bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container"
 							style="
 								padding-top: 10px;
 								background-image: url(&quot;graphics/viewport.jpg&quot;);
@@ -698,9 +647,9 @@
 							">
 							<!-- The generated HTML will eventually be injected here -->
 						</div>
-					</div>
-				</aside>
-			</main>
+					</aside>
+				</main>
+			</div>
 		</div>
 
 		<!-- Hit Dice Calculator Modal -->
@@ -752,8 +701,12 @@
 						'22': '41,000', '23': '50,000', '24': '62,000', '25': '75,000', '26': '90,000',
 						'27': '105,000', '28': '120,000', '29': '135,000', '30': '155,000'
 				};
-				const challengeOrder = ['0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30'];
 
+				const crOrder = [
+					'0', '1/8', '1/4', '1/2', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+					'11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22',
+					'23', '24', '25', '26', '27', '28', '29', '30'
+				];
 
 				// --- UI ELEMENTS ---
 				const cardHeaders = document.querySelectorAll(".card-header");
@@ -801,8 +754,8 @@
 
 				// --- FUNCTIONS ---
 
-				function getDefaultNPC() {
-					return {
+				function initializeNPC() {
+					NPC = {
 						name: "",
 						size: "",
 						type: "",
@@ -832,10 +785,6 @@
 						token: "",
 						image: ""
 					};
-				}
-
-				function initializeNPC() {
-					NPC = getDefaultNPC();
 					updateFormFromNPC();
 				}
 
@@ -1008,10 +957,10 @@
 					for (const key in inputs) {
 						if (key === 'description') {
 							const trixEditorElement = document.querySelector("trix-editor");
-							inputs.description.value = NPC[key] || ''; // Always set the hidden input
-							
-							// Only call loadHTML if the editor object exists.
-							if (trixEditorElement && trixEditorElement.editor) {
+							if (trixEditorElement) {
+								// Set the value of the hidden input field first
+								inputs.description.value = NPC[key] || '';
+								// Then, tell the editor to load that HTML
 								trixEditorElement.editor.loadHTML(NPC[key] || "");
 							}
 							continue;
@@ -1119,7 +1068,7 @@
 
 				function populateChallengeDropdown() {
 						const challengeSelect = inputs.challenge;
-						challengeOrder.forEach(cr => {
+						crOrder.forEach(cr => {
 								const option = document.createElement('option');
 								option.value = cr;
 								option.textContent = cr;
@@ -1137,11 +1086,7 @@
 						currentFileHandle = handle;
 						const file = await handle.getFile();
 						const content = await file.text();
-						const loadedNPC = JSON.parse(content);
-						
-						// Merge loaded data with defaults to ensure all properties exist
-						NPC = { ...getDefaultNPC(), ...loadedNPC };
-
+						NPC = JSON.parse(content);
 						updateFormFromNPC();
 						fileStatusEl.textContent = `Editing: ${file.name}`;
 					} catch (err) {
@@ -1242,7 +1187,13 @@
 					});
 				}
 
-				function handleTokenFile(file) {
+				// Token Upload
+				tokenBox.addEventListener('click', () => {
+					tokenUpload.click();
+				});
+
+				tokenUpload.addEventListener('change', (event) => {
+					const file = event.target.files[0];
 					if (file && (file.type === "image/png" || file.type === "image/webp")) {
 						const reader = new FileReader();
 						reader.onload = function(e) {
@@ -1252,10 +1203,17 @@
 						reader.readAsDataURL(file);
 					} else {
 						console.warn("Invalid file type. Please select a PNG or WEBP image.");
+						event.target.value = null;
 					}
-				}
+				});
 				
-				function handleImageFile(file) {
+				// Image Upload
+				imageBox.addEventListener('click', () => {
+					imageUpload.click();
+				});
+
+				imageUpload.addEventListener('change', (event) => {
+					const file = event.target.files[0];
 					if (file && (file.type === "image/png" || file.type === "image/webp" || file.type === "image/jpeg")) {
 						const reader = new FileReader();
 						reader.onload = function(e) {
@@ -1265,8 +1223,9 @@
 						reader.readAsDataURL(file);
 					} else {
 						console.warn("Invalid file type. Please select a PNG, WEBP, or JPG image.");
+						event.target.value = null;
 					}
-				}
+				});
 
 				// HP Modal Listeners
 				function hideHpModal() {
@@ -1310,41 +1269,6 @@
 					}
 				});
 
-				// --- Drag and Drop Image Upload ---
-				function setupDragAndDrop(box, fileHandler) {
-					box.addEventListener('dragover', (event) => {
-						event.preventDefault();
-						box.classList.add('border-dashed', 'border-2', 'border-indigo-600');
-					});
-
-					box.addEventListener('dragleave', () => {
-						box.classList.remove('border-dashed', 'border-2', 'border-indigo-600');
-					});
-
-					box.addEventListener('drop', (event) => {
-						event.preventDefault();
-						box.classList.remove('border-dashed', 'border-2', 'border-indigo-600');
-						const file = event.dataTransfer.files[0];
-						fileHandler(file);
-					});
-				}
-
-				// Setup for Token Box
-				setupDragAndDrop(tokenBox, handleTokenFile);
-				tokenBox.addEventListener('click', () => tokenUpload.click());
-				tokenUpload.addEventListener('change', (event) => {
-					handleTokenFile(event.target.files[0]);
-					event.target.value = null; // Reset for same-file upload
-				});
-
-				// Setup for Image Box
-				setupDragAndDrop(imageBox, handleImageFile);
-				imageBox.addEventListener('click', () => imageUpload.click());
-				imageUpload.addEventListener('change', (event) => {
-					handleImageFile(event.target.files[0]);
-					event.target.value = null; // Reset for same-file upload
-				});
-
 
 				// File buttons
 				newNpcBtn.addEventListener("click", createNewNpc);
@@ -1378,4 +1302,13 @@
 		</script>
 	</body>
 </html>
+
+
+
+
+
+
+
+
+
 
