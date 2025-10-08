@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.02.07" />
+		<meta name="version" content="0.02.11" />
 		<meta name="date" content="2025-10-08" />
 		
 		<title>NPC Engineer</title>
@@ -282,6 +282,13 @@
 			#npc-token, #npc-image {
 				padding: 0;
 			}
+			.menu-item.disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+			.menu-item.disabled:hover {
+				background-color: transparent;
+			}
 		</style>
 	</head>
 	<body class="bg-[#E2E8F0]">
@@ -291,14 +298,55 @@
 			<!-- Sticky Header Area -->
 			<header class="sticky top-0 z-50 bg-[#E2E8F0] pt-1 pb-12">
 				<div class="relative h-24">
-					<!-- Height adjusted to contain the logo -->
+					
+					<!-- Hamburger Menu -->
+					<div class="absolute top-2 left-2 z-40">
+						<button id="hamburger-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-violet-200 transition-colors">
+							<svg class="h-6 w-6 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+							</svg>
+						</button>
+						<div id="main-menu" class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden">
+							<!-- Projects Sub-Menu -->
+							<div class="relative group/projects">
+								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
+									<span>Projects</span>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+								</div>
+								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/projects:block">
+									<a href="#" id="menu-new-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New Project</a>
+									<a href="#" id="menu-load-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Select Project</a>
+									<a href="#" id="menu-import-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import Project</a>
+									<a href="#" id="menu-export-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Project</a>
+								</div>
+							</div>
+							<hr class="my-1"/>
+							<!-- NPCs Sub-Menu -->
+							<div class="relative group/npcs">
+								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
+									<span>NPCs</span>
+									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+								</div>
+								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/npcs:block">
+									<a href="#" id="menu-new-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New NPC</a>
+									<a href="#" id="menu-import-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import NPC</a>
+									<a href="#" id="menu-export-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export NPC</a>
+									<a href="#" id="menu-delete-npc" class="menu-item block px-4 py-1 text-sm text-red-600 hover:bg-red-50">Delete NPC</a>
+								</div>
+							</div>
+							<hr class="my-1"/>
+							<a href="#" id="menu-settings" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+						</div>
+					</div>
+
 					<!-- Background circle for the graphic -->
 					<div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
 					<!-- Graphic Image -->
 					<img src="graphics/npc engineer.webp" alt="NPC Engineer Logo" class="absolute w-32 h-32 rounded-full z-30" style="top: 16px; left: 28px" />
 					
+					
 					<!-- Project Management Buttons -->
-					<div id="project-buttons" class="absolute right-0 top-[15px] z-30 flex items-center space-x-4">
+					<div id="project-buttons" class="absolute right-3 top-[15px] z-30 flex items-center space-x-4">
 						<span id="project-status" class="text-sm font-medium text-gray-600 mr-2">No Project Loaded</span>
 						<!-- New Project Button -->
 						<button id="newProjectBtn" title="Create a new Project" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
@@ -332,10 +380,7 @@
 					
 					<!-- Persistent Header Bar -->
 					<div class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center justify-between px-4">
-						<!-- App Title -->
 						<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
-						
-						<!-- NPC Management Buttons -->
 						<div id="npc-buttons" class="flex items-center space-x-4">
 							<button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
 								<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-5 w-5" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 502 502" xml:space="preserve"><g><g><path d="M405.889,348.576V105.273c0-2.652-1.054-5.196-2.929-7.071L307.688,2.929C305.812,1.054,303.269,0,300.617,0H70.783 c-5.523,0-10,4.477-10,10v445.916c0,5.523,4.477,10,10,10h216.442C303.083,488.611,328.615,502,356.57,502 c46.674,0,84.646-37.972,84.646-84.646C441.217,389.827,428.102,364.485,405.889,348.576z M80.783,20h215.691l76.158,76.158 h-51.151c-5.522,0-10,4.477-10,10s4.478,10,10,10h64.408v221.789c-9.334-3.451-19.247-5.241-29.319-5.241 c-46.675,0-84.647,37.973-84.647,84.647c0,9.793,1.692,19.45,4.955,28.562H80.783V20z M356.57,482 c-22.766,0-43.43-11.629-55.277-31.107c-6.13-10.077-9.37-21.675-9.37-33.539c0-35.646,29.001-64.647,64.647-64.647 c11.785,0,23.28,3.21,33.334,9.278c0.474,0.355,0.979,0.67,1.513,0.938c18.668,11.975,29.799,32.278,29.799,54.431 C421.217,453,392.217,482,356.57,482z"/><path d="M394.345,407.354h-27.776v-27.776c0-5.523-4.478-10-10-10s-10,4.477-10,10v27.776h-27.776c-5.522,0-10,4.477-10,10 s4.478,10,10,10h27.776v27.776c0,5.523,4.478,10,10,10s10-4.477,10-10v-27.776h27.776c5.522,0,10-4.477,10-10 S399.868,407.354,394.345,407.354z"/><path d="M292.56,106.158c0-5.523-4.478-10-10-10h-11.447c-5.522,0-10,4.477-10,10s4.478,10,10,10h11.447 C288.083,116.158,292.56,111.681,292.56,106.158z"/></g></g></svg>
@@ -593,7 +638,7 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 						<div class="card-body">
 							<div class="p-4">
-								<div class="flex">
+								<div class="flex space-x-8">
 									<!-- Ability, Score, Bonus Columns -->
 									<div class="flex space-x-4">
 										<!-- Ability Column -->
@@ -627,7 +672,47 @@ Double-click to open a window that will help build a correct expression.">
 											<span id="npc-charisma-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
 										</div>
 									</div>
-									<!-- Other stat columns will go here -->
+									
+									<!-- Saving Throws Column -->
+									<div class="flex space-x-2">
+										<div class="flex flex-col items-center space-y-1">
+											<label class="label-text font-semibold h-6 mb-1 text-center" style="width: 50px;">Base</label>
+											<span id="npc-strength-saving-throw-base" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-dexterity-saving-throw-base" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-constitution-saving-throw-base" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-intelligence-saving-throw-base" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-wisdom-saving-throw-base" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-charisma-saving-throw-base" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+										</div>
+										<div class="flex flex-col items-center space-y-1">
+											<label class="label-text font-semibold h-6 mb-1 text-center" style="width: 80px;">Proficiency</label>
+											<div class="h-6 flex items-center justify-center"><input type="checkbox" id="npc-strength-saving-throw-prof" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
+											<div class="h-6 flex items-center justify-center"><input type="checkbox" id="npc-dexterity-saving-throw-prof" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
+											<div class="h-6 flex items-center justify-center"><input type="checkbox" id="npc-constitution-saving-throw-prof" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
+											<div class="h-6 flex items-center justify-center"><input type="checkbox" id="npc-intelligence-saving-throw-prof" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
+											<div class="h-6 flex items-center justify-center"><input type="checkbox" id="npc-wisdom-saving-throw-prof" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
+											<div class="h-6 flex items-center justify-center"><input type="checkbox" id="npc-charisma-saving-throw-prof" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
+										</div>
+										<div class="flex flex-col items-center space-y-1">
+											<label class="label-text font-semibold h-6 mb-1 text-center" style="width: 50px;">Adjust</label>
+											<input type="number" id="npc-strength-saving-throw-adjust" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="-9" max="9">
+											<input type="number" id="npc-dexterity-saving-throw-adjust" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="-9" max="9">
+											<input type="number" id="npc-constitution-saving-throw-adjust" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="-9" max="9">
+											<input type="number" id="npc-intelligence-saving-throw-adjust" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="-9" max="9">
+											<input type="number" id="npc-wisdom-saving-throw-adjust" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="-9" max="9">
+											<input type="number" id="npc-charisma-saving-throw-adjust" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="-9" max="9">
+										</div>
+										<div class="flex flex-col items-center space-y-1">
+											<label class="label-text font-semibold h-6 mb-1 text-center" style="width: 50px;">Total</label>
+											<span id="npc-strength-saving-throw-total" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-dexterity-saving-throw-total" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-constitution-saving-throw-total" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-intelligence-saving-throw-total" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-wisdom-saving-throw-total" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+											<span id="npc-charisma-saving-throw-total" class="font-medium text-gray-800 h-6 flex items-center justify-center w-full"></span>
+										</div>
+									</div>
+
 								</div>
 							</div>
 						</div>
@@ -780,6 +865,12 @@ Double-click to open a window that will help build a correct expression.">
 					armorClass: "", hitPoints: "", challenge: "0", experience: "10", proficiencyBonus: 2,
 					strength: 10, strengthBonus: 0, dexterity: 10, dexterityBonus: 0, constitution: 10, constitutionBonus: 0,
 					intelligence: 10, intelligenceBonus: 0, wisdom: 10, wisdomBonus: 0, charisma: 10, charismaBonus: 0,
+					strengthSavingThrowProf: false, strengthSavingThrowAdjust: 0,
+					dexteritySavingThrowProf: false, dexteritySavingThrowAdjust: 0,
+					constitutionSavingThrowProf: false, constitutionSavingThrowAdjust: 0,
+					intelligenceSavingThrowProf: false, intelligenceSavingThrowAdjust: 0,
+					wisdomSavingThrowProf: false, wisdomSavingThrowAdjust: 0,
+					charismaSavingThrowProf: false, charismaSavingThrowAdjust: 0,
 					gender: "neutral", isUnique: false, isProperName: false, description: "", token: "", image: ""
 				};
 
@@ -813,6 +904,18 @@ Double-click to open a window that will help build a correct expression.">
 				const exportNpcBtn = document.getElementById("exportNpcBtn");
 				const deleteNpcBtn = document.getElementById("deleteNpcBtn");
 				
+				// Menu Items
+				const hamburgerBtn = document.getElementById('hamburger-btn');
+				const mainMenu = document.getElementById('main-menu');
+				const menuNewProject = document.getElementById('menu-new-project');
+				const menuLoadProject = document.getElementById('menu-load-project');
+				const menuImportProject = document.getElementById('menu-import-project');
+				const menuExportProject = document.getElementById('menu-export-project');
+				const menuNewNpc = document.getElementById('menu-new-npc');
+				const menuImportNpc = document.getElementById('menu-import-npc');
+				const menuExportNpc = document.getElementById('menu-export-npc');
+				const menuDeleteNpc = document.getElementById('menu-delete-npc');
+
 				// NPC Selector
 				const npcSelector = document.getElementById("npc-selector");
 
@@ -865,6 +968,12 @@ Double-click to open a window that will help build a correct expression.">
 				// --- FUNCTIONS ---
 
 				// --- Project Management ---
+				function showNewProjectModal() {
+					modalOverlay.classList.remove('hidden');
+					newProjectModal.classList.remove('hidden');
+					newProjectNameInput.focus();
+				}
+
 				async function createNewProject() {
 					const projectName = newProjectNameInput.value.trim();
 					if (!projectName) {
@@ -976,10 +1085,8 @@ Double-click to open a window that will help build a correct expression.">
 				}
 
 				async function importNpc() {
-					if (!activeProject) {
-						alert("Please load or create a project first.");
-						return;
-					}
+					if (!activeProject) return;
+					
 					try {
 						const [handle] = await window.showOpenFilePicker({
 							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
@@ -1017,6 +1124,26 @@ Double-click to open a window that will help build a correct expression.">
 				}
 				
 				// --- UI & State Update Functions ---
+				function updateMenuState() {
+					const hasActiveProject = !!activeProject;
+					const menuItemsToToggle = [
+						menuExportProject, menuNewNpc, menuImportNpc,
+						menuExportNpc, menuDeleteNpc
+					];
+
+					menuItemsToToggle.forEach(item => {
+						if (hasActiveProject) {
+							item.classList.remove('disabled');
+						} else {
+							item.classList.add('disabled');
+						}
+					});
+					
+					if (hasActiveProject && activeProject.npcs.length <= 1) {
+						menuDeleteNpc.classList.add('disabled');
+					}
+				}
+
 				function updateUIForActiveProject() {
 					if (activeProject) {
 						projectStatusEl.textContent = `Project: ${activeProject.projectName}`;
@@ -1024,13 +1151,16 @@ Double-click to open a window that will help build a correct expression.">
 						mainContentColumn.style.pointerEvents = 'auto';
 						npcSelector.classList.remove('hidden');
 						deleteNpcBtn.classList.remove('hidden');
+						[newNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = false);
 					} else {
 						projectStatusEl.textContent = "No Project Loaded";
 						mainContentColumn.style.opacity = '0.3';
 						mainContentColumn.style.pointerEvents = 'none';
 						npcSelector.classList.add('hidden');
 						deleteNpcBtn.classList.add('hidden');
+						[newNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = true);
 					}
+					updateMenuState();
 					updateFormFromActiveNPC();
 				}
 				
@@ -1059,12 +1189,8 @@ Double-click to open a window that will help build a correct expression.">
 						option.disabled = true;
 						npcSelector.appendChild(option);
 					}
-
-
-					// Disable delete button if only one NPC is left
+					
 					deleteNpcBtn.disabled = activeProject.npcs.length <= 1;
-					deleteNpcBtn.style.cursor = deleteNpcBtn.disabled ? 'not-allowed' : 'pointer';
-					deleteNpcBtn.style.opacity = deleteNpcBtn.disabled ? '0.5' : '1';
 				}
 				
 				function updateFormFromActiveNPC() {
@@ -1113,6 +1239,13 @@ Double-click to open a window that will help build a correct expression.">
 							element.value = activeNPC[key] || "";
 						}
 					}
+
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					abilities.forEach(ability => {
+						document.getElementById(`npc-${ability}-saving-throw-prof`).checked = activeNPC[`${ability}SavingThrowProf`] || false;
+						document.getElementById(`npc-${ability}-saving-throw-adjust`).value = activeNPC[`${ability}SavingThrowAdjust`] || 0;
+					});
+
 					experienceDisplay.textContent = activeNPC.experience || '';
 					proficiencyBonusDisplay.textContent = `+${activeNPC.proficiencyBonus}` || '+2';
 					updateTokenDisplay();
@@ -1147,6 +1280,13 @@ Double-click to open a window that will help build a correct expression.">
 							activeNPC[key] = element.value;
 						}
 					}
+					
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					abilities.forEach(ability => {
+						activeNPC[`${ability}SavingThrowProf`] = document.getElementById(`npc-${ability}-saving-throw-prof`).checked;
+						activeNPC[`${ability}SavingThrowAdjust`] = parseInt(document.getElementById(`npc-${ability}-saving-throw-adjust`).value, 10) || 0;
+					});
+
 					activeNPC.experience = experienceDisplay.textContent;
 					activeNPC.proficiencyBonus = parseInt(proficiencyBonusDisplay.textContent.replace('+', ''), 10);
 					updateAbilityBonuses();
@@ -1180,6 +1320,26 @@ Double-click to open a window that will help build a correct expression.">
 					if (crValue <= 28) return 8;
 					return 9; // for CR 29-30
 				}
+				
+				function updateSavingThrows() {
+					if (!activeNPC) return;
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					const profBonus = activeNPC.proficiencyBonus || 2;
+					
+					abilities.forEach(ability => {
+						const base = activeNPC[`${ability}Bonus`] || 0;
+						const isProficient = document.getElementById(`npc-${ability}-saving-throw-prof`).checked;
+						const adjust = parseInt(document.getElementById(`npc-${ability}-saving-throw-adjust`).value, 10) || 0;
+						
+						const total = base + (isProficient ? profBonus : 0) + adjust;
+						
+						const baseEl = document.getElementById(`npc-${ability}-saving-throw-base`);
+						const totalEl = document.getElementById(`npc-${ability}-saving-throw-total`);
+						
+						baseEl.textContent = base >= 0 ? `+${base}` : base;
+						totalEl.textContent = total >= 0 ? `+${total}` : total;
+					});
+				}
 
 				function updateAbilityBonuses() {
 					if (!activeNPC) return;
@@ -1194,6 +1354,7 @@ Double-click to open a window that will help build a correct expression.">
 						activeNPC[ability] = score;
 						activeNPC[`${ability}Bonus`] = bonus;
 					});
+					updateSavingThrows();
 				}
 
 				function updateViewport() {
@@ -1207,7 +1368,7 @@ Double-click to open a window that will help build a correct expression.">
 						strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus
 					} = activeNPC;
 
-					const NPCName = name || "New NPC";
+					const NPCName = name || "";
 					const NPCac = armorClass || "";
 					const NPChp = hitPoints || "";
 					const NPCDescriptionHTML = description || "";
@@ -1334,6 +1495,14 @@ Double-click to open a window that will help build a correct expression.">
 						}
 					});
 				}
+				
+				function setupSavingThrowListeners() {
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					abilities.forEach(ability => {
+						document.getElementById(`npc-${ability}-saving-throw-prof`).addEventListener('input', updateActiveNPCFromForm);
+						document.getElementById(`npc-${ability}-saving-throw-adjust`).addEventListener('input', updateActiveNPCFromForm);
+					});
+				}
 
 				function setupDragAndDrop(box, validTypes, npcKey, updateFn) {
 					["dragenter","dragover","dragleave","drop"].forEach(eventName => {
@@ -1392,26 +1561,45 @@ Double-click to open a window that will help build a correct expression.">
 				}
 
 				// --- EVENT LISTENERS ---
-				newProjectBtn.addEventListener('click', () => {
-					modalOverlay.classList.remove('hidden');
-					newProjectModal.classList.remove('hidden');
-					newProjectNameInput.focus();
+				
+				// Icon Buttons
+				newProjectBtn.addEventListener('click', showNewProjectModal);
+				loadProjectBtn.addEventListener('click', showLoadProjectModal);
+				importProjectBtn.addEventListener('click', importProject);
+				exportProjectBtn.addEventListener('click', exportProject);
+				newNpcBtn.addEventListener("click", createNewNpc);
+				importNpcBtn.addEventListener("click", importNpc);
+				exportNpcBtn.addEventListener("click", exportNpc);
+				
+				// Menu Items
+				menuNewProject.addEventListener('click', (e) => { e.preventDefault(); showNewProjectModal(); mainMenu.classList.add('hidden'); });
+				menuLoadProject.addEventListener('click', (e) => { e.preventDefault(); showLoadProjectModal(); mainMenu.classList.add('hidden'); });
+				menuImportProject.addEventListener('click', (e) => { e.preventDefault(); importProject(); mainMenu.classList.add('hidden'); });
+				menuExportProject.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportProject.classList.contains('disabled')) exportProject(); mainMenu.classList.add('hidden'); });
+				menuNewNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuNewNpc.classList.contains('disabled')) createNewNpc(); mainMenu.classList.add('hidden'); });
+				menuImportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuImportNpc.classList.contains('disabled')) importNpc(); mainMenu.classList.add('hidden'); });
+				menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportNpc.classList.contains('disabled')) exportNpc(); mainMenu.classList.add('hidden'); });
+				menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuDeleteNpc.classList.contains('disabled')) deleteCurrentNpc(); mainMenu.classList.add('hidden'); });
+				
+				// Hamburger Menu Logic
+				hamburgerBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					mainMenu.classList.toggle('hidden');
 				});
 
-				loadProjectBtn.addEventListener('click', showLoadProjectModal);
-				exportProjectBtn.addEventListener('click', exportProject);
-				importProjectBtn.addEventListener('click', importProject);
+				window.addEventListener('click', (e) => {
+					if (!mainMenu.classList.contains('hidden') && !hamburgerBtn.contains(e.target)) {
+						mainMenu.classList.add('hidden');
+					}
+				});
 				
+				// Modal Buttons
 				createProjectBtn.addEventListener('click', createNewProject);
 				newProjectNameInput.addEventListener('keyup', (e) => {
 					if (e.key === 'Enter') createProjectBtn.click();
 				});
-
-				newNpcBtn.addEventListener("click", createNewNpc);
-				importNpcBtn.addEventListener("click", importNpc);
-				exportNpcBtn.addEventListener("click", exportNpc);
-				deleteNpcBtn.addEventListener('click', deleteCurrentNpc);
 				
+				// NPC Selector
 				npcSelector.addEventListener('change', (e) => {
 					const newIndex = parseInt(e.target.value, 10);
 					if (newIndex !== activeNPCIndex) {
@@ -1453,6 +1641,7 @@ Double-click to open a window that will help build a correct expression.">
 					const profBonus = calculateProficiencyBonus(selectedCr);
 					proficiencyBonusDisplay.textContent = `+${profBonus}`;
 					updateActiveNPCFromForm();
+					updateSavingThrows();
 				});
 
 				document.querySelector("trix-editor").addEventListener("trix-change", updateActiveNPCFromForm);
@@ -1515,6 +1704,7 @@ Double-click to open a window that will help build a correct expression.">
 				// --- INITIALIZATION ---
 				populateChallengeDropdown();
 				setupCustomToggles();
+				setupSavingThrowListeners();
 				updateUIForActiveProject(); // Initial setup for no project loaded
 
 				document.querySelectorAll('.card-body').forEach(cardBody => {
@@ -1526,4 +1716,5 @@ Double-click to open a window that will help build a correct expression.">
 		</script>
 	</body>
 </html>
+
 
