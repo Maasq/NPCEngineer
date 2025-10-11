@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.02.21" />
+		<meta name="version" content="0.02.28" />
 		<meta name="date" content="2025-10-11" />
 		
 		<title>NPC Engineer</title>
@@ -300,6 +300,15 @@
 			.stat-header {
 				color: #8B575C; /* Desaturated dark red */
 			}
+			.drop-cap::first-letter {
+				font-family: 'Macondo Swash Caps', serif;
+				font-size: 3em;
+				float: left;
+				line-height: 0.8;
+				padding-top: 4px; /* Adjust vertical alignment */
+				padding-right: 4px;
+				color: #7A200D;
+			}
 		</style>
 	</head>
 	<body class="bg-[#E2E8F0]">
@@ -340,6 +349,7 @@
 								</div>
 								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/npcs:block">
 									<a href="#" id="menu-new-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New NPC</a>
+									<a href="#" id="menu-duplicate-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Duplicate NPC</a>
 									<a href="#" id="menu-import-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import NPC</a>
 									<a href="#" id="menu-export-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export NPC</a>
 									<a href="#" id="menu-delete-npc" class="menu-item block px-4 py-1 text-sm text-red-600 hover:bg-red-50">Delete NPC</a>
@@ -395,6 +405,9 @@
 						<div id="npc-buttons" class="flex items-center space-x-4">
 							<button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
 								<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-5 w-5" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 502 502" xml:space="preserve"><g><g><path d="M405.889,348.576V105.273c0-2.652-1.054-5.196-2.929-7.071L307.688,2.929C305.812,1.054,303.269,0,300.617,0H70.783 c-5.523,0-10,4.477-10,10v445.916c0,5.523,4.477,10,10,10h216.442C303.083,488.611,328.615,502,356.57,502 c46.674,0,84.646-37.972,84.646-84.646C441.217,389.827,428.102,364.485,405.889,348.576z M80.783,20h215.691l76.158,76.158 h-51.151c-5.522,0-10,4.477-10,10s4.478,10,10,10h64.408v221.789c-9.334-3.451-19.247-5.241-29.319-5.241 c-46.675,0-84.647,37.973-84.647,84.647c0,9.793,1.692,19.45,4.955,28.562H80.783V20z M356.57,482 c-22.766,0-43.43-11.629-55.277-31.107c-6.13-10.077-9.37-21.675-9.37-33.539c0-35.646,29.001-64.647,64.647-64.647 c11.785,0,23.28,3.21,33.334,9.278c0.474,0.355,0.979,0.67,1.513,0.938c18.668,11.975,29.799,32.278,29.799,54.431 C421.217,453,392.217,482,356.57,482z"/><path d="M394.345,407.354h-27.776v-27.776c0-5.523-4.478-10-10-10s-10,4.477-10,10v27.776h-27.776c-5.522,0-10,4.477-10,10 s4.478,10,10,10h27.776v27.776c0,5.523,4.478,10,10,10s10-4.477,10-10v-27.776h27.776c5.522,0,10-4.477,10-10 S399.868,407.354,394.345,407.354z"/><path d="M292.56,106.158c0-5.523-4.478-10-10-10h-11.447c-5.522,0-10,4.477-10,10s4.478,10,10,10h11.447 C288.083,116.158,292.56,111.681,292.56,106.158z"/></g></g></svg>
+							</button>
+							<button id="duplicateNpcBtn" title="Duplicate this NPC." class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
+								<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 64 64" data-name="Material Expand" id="Material_Expand" xmlns="http://www.w3.org/2000/svg"><path d="M60,18H44V4a2,2,0,0,0-2-2H8A2,2,0,0,0,6,4V34H4a2,2,0,0,0-2,2v4a6.006,6.006,0,0,0,6,6H24v4H22a2,2,0,0,0-2,2v4a6.006,6.006,0,0,0,6,6H56a6.006,6.006,0,0,0,6-6V20A2,2,0,0,0,60,18ZM10,6H40V40a2,2,0,0,1-4,0V36a2,2,0,0,0-2-2H10ZM6,40V38H32v2a5.972,5.972,0,0,0,.343,2H8A2,2,0,0,1,6,40ZM26,58a2,2,0,0,1-2-2V54H50v2a5.972,5.972,0,0,0,.343,2Zm32-2a2,2,0,0,1-4,0V52a2,2,0,0,0-2-2H28V46H38a6.006,6.006,0,0,0,6-6V22H58Z"/><rect height="4" width="4" x="14" y="10"/><rect height="4" width="14" x="22" y="10"/><rect height="4" width="22" x="14" y="18"/><rect height="4" width="22" x="14" y="26"/><rect height="4" width="6" x="48" y="26"/><rect height="4" width="6" x="48" y="34"/><rect height="4" width="6" x="48" y="42"/></svg>
 							</button>
 							<button id="importNpcBtn" title="Import NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
 								<svg class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M21 5h-8.8L11 3H4L2.8 5H1v16h20l2.902-12H21zM2 6h1.366l1.2-2h5.868l1.2 2H20v3h-5.6l-2 2H4.35L2 18.015zm20.632 4l-2.42 10H2.39l2.68-8h7.744l2-2z"/></svg>
@@ -754,11 +767,19 @@ Double-click to open a window that will help build a correct expression.">
 									<div>
 										<h3 class="font-bold text-center mb-1 text-gray-800">Speeds (ft.)</h3>
 										<div class="flex items-center space-x-2 mb-1">
-											<label for="npc-speed-base" class="label-text w-20 text-right">Base</label>
+											<label for="npc-speed-base" class="label-text w-24 text-right whitespace-nowrap">Base Speed</label>
 											<input type="number" id="npc-speed-base" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
 										</div>
 										<div class="flex items-center space-x-2 mb-1">
-											<label for="npc-speed-fly" class="label-text w-20 text-right">Fly</label>
+											<label for="npc-speed-burrow" class="label-text w-24 text-right">Burrow</label>
+											<input type="number" id="npc-speed-burrow" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-climb" class="label-text w-24 text-right">Climb</label>
+											<input type="number" id="npc-speed-climb" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-fly" class="label-text w-24 text-right">Fly</label>
 											<input type="number" id="npc-speed-fly" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
 											<div class="w-28 flex items-center ml-4">
 												<input type="checkbox" id="npc-fly-hover" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
@@ -766,16 +787,8 @@ Double-click to open a window that will help build a correct expression.">
 											</div>
 										</div>
 										<div class="flex items-center space-x-2 mb-1">
-											<label for="npc-speed-climb" class="label-text w-20 text-right">Climb</label>
-											<input type="number" id="npc-speed-climb" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
-										</div>
-										<div class="flex items-center space-x-2 mb-1">
-											<label for="npc-speed-swim" class="label-text w-20 text-right">Swim</label>
+											<label for="npc-speed-swim" class="label-text w-24 text-right">Swim</label>
 											<input type="number" id="npc-speed-swim" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
-										</div>
-										<div class="flex items-center space-x-2 mb-1">
-											<label for="npc-speed-burrow" class="label-text w-20 text-right">Burrow</label>
-											<input type="number" id="npc-speed-burrow" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
 										</div>
 									</div>
 									<!-- Senses Section -->
@@ -867,8 +880,28 @@ Double-click to open a window that will help build a correct expression.">
 
 				<!-- Right Column: Sticky on large screens -->
 				<aside class="w-[500px] flex-shrink-0 lg:sticky top-36">
-					<div id="viewport" class="w-[500px] h-[800px] bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container" style=" padding-top: 10px; background-image: url(&quot;graphics/viewport.jpg&quot;); background-repeat: repeat; background-position: top left; background-size: auto; ">
+					<div id="viewport" class="w-[500px] h-[800px] bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container" style=" padding-top: 10px; background-image: url(&quot;graphics/viewport.jpg&quot;); background-repeat: repeat; background-position: top left; background-size: auto; overflow-y: scroll;">
 						<!-- The generated HTML will eventually be injected here -->
+					</div>
+					<div id="npc-options-container" class="hidden w-full mt-2 ml-5">
+						<div class="flex flex-col space-y-1">
+							<div class="flex items-center">
+								<input type="checkbox" id="npc-add-description" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+								<label for="npc-add-description" class="ml-2 label-text text-xs">Add description to the NPC</label>
+							</div>
+							<div class="flex items-center">
+								<input type="checkbox" id="npc-add-title" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+								<label for="npc-add-title" class="ml-2 label-text text-xs">Add a title</label>
+							</div>
+							<div class="flex items-center">
+								<input type="checkbox" id="npc-add-image-link" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+								<label for="npc-add-image-link" class="ml-2 label-text text-xs">Add an image link</label>
+							</div>
+							<div class="flex items-center">
+								<input type="checkbox" id="npc-use-drop-cap" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+								<label for="npc-use-drop-cap" class="ml-2 label-text text-xs">Use a drop cap in the description</label>
+							</div>
+						</div>
 					</div>
 				</aside>
 			</main>
@@ -917,6 +950,36 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 				<div id="group-list" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
 					<!-- Group items will be injected here -->
+				</div>
+			</div>
+
+			<!-- Settings Modal -->
+			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+				<div class="flex justify-between items-center mb-2">
+					<h3 class="font-bold text-slate-700">Project Default Settings</h3>
+					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+				</div>
+				<div class="space-y-2 border-t pt-2 mt-2">
+					<p class="text-xs text-gray-500">These settings are applied to all new NPCs created in this project.</p>
+					<div class="flex items-center">
+						<input type="checkbox" id="project-add-description" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-add-description" class="ml-2 label-text">Add description to the NPC</label>
+					</div>
+					<div class="flex items-center">
+						<input type="checkbox" id="project-add-title" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-add-title" class="ml-2 label-text">Add a title</label>
+					</div>
+					<div class="flex items-center">
+						<input type="checkbox" id="project-add-image-link" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-add-image-link" class="ml-2 label-text">Add an image link</label>
+					</div>
+					<div class="flex items-center">
+						<input type="checkbox" id="project-use-drop-cap" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-use-drop-cap" class="ml-2 label-text">Use a drop cap in the description</label>
+					</div>
+				</div>
+				<div class="text-right pt-2">
+					<button id="settings-ok-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">OK</button>
 				</div>
 			</div>
 
@@ -983,7 +1046,8 @@ Double-click to open a window that will help build a correct expression.">
 					charismaSavingThrowProf: false, charismaSavingThrowAdjust: 0,
 					gender: "creature", isUnique: false, isProperName: false, description: "", token: "", image: "",
 					saves: "",
-					addDescription: 1, addTitle: 1, addImageLink: 1,
+					speed: "",
+					addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
 					speedBase: 30, speedFly: 0, flyHover: false, speedClimb: 0, speedSwim: 0, speedBurrow: 0,
 					senseBlindsight: 0, blindBeyond: false, senseDarkvision: 0, senseTremorsense: 0, senseTruesight: 0,
 					passivePerception: 10, fg_group: ""
@@ -1022,6 +1086,7 @@ Double-click to open a window that will help build a correct expression.">
 
 				// NPC Buttons
 				const newNpcBtn = document.getElementById("newNpcBtn");
+				const duplicateNpcBtn = document.getElementById("duplicateNpcBtn");
 				const importNpcBtn = document.getElementById("importNpcBtn");
 				const exportNpcBtn = document.getElementById("exportNpcBtn");
 				const deleteNpcBtn = document.getElementById("deleteNpcBtn");
@@ -1034,18 +1099,23 @@ Double-click to open a window that will help build a correct expression.">
 				const menuImportProject = document.getElementById('menu-import-project');
 				const menuExportProject = document.getElementById('menu-export-project');
 				const menuNewNpc = document.getElementById('menu-new-npc');
+				const menuDuplicateNpc = document.getElementById('menu-duplicate-npc');
 				const menuImportNpc = document.getElementById('menu-import-npc');
 				const menuExportNpc = document.getElementById('menu-export-npc');
 				const menuDeleteNpc = document.getElementById('menu-delete-npc');
+				const menuSettings = document.getElementById('menu-settings');
+
 
 				// NPC Selector
 				const npcSelector = document.getElementById("npc-selector");
+				const npcOptionsContainer = document.getElementById('npc-options-container');
 
 				// Modals & Overlays
 				const modalOverlay = document.getElementById("modal-overlay");
 				const newProjectModal = document.getElementById("new-project-modal");
 				const loadProjectModal = document.getElementById("load-project-modal");
 				const hpModal = document.getElementById("hp-modal");
+				const settingsModal = document.getElementById('settings-modal');
 				
 				// Modal-specific elements
 				const createProjectBtn = document.getElementById("create-project-btn");
@@ -1056,6 +1126,7 @@ Double-click to open a window that will help build a correct expression.">
 				const addGroupBtn = document.getElementById('add-group-btn');
 				const newGroupNameInput = document.getElementById('new-group-name');
 				const groupListDiv = document.getElementById('group-list');
+				const settingsOkBtn = document.getElementById('settings-ok-btn');
 
 				const tokenBox = document.getElementById("npc-token");
 				const tokenUpload = document.getElementById("token-upload");
@@ -1069,6 +1140,20 @@ Double-click to open a window that will help build a correct expression.">
 				const bonusInput = document.getElementById("hp-bonus");
 				const experienceDisplay = document.getElementById("npc-experience-display");
 				const proficiencyBonusDisplay = document.getElementById("npc-proficiency-bonus-display");
+
+				// Settings Checkboxes
+				const projectSettingsCheckboxes = {
+					addDescription: document.getElementById('project-add-description'),
+					addTitle: document.getElementById('project-add-title'),
+					addImageLink: document.getElementById('project-add-image-link'),
+					useDropCap: document.getElementById('project-use-drop-cap'),
+				};
+				const npcSettingsCheckboxes = {
+					addDescription: document.getElementById('npc-add-description'),
+					addTitle: document.getElementById('npc-add-title'),
+					addImageLink: document.getElementById('npc-add-image-link'),
+					useDropCap: document.getElementById('npc-use-drop-cap'),
+				};
 
 				// --- FORM INPUTS ---
 				const inputs = {
@@ -1130,9 +1215,10 @@ Double-click to open a window that will help build a correct expression.">
 						projectName: projectName,
 						metadata: { 
 							createdAt: new Date(),
-							addDescription: 1,
-							addTitle: 1,
-							addImageLink: 1,
+							addDescription: true,
+							addTitle: true,
+							addImageLink: true,
+							useDropCap: true,
 							fg_groups: []
 						},
 						npcs: [{ ...defaultNPC, fg_group: projectName }]
@@ -1151,6 +1237,27 @@ Double-click to open a window that will help build a correct expression.">
 				}
 
 				function loadProject(project) {
+					// Backward compatibility for booleans
+					const propsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
+					
+					propsToConvert.forEach(prop => {
+						if (typeof project.metadata[prop] === 'number') {
+							project.metadata[prop] = project.metadata[prop] === 1;
+						} else if (project.metadata[prop] === undefined) {
+							project.metadata[prop] = true;
+						}
+					});
+
+					project.npcs.forEach(npc => {
+						propsToConvert.forEach(prop => {
+							if (typeof npc[prop] === 'number') {
+								npc[prop] = npc[prop] === 1;
+							} else if (npc[prop] === undefined) {
+								npc[prop] = project.metadata[prop];
+							}
+						});
+					});
+
 					activeProject = project;
 					// Select the first NPC by default
 					switchActiveNPC(0);
@@ -1219,11 +1326,35 @@ Double-click to open a window that will help build a correct expression.">
 					if (!activeProject) return;
 					const newNpc = { 
 						...defaultNPC,
+						useDropCap: activeProject.metadata.useDropCap,
 						addDescription: activeProject.metadata.addDescription,
 						addTitle: activeProject.metadata.addTitle,
 						addImageLink: activeProject.metadata.addImageLink,
 						fg_group: activeProject.projectName // Set default group
 					};
+					activeProject.npcs.push(newNpc);
+					switchActiveNPC(activeProject.npcs.length - 1);
+					saveActiveProjectToDB();
+					inputs.name.focus();
+				}
+
+				function duplicateCurrentNpc() {
+					if (!activeProject || !activeNPC) return;
+
+					// Create a deep copy
+					const newNpc = JSON.parse(JSON.stringify(activeNPC));
+
+					// Find a unique name
+					let baseName = activeNPC.name || 'Unnamed';
+					let newName = `${baseName} (copy)`;
+					let counter = 1;
+					while (activeProject.npcs.some(npc => npc.name === newName)) {
+						counter++;
+						newName = `${baseName} (copy ${counter})`;
+					}
+					newNpc.name = newName;
+
+					// Add to project and switch
 					activeProject.npcs.push(newNpc);
 					switchActiveNPC(activeProject.npcs.length - 1);
 					saveActiveProjectToDB();
@@ -1284,8 +1415,8 @@ Double-click to open a window that will help build a correct expression.">
 				function updateMenuState() {
 					const hasActiveProject = !!activeProject;
 					const menuItemsToToggle = [
-						menuExportProject, menuNewNpc, menuImportNpc,
-						menuExportNpc, menuDeleteNpc
+						menuExportProject, menuNewNpc, menuDuplicateNpc, menuImportNpc,
+						menuExportNpc, menuDeleteNpc, menuSettings
 					];
 
 					menuItemsToToggle.forEach(item => {
@@ -1303,19 +1434,21 @@ Double-click to open a window that will help build a correct expression.">
 
 				function updateUIForActiveProject() {
 					if (activeProject) {
-						projectStatusEl.textContent = `Project: ${activeProject.projectName}`;
+						projectStatusEl.textContent = `Project: ${activeProject.projectName} (${activeProject.npcs.length} NPCs)`;
 						mainContentColumn.style.opacity = '1';
 						mainContentColumn.style.pointerEvents = 'auto';
 						npcSelector.classList.remove('hidden');
 						deleteNpcBtn.classList.remove('hidden');
-						[newNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = false);
+						npcOptionsContainer.classList.remove('hidden');
+						[newNpcBtn, duplicateNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = false);
 					} else {
 						projectStatusEl.textContent = "No Project Loaded";
 						mainContentColumn.style.opacity = '0.3';
 						mainContentColumn.style.pointerEvents = 'none';
 						npcSelector.classList.add('hidden');
 						deleteNpcBtn.classList.add('hidden');
-						[newNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = true);
+						npcOptionsContainer.classList.add('hidden');
+						[newNpcBtn, duplicateNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = true);
 					}
 					updateMenuState();
 					updateFormFromActiveNPC();
@@ -1325,16 +1458,22 @@ Double-click to open a window that will help build a correct expression.">
 					if (!activeProject) return;
 					
 					npcSelector.innerHTML = '';
-					activeProject.npcs.forEach((npc, index) => {
-						if (npc.name) { // Only add NPCs with names
-							const option = document.createElement('option');
-							option.value = index;
-							option.textContent = npc.name;
-							if (index === activeNPCIndex) {
-								option.selected = true;
-							}
-							npcSelector.appendChild(option);
+					
+					const namedNpcs = activeProject.npcs
+						.map((npc, index) => ({ npc, originalIndex: index })) // Keep original index
+						.filter(item => item.npc.name); // Filter for named NPCs
+
+					// Sort alphabetically by name, case-insensitive
+					namedNpcs.sort((a, b) => a.npc.name.localeCompare(b.npc.name));
+					
+					namedNpcs.forEach(item => {
+						const option = document.createElement('option');
+						option.value = item.originalIndex;
+						option.textContent = item.npc.name;
+						if (item.originalIndex === activeNPCIndex) {
+							option.selected = true;
 						}
+						npcSelector.appendChild(option);
 					});
 
 					// Handle case where current NPC is unnamed
@@ -1344,7 +1483,13 @@ Double-click to open a window that will help build a correct expression.">
 						option.textContent = "New Unnamed NPC";
 						option.selected = true;
 						option.disabled = true;
-						npcSelector.appendChild(option);
+						// Find where to insert the unnamed NPC to keep the list sorted
+						const firstNpc = npcSelector.querySelector('option');
+						if (firstNpc) {
+							npcSelector.insertBefore(option, firstNpc);
+						} else {
+							npcSelector.appendChild(option);
+						}
 					}
 					
 					deleteNpcBtn.disabled = activeProject.npcs.length <= 1;
@@ -1397,6 +1542,10 @@ Double-click to open a window that will help build a correct expression.">
 							} else {
 								element.value = activeNPC[key] || "";
 							}
+						}
+
+						for (const key in npcSettingsCheckboxes) {
+							npcSettingsCheckboxes[key].checked = activeNPC[key];
 						}
 
 						const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
@@ -1471,6 +1620,10 @@ Double-click to open a window that will help build a correct expression.">
 							activeNPC[key] = element.value;
 						}
 					}
+
+					for (const key in npcSettingsCheckboxes) {
+						activeNPC[key] = npcSettingsCheckboxes[key].checked;
+					}
 					
 					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 					abilities.forEach(ability => {
@@ -1514,6 +1667,41 @@ Double-click to open a window that will help build a correct expression.">
 					return 9; // for CR 29-30
 				}
 				
+				function calculateSpeedString(npc) {
+					if (!npc) return "";
+
+					let speedParts = [];
+					let baseSpeedString = `${npc.speedBase || 0} ft.`;
+					
+					if (parseInt(npc.speedBase, 10) > 0 || (parseInt(npc.speedBase, 10) === 0 && !npc.speedBurrow && !npc.speedClimb && !npc.speedFly && !npc.speedSwim)) {
+						speedParts.push(baseSpeedString);
+					}
+
+					if (npc.speedBurrow > 0) {
+						speedParts.push(`burrow ${npc.speedBurrow} ft.`);
+					}
+					if (npc.speedClimb > 0) {
+						speedParts.push(`climb ${npc.speedClimb} ft.`);
+					}
+					if (npc.speedFly > 0) {
+						let flyString = `fly ${npc.speedFly} ft.`;
+						if (npc.flyHover) {
+							flyString += " (hover)";
+						}
+						speedParts.push(flyString);
+					}
+					if (npc.speedSwim > 0) {
+						speedParts.push(`swim ${npc.speedSwim} ft.`);
+					}
+					
+					if (speedParts.length > 1 && speedParts[0] === '0 ft.') {
+						speedParts.shift();
+					}
+
+					return speedParts.join(', ');
+				}
+
+
 				function calculateAllStats() {
 					if (!activeNPC) return;
 					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
@@ -1542,6 +1730,9 @@ Double-click to open a window that will help build a correct expression.">
 
 					// 3. Calculate Passive Perception
 					activeNPC.passivePerception = 10 + (activeNPC.wisdomBonus || 0);
+					
+					// 4. Calculate Speed String
+					activeNPC.speed = calculateSpeedString(activeNPC);
 				}
 
 				function updateStatDisplays() {
@@ -1577,7 +1768,8 @@ Double-click to open a window that will help build a correct expression.">
 					const {
 						name, size, type, species, alignment, armorClass, hitPoints, description, saves,
 						strength, dexterity, constitution, intelligence, wisdom, charisma,
-						strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus
+						strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
+						useDropCap, addDescription, speed
 					} = activeNPC;
 
 					const NPCName = name || "";
@@ -1589,7 +1781,7 @@ Double-click to open a window that will help build a correct expression.">
 					if (species) { NPCTypeString += ` (${species})`; }
 					if (alignment) { NPCTypeString += `, ${alignment}`; }
 
-					const NPCspeed = "";
+					const NPCspeed = speed || "";
 					const NPCstr = strength || "10";
 					const NPCstrbo = strengthBonus !== undefined ? (strengthBonus >= 0 ? `+${strengthBonus}` : strengthBonus) : "+0";
 					const NPCdex = dexterity || "10";
@@ -1602,6 +1794,9 @@ Double-click to open a window that will help build a correct expression.">
 					const NPCwisbo = wisdomBonus !== undefined ? (wisdomBonus >= 0 ? `+${wisdomBonus}` : wisdomBonus) : "+0";
 					const NPCcha = charisma || "10";
 					const NPCchabo = charismaBonus !== undefined ? (charismaBonus >= 0 ? `+${charismaBonus}` : charismaBonus) : "+0";
+
+					const dropCapClass = useDropCap ? 'drop-cap' : '';
+					const descriptionHtml = addDescription ? `<div class="npcdescrip ${dropCapClass}"> ${NPCDescriptionHTML} </div>` : '';
 
 					const generatedHtml = `
 						<div class="container">
@@ -1649,7 +1844,7 @@ Double-click to open a window that will help build a correct expression.">
 							<div class="npcbottom">&nbsp;</div>
 							<div class="cap"></div>
 						</div>
-						<div class="npcdescrip"> ${NPCDescriptionHTML} </div>
+						${descriptionHtml}
 					`;
 					viewport.innerHTML = generatedHtml;
 				}
@@ -1758,6 +1953,7 @@ Double-click to open a window that will help build a correct expression.">
 					loadProjectModal.classList.add('hidden');
 					hpModal.classList.add('hidden');
 					manageGroupsModal.classList.add('hidden');
+					settingsModal.classList.add('hidden');
 				}
 
 				async function showLoadProjectModal() {
@@ -1836,6 +2032,17 @@ Double-click to open a window that will help build a correct expression.">
 					manageGroupsModal.classList.remove('hidden');
 				}
 
+				function showSettingsModal() {
+					if (!activeProject) return;
+
+					for (const key in projectSettingsCheckboxes) {
+						projectSettingsCheckboxes[key].checked = activeProject.metadata[key];
+					}
+
+					modalOverlay.classList.remove('hidden');
+					settingsModal.classList.remove('hidden');
+				}
+
 				function deleteGroup(groupName) {
 					if (!activeProject || !activeProject.metadata.fg_groups) return;
 					
@@ -1884,6 +2091,7 @@ Double-click to open a window that will help build a correct expression.">
 				importProjectBtn.addEventListener('click', importProject);
 				exportProjectBtn.addEventListener('click', exportProject);
 				newNpcBtn.addEventListener("click", createNewNpc);
+				duplicateNpcBtn.addEventListener("click", duplicateCurrentNpc);
 				importNpcBtn.addEventListener("click", importNpc);
 				exportNpcBtn.addEventListener("click", exportNpc);
 				
@@ -1893,9 +2101,11 @@ Double-click to open a window that will help build a correct expression.">
 				menuImportProject.addEventListener('click', (e) => { e.preventDefault(); importProject(); mainMenu.classList.add('hidden'); });
 				menuExportProject.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportProject.classList.contains('disabled')) exportProject(); mainMenu.classList.add('hidden'); });
 				menuNewNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuNewNpc.classList.contains('disabled')) createNewNpc(); mainMenu.classList.add('hidden'); });
+				menuDuplicateNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuDuplicateNpc.classList.contains('disabled')) duplicateCurrentNpc(); mainMenu.classList.add('hidden'); });
 				menuImportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuImportNpc.classList.contains('disabled')) importNpc(); mainMenu.classList.add('hidden'); });
 				menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportNpc.classList.contains('disabled')) exportNpc(); mainMenu.classList.add('hidden'); });
 				menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuDeleteNpc.classList.contains('disabled')) deleteCurrentNpc(); mainMenu.classList.add('hidden'); });
+				menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!menuSettings.classList.contains('disabled')) showSettingsModal(); mainMenu.classList.add('hidden'); });
 				
 				// Hamburger Menu Logic
 				hamburgerBtn.addEventListener('click', (e) => {
@@ -1921,6 +2131,7 @@ Double-click to open a window that will help build a correct expression.">
 						addNewGroup();
 					}
 				});
+				settingsOkBtn.addEventListener('click', hideAllModals);
 
 				
 				// NPC Selector
@@ -1961,6 +2172,26 @@ Double-click to open a window that will help build a correct expression.">
 						input.addEventListener("input", updateActiveNPCFromForm);
 					}
 				});
+
+				// Settings Checkbox Listeners
+				for (const key in projectSettingsCheckboxes) {
+					projectSettingsCheckboxes[key].addEventListener('input', () => {
+						if (activeProject) {
+							activeProject.metadata[key] = projectSettingsCheckboxes[key].checked;
+							saveActiveProjectToDB();
+						}
+					});
+				}
+				for (const key in npcSettingsCheckboxes) {
+					npcSettingsCheckboxes[key].addEventListener('input', () => {
+						if (activeNPC) {
+							activeNPC[key] = npcSettingsCheckboxes[key].checked;
+							updateViewport();
+							saveActiveProjectToDB();
+						}
+					});
+				}
+
 
 				inputs.challenge.addEventListener('change', () => {
 					const selectedCr = inputs.challenge.value;
@@ -2042,5 +2273,4 @@ Double-click to open a window that will help build a correct expression.">
 		</script>
 	</body>
 </html>
-
 
