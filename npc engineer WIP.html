@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.02.17" />
-		<meta name="date" content="2025-10-08" />
+		<meta name="version" content="0.02.21" />
+		<meta name="date" content="2025-10-11" />
 		
 		<title>NPC Engineer</title>
 		
@@ -30,6 +30,8 @@
 		<link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet" />
 		<!-- Lato used for Description maybe? -->
 		<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet" />
+		<!-- Macondo Swash Caps used for drop caps -->
+		<link href="https://fonts.googleapis.com/css2?family=Macondo+Swash+Caps&display=swap" rel="stylesheet" />
 		
 		<style>
 			body { /* A simple style for our application font */
@@ -180,8 +182,8 @@
 			div.npcdescrip {
 				margin: auto;
 				background-color: transparent; /* Removes color */
-				background-image: none;        /* Removes image */
-  				background: rgba(255, 255, 255, 0.0);
+				background-image: none;        /* Removes image */
+  				background: rgba(255, 255, 255, 0.0);
 				color: #000000;
 				font-family: "Questrial", sans-serif;
 				font-size: 12pt;
@@ -422,8 +424,23 @@
 
 					<!-- Card: NPC Information -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">NPC Information</h2>
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
+							<h2 class="font-bold text-slate-700 cursor-pointer select-none" id="npc-info-header-title">NPC Information</h2>
+							<div class="flex items-center space-x-2">
+								<label for="fantasy-grounds-group" class="label-text text-xs">FG Group:</label>
+								<select id="fantasy-grounds-group" class="info-select h-6 text-xs" style="width: 150px;"></select>
+								<button id="manage-groups-btn" title="Manage Groups">
+									<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 447.479 447.479" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 447.479 447.479">
+										<g>
+											<path d="M411.426,75.746H36.053C16.173,75.746,0,91.92,0,111.799V335.68c0,19.879,16.173,36.052,36.053,36.052h375.374   c19.879,0,36.053-16.173,36.053-36.052V111.799C447.479,91.92,431.306,75.746,411.426,75.746z M427.479,335.68   c0,8.851-7.201,16.052-16.053,16.052H36.053c-8.852,0-16.053-7.201-16.053-16.052V111.799c0-8.852,7.201-16.053,16.053-16.053   h375.374c8.852,0,16.053,7.201,16.053,16.053V335.68z"/>
+											<path d="m82.747,127.494c-17.506,0-31.749,14.243-31.749,31.749 0,14.011 9.127,25.923 21.745,30.125v120.615c0,5.523 4.477,10 10,10s10-4.477 10-10v-120.613c12.622-4.199 21.753-16.113 21.753-30.127-1.42109e-14-17.506-14.243-31.749-31.749-31.749zm0,43.498c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749 11.749,5.271 11.749,11.749-5.271,11.749-11.749,11.749z"/>
+											<path d="m186.743,172.115v-34.623c0-5.523-4.477-10-10-10s-10,4.477-10,10v34.622c-12.62,4.2-21.75,16.113-21.75,30.126s9.129,25.927 21.75,30.126v77.616c0,5.523 4.477,10 10,10s10-4.477 10-10v-77.616c12.62-4.201 21.748-16.114 21.748-30.126s-9.129-25.925-21.748-30.125zm-10.001,41.875c-6.478,0-11.749-5.271-11.749-11.749 0-6.478 5.271-11.749 11.749-11.749 6.479,0 11.749,5.271 11.749,11.749 2.84217e-14,6.478-5.271,11.749-11.749,11.749z"/>
+											<path d="m280.733,215.111v-77.618c0-5.523-4.477-10-10-10s-10,4.477-10,10v77.621c-12.618,4.202-21.745,16.114-21.745,30.125s9.127,25.923 21.745,30.125v34.619c0,5.523 4.477,10 10,10s10-4.477 10-10v-34.616c12.622-4.199 21.753-16.114 21.753-30.128s-9.131-25.929-21.753-30.128zm-9.996,41.877c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749c6.478,0 11.749,5.271 11.749,11.749s-5.271,11.749-11.749,11.749z"/>
+											<path d="m374.733,258.111v-120.619c0-5.523-4.477-10-10-10s-10,4.477-10,10v120.618c-12.62,4.2-21.75,16.114-21.75,30.126 0,17.506 14.243,31.749 31.749,31.749s31.749-14.242 31.749-31.749c-5.68434e-14-14.012-9.128-25.925-21.748-30.125zm-10.001,41.874c-6.479,0-11.749-5.271-11.749-11.749 0-6.479 5.271-11.749 11.749-11.749s11.749,5.271 11.749,11.749c-5.68434e-14,6.479-5.27,11.749-11.749,11.749z"/>
+										</g>
+									</svg>
+								</button>
+							</div>
 						</div>
 						<div class="card-body">
 							<div class="px-4 pt-2 pb-2">
@@ -643,14 +660,14 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Statistics -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Statistics</h2>
 						</div>
 						<div class="card-body">
 							<div class="p-4">
-								<div class="flex space-x-12">
+								<div class="flex justify-around">
 									<!-- Ability Scores Section -->
-									<div>
+									<div class="ml-12">
 										<h3 class="font-bold text-center ml-9 mb-1 text-gray-800">Ability Scores</h3>
 										<div class="flex space-x-2">
 											<!-- Ability Column -->
@@ -687,7 +704,7 @@ Double-click to open a window that will help build a correct expression.">
 									</div>
 									
 									<!-- Saving Throws Section -->
-									<div>
+									<div class="mr-12">
 										<h3 class="font-bold text-center mb-1 text-gray-800">Saving Throws</h3>
 										<div class="flex space-x-2">
 											<div class="flex flex-col items-center space-y-1">
@@ -724,10 +741,79 @@ Double-click to open a window that will help build a correct expression.">
 							</div>
 						</div>
 					</div>
+					
+					<!-- Card: Movement Speed and Sense Ranges -->
+					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Movement Speed and Sense Ranges</h2>
+						</div>
+						<div class="card-body">
+							<div class="p-4">
+								<div class="flex justify-around">
+									<!-- Speeds Section -->
+									<div>
+										<h3 class="font-bold text-center mb-1 text-gray-800">Speeds (ft.)</h3>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-base" class="label-text w-20 text-right">Base</label>
+											<input type="number" id="npc-speed-base" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-fly" class="label-text w-20 text-right">Fly</label>
+											<input type="number" id="npc-speed-fly" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+											<div class="w-28 flex items-center ml-4">
+												<input type="checkbox" id="npc-fly-hover" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+												<label for="npc-fly-hover" class="label-text ml-2">Hover</label>
+											</div>
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-climb" class="label-text w-20 text-right">Climb</label>
+											<input type="number" id="npc-speed-climb" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-swim" class="label-text w-20 text-right">Swim</label>
+											<input type="number" id="npc-speed-swim" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-speed-burrow" class="label-text w-20 text-right">Burrow</label>
+											<input type="number" id="npc-speed-burrow" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
+										</div>
+									</div>
+									<!-- Senses Section -->
+									<div>
+										<h3 class="font-bold text-center mb-1 text-gray-800">Senses (ft.)</h3>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-sense-blindsight" class="label-text w-36 text-right">Blindsight</label>
+											<input type="number" id="npc-sense-blindsight" class="info-input h-6 w-20 text-center" min="0" max="600" step="10">
+											<div class="w-32 flex items-center ml-4">
+												<input type="checkbox" id="npc-blind-beyond" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+												<label for="npc-blind-beyond" class="label-text ml-2">Blind Beyond</label>
+											</div>
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-sense-darkvision" class="label-text w-36 text-right">Darkvision</label>
+											<input type="number" id="npc-sense-darkvision" class="info-input h-6 w-20 text-center" min="0" max="600" step="10">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-sense-tremorsense" class="label-text w-36 text-right">Tremorsense</label>
+											<input type="number" id="npc-sense-tremorsense" class="info-input h-6 w-20 text-center" min="0" max="600" step="10">
+										</div>
+										<div class="flex items-center space-x-2 mb-1">
+											<label for="npc-sense-truesight" class="label-text w-36 text-right">Truesight</label>
+											<input type="number" id="npc-sense-truesight" class="info-input h-6 w-20 text-center" min="0" max="600" step="10">
+										</div>
+										<div class="flex items-center space-x-2 mt-2">
+											<label class="label-text w-36 text-right font-semibold whitespace-nowrap">Passive Perception</label>
+											<span id="npc-passive-perception" class="font-medium text-gray-800 h-6 flex items-center justify-center w-20"></span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 
 					<!-- Card: Resistances -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Resistances</h2>
 						</div>
 						<div class="card-body">
@@ -737,7 +823,7 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Skills and Languages -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Skills and Languages</h2>
 						</div>
 						<div class="card-body">
@@ -747,7 +833,7 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Traits -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Traits</h2>
 						</div>
 						<div class="card-body">
@@ -757,7 +843,7 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Actions -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Actions</h2>
 						</div>
 						<div class="card-body">
@@ -767,7 +853,7 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Description -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-white px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Description</h2>
 						</div>
 						<div class="card-body">
@@ -818,6 +904,22 @@ Double-click to open a window that will help build a correct expression.">
 					<!-- Project items will be injected here -->
 				</div>
 			</div>
+			
+			<!-- Manage Groups Modal -->
+			<div id="manage-groups-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+				<div class="flex justify-between items-center mb-2">
+					<h3 class="font-bold text-slate-700">Manage Groups</h3>
+					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+				</div>
+				<div class="flex space-x-2">
+					<input type="text" id="new-group-name" class="info-input w-full" placeholder="New group name...">
+					<button id="add-group-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add</button>
+				</div>
+				<div id="group-list" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
+					<!-- Group items will be injected here -->
+				</div>
+			</div>
+
 
 			<!-- Hit Dice Calculator Modal -->
 			<div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-64 hidden">
@@ -866,6 +968,7 @@ Double-click to open a window that will help build a correct expression.">
 				let activeProject = null;
 				let activeNPC = null;
 				let activeNPCIndex = -1;
+				let isUpdatingForm = false;
 				
 				const defaultNPC = {
 					name: "", size: "", type: "", species: "", alignment: "",
@@ -880,7 +983,10 @@ Double-click to open a window that will help build a correct expression.">
 					charismaSavingThrowProf: false, charismaSavingThrowAdjust: 0,
 					gender: "creature", isUnique: false, isProperName: false, description: "", token: "", image: "",
 					saves: "",
-					addDescription: 1, addTitle: 1, addImageLink: 1
+					addDescription: 1, addTitle: 1, addImageLink: 1,
+					speedBase: 30, speedFly: 0, flyHover: false, speedClimb: 0, speedSwim: 0, speedBurrow: 0,
+					senseBlindsight: 0, blindBeyond: false, senseDarkvision: 0, senseTremorsense: 0, senseTruesight: 0,
+					passivePerception: 10, fg_group: ""
 				};
 
 				const crToXpMap = {
@@ -945,6 +1051,11 @@ Double-click to open a window that will help build a correct expression.">
 				const createProjectBtn = document.getElementById("create-project-btn");
 				const newProjectNameInput = document.getElementById("new-project-name");
 				const projectListDiv = document.getElementById("project-list");
+				const manageGroupsBtn = document.getElementById('manage-groups-btn');
+				const manageGroupsModal = document.getElementById('manage-groups-modal');
+				const addGroupBtn = document.getElementById('add-group-btn');
+				const newGroupNameInput = document.getElementById('new-group-name');
+				const groupListDiv = document.getElementById('group-list');
 
 				const tokenBox = document.getElementById("npc-token");
 				const tokenUpload = document.getElementById("token-upload");
@@ -978,7 +1089,19 @@ Double-click to open a window that will help build a correct expression.">
 					gender: document.getElementById("npc-gender"),
 					isUnique: document.getElementById("npc-unique"),
 					isProperName: document.getElementById("npc-proper"),
-					description: document.getElementById("npc-description") // hidden input for Trix
+					description: document.getElementById("npc-description"), // hidden input for Trix
+					speedBase: document.getElementById('npc-speed-base'),
+					speedFly: document.getElementById('npc-speed-fly'),
+					flyHover: document.getElementById('npc-fly-hover'),
+					speedClimb: document.getElementById('npc-speed-climb'),
+					speedSwim: document.getElementById('npc-speed-swim'),
+					speedBurrow: document.getElementById('npc-speed-burrow'),
+					senseBlindsight: document.getElementById('npc-sense-blindsight'),
+					blindBeyond: document.getElementById('npc-blind-beyond'),
+					senseDarkvision: document.getElementById('npc-sense-darkvision'),
+					senseTremorsense: document.getElementById('npc-sense-tremorsense'),
+					senseTruesight: document.getElementById('npc-sense-truesight'),
+					fg_group: document.getElementById('fantasy-grounds-group')
 				};
 
 				// --- FUNCTIONS ---
@@ -1005,13 +1128,14 @@ Double-click to open a window that will help build a correct expression.">
 
 					const newProject = {
 						projectName: projectName,
-						metadata: { 
+						metadata: { 
 							createdAt: new Date(),
 							addDescription: 1,
 							addTitle: 1,
-							addImageLink: 1
+							addImageLink: 1,
+							fg_groups: []
 						},
-						npcs: [{ ...defaultNPC }]
+						npcs: [{ ...defaultNPC, fg_group: projectName }]
 					};
 
 					try {
@@ -1078,7 +1202,7 @@ Double-click to open a window that will help build a correct expression.">
 						const importedProject = JSON.parse(content);
 						
 						// Remove existing ID to ensure a new one is created on import
-						delete importedProject.id; 
+						delete importedProject.id; 
 
 						await db.projects.add(importedProject);
 						alert(`Project "${importedProject.projectName}" imported successfully!`);
@@ -1093,11 +1217,12 @@ Double-click to open a window that will help build a correct expression.">
 				// --- NPC Management ---
 				function createNewNpc() {
 					if (!activeProject) return;
-					const newNpc = { 
+					const newNpc = { 
 						...defaultNPC,
 						addDescription: activeProject.metadata.addDescription,
 						addTitle: activeProject.metadata.addTitle,
-						addImageLink: activeProject.metadata.addImageLink
+						addImageLink: activeProject.metadata.addImageLink,
+						fg_group: activeProject.projectName // Set default group
 					};
 					activeProject.npcs.push(newNpc);
 					switchActiveNPC(activeProject.npcs.length - 1);
@@ -1226,74 +1351,94 @@ Double-click to open a window that will help build a correct expression.">
 				}
 				
 				function updateFormFromActiveNPC() {
-					if (!activeNPC) {
-						Object.values(inputs).forEach(input => {
-							if (input.type === 'checkbox') input.checked = false;
-							else input.value = '';
-						});
-						document.querySelector("trix-editor").editor.loadHTML("");
-						viewport.innerHTML = '';
-						updateNpcSelector();
-						return;
-					}
-
-					for (const key in inputs) {
-						if (key === 'description') {
-							const trixEditorElement = document.querySelector("trix-editor");
-							inputs.description.value = activeNPC[key] || '';
-							if (trixEditorElement && trixEditorElement.editor) {
-								trixEditorElement.editor.loadHTML(activeNPC[key] || "");
-							}
-							continue;
+					isUpdatingForm = true;
+					try {
+						if (!activeNPC) {
+							Object.values(inputs).forEach(input => {
+								if (input.type === 'checkbox') input.checked = false;
+								else input.value = '';
+							});
+							document.querySelector("trix-editor").editor.loadHTML("");
+							viewport.innerHTML = '';
+							updateNpcSelector();
+							return;
 						}
-						const element = inputs[key];
-						const customToggle = document.getElementById(`toggle-custom-${key}`);
-						if (customToggle) {
-							const select = element;
-							const customInput = document.getElementById(`npc-${key}-custom`);
-							const npcValue = activeNPC[key] || "";
-							const isStandardOption = [...select.options].some(opt => opt.value === npcValue && !opt.disabled);
-							if (isStandardOption || npcValue === "") {
-								select.value = npcValue;
-								customToggle.checked = false;
-								select.classList.remove('hidden');
-								customInput.classList.add('hidden');
+
+						for (const key in inputs) {
+							if (key === 'description') {
+								const trixEditorElement = document.querySelector("trix-editor");
+								inputs.description.value = activeNPC[key] || '';
+								if (trixEditorElement && trixEditorElement.editor) {
+									trixEditorElement.editor.loadHTML(activeNPC[key] || "");
+								}
+								continue;
+							}
+							const element = inputs[key];
+							const customToggle = document.getElementById(`toggle-custom-${key}`);
+							if (customToggle) {
+								const select = element;
+								const customInput = document.getElementById(`npc-${key}-custom`);
+								const npcValue = activeNPC[key] || "";
+								const isStandardOption = [...select.options].some(opt => opt.value === npcValue && !opt.disabled);
+								if (isStandardOption || npcValue === "") {
+									select.value = npcValue;
+									customToggle.checked = false;
+									select.classList.remove('hidden');
+									customInput.classList.add('hidden');
+								} else {
+									customInput.value = npcValue;
+									customToggle.checked = true;
+									select.classList.add('hidden');
+									customInput.classList.remove('hidden');
+									select.value = "";
+								}
+							} else if (element.type === "checkbox") {
+								element.checked = activeNPC[key] || false;
 							} else {
-								customInput.value = npcValue;
-								customToggle.checked = true;
-								select.classList.add('hidden');
-								customInput.classList.remove('hidden');
-								select.value = "";
+								element.value = activeNPC[key] || "";
 							}
-						} else if (element.type === "checkbox") {
-							element.checked = activeNPC[key] || false;
-						} else {
-							element.value = activeNPC[key] || "";
 						}
+
+						const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+						abilities.forEach(ability => {
+							document.getElementById(`npc-${ability}-saving-throw-prof`).checked = activeNPC[`${ability}SavingThrowProf`] || false;
+							document.getElementById(`npc-${ability}-saving-throw-adjust`).value = activeNPC[`${ability}SavingThrowAdjust`] || 0;
+						});
+
+						// Populate FG groups dropdown
+						const fgGroupDropdown = document.getElementById('fantasy-grounds-group');
+						fgGroupDropdown.innerHTML = '';
+						const projectOption = document.createElement('option');
+						projectOption.value = activeProject.projectName;
+						projectOption.textContent = activeProject.projectName;
+						fgGroupDropdown.appendChild(projectOption);
+						(activeProject.metadata.fg_groups || []).forEach(group => {
+							const groupOption = document.createElement('option');
+							groupOption.value = group;
+							groupOption.textContent = group;
+							fgGroupDropdown.appendChild(groupOption);
+						});
+						fgGroupDropdown.value = activeNPC.fg_group || activeProject.projectName;
+
+						experienceDisplay.textContent = activeNPC.experience || '';
+						proficiencyBonusDisplay.textContent = `+${activeNPC.proficiencyBonus}` || '+2';
+						updateTokenDisplay();
+						updateImageDisplay();
+						calculateAllStats();
+						updateStatDisplays();
+						updateViewport();
+						updateNpcSelector();
+					} finally {
+						isUpdatingForm = false;
 					}
-
-					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
-					abilities.forEach(ability => {
-						document.getElementById(`npc-${ability}-saving-throw-prof`).checked = activeNPC[`${ability}SavingThrowProf`] || false;
-						document.getElementById(`npc-${ability}-saving-throw-adjust`).value = activeNPC[`${ability}SavingThrowAdjust`] || 0;
-					});
-
-					experienceDisplay.textContent = activeNPC.experience || '';
-					proficiencyBonusDisplay.textContent = `+${activeNPC.proficiencyBonus}` || '+2';
-					updateTokenDisplay();
-					updateImageDisplay();
-					updateAbilityBonuses();
-					updateSavingThrows();
-					updateViewport();
-					updateNpcSelector();
 				}
 
 				function updateActiveNPCFromForm() {
-					if (!activeNPC) return;
+					if (isUpdatingForm || !activeNPC) return;
 
 					const newName = inputs.name.value.trim();
 					if (newName && newName.toLowerCase() !== activeNPC.name.toLowerCase()) {
-						const isDuplicate = activeProject.npcs.some((npc, index) => 
+						const isDuplicate = activeProject.npcs.some((npc, index) => 
 							index !== activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
 						);
 
@@ -1336,12 +1481,12 @@ Double-click to open a window that will help build a correct expression.">
 					activeNPC.experience = experienceDisplay.textContent;
 					activeNPC.proficiencyBonus = parseInt(proficiencyBonusDisplay.textContent.replace('+', ''), 10);
 					
-					updateAbilityBonuses();
-					updateSavingThrows();
+					calculateAllStats();
+					updateStatDisplays();
 					updateViewport();
 
 					if (wasUnnamed && activeNPC.name) {
-						updateNpcSelector(); 
+						updateNpcSelector(); 
 					} else {
 						// Update the text of the current option if name changes
 						const currentOption = npcSelector.options[npcSelector.selectedIndex];
@@ -1369,43 +1514,59 @@ Double-click to open a window that will help build a correct expression.">
 					return 9; // for CR 29-30
 				}
 				
-				function updateSavingThrows() {
+				function calculateAllStats() {
 					if (!activeNPC) return;
 					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 					const abilityAbbr = { strength: 'Str', dexterity: 'Dex', constitution: 'Con', intelligence: 'Int', wisdom: 'Wis', charisma: 'Cha' };
+					
+					// 1. Calculate ability bonuses
+					abilities.forEach(ability => {
+						const score = activeNPC[ability] || 10;
+						activeNPC[`${ability}Bonus`] = calculateAbilityBonus(score);
+					});
+
+					// 2. Calculate saving throws
 					const profBonus = activeNPC.proficiencyBonus || 2;
 					const savesArray = [];
-					
 					abilities.forEach(ability => {
 						const base = activeNPC[`${ability}Bonus`] || 0;
 						const isProficient = activeNPC[`${ability}SavingThrowProf`] || false;
 						const adjust = activeNPC[`${ability}SavingThrowAdjust`] || 0;
-						
 						const total = base + (isProficient ? profBonus : 0) + adjust;
-						
-						const totalEl = document.getElementById(`npc-${ability}-saving-throw-total`);
-						totalEl.textContent = total >= 0 ? `+${total}` : total;
 						
 						if (isProficient || adjust !== 0) {
 							savesArray.push(`${abilityAbbr[ability]} ${total >= 0 ? '+' : ''}${total}`);
 						}
 					});
 					activeNPC.saves = savesArray.join(', ');
+
+					// 3. Calculate Passive Perception
+					activeNPC.passivePerception = 10 + (activeNPC.wisdomBonus || 0);
 				}
 
-				function updateAbilityBonuses() {
+				function updateStatDisplays() {
 					if (!activeNPC) return;
 					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					const profBonus = activeNPC.proficiencyBonus || 2;
+
 					abilities.forEach(ability => {
-						const score = activeNPC[ability] || 10;
-						const bonus = calculateAbilityBonus(score);
-						activeNPC[`${ability}Bonus`] = bonus;
-						
+						// Update bonus display
+						const bonus = activeNPC[`${ability}Bonus`] || 0;
 						const bonusEl = document.getElementById(`npc-${ability}-bonus`);
 						if (bonusEl) {
 							bonusEl.textContent = bonus >= 0 ? `+${bonus}` : bonus;
 						}
+
+						// Update saving throw total display
+						const base = bonus;
+						const isProficient = activeNPC[`${ability}SavingThrowProf`] || false;
+						const adjust = activeNPC[`${ability}SavingThrowAdjust`] || 0;
+						const total = base + (isProficient ? profBonus : 0) + adjust;
+						const totalEl = document.getElementById(`npc-${ability}-saving-throw-total`);
+						totalEl.textContent = total >= 0 ? `+${total}` : total;
 					});
+					
+					document.getElementById('npc-passive-perception').textContent = activeNPC.passivePerception || 10;
 				}
 
 				function updateViewport() {
@@ -1596,6 +1757,7 @@ Double-click to open a window that will help build a correct expression.">
 					newProjectModal.classList.add('hidden');
 					loadProjectModal.classList.add('hidden');
 					hpModal.classList.add('hidden');
+					manageGroupsModal.classList.add('hidden');
 				}
 
 				async function showLoadProjectModal() {
@@ -1640,6 +1802,79 @@ Double-click to open a window that will help build a correct expression.">
 					modalOverlay.classList.remove('hidden');
 					loadProjectModal.classList.remove('hidden');
 				}
+				
+				async function showManageGroupsModal() {
+					if (!activeProject) return;
+					groupListDiv.innerHTML = '';
+
+					const groups = activeProject.metadata.fg_groups || [];
+					if (groups.length === 0) {
+						groupListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom groups created.</p>';
+					} else {
+						groups.forEach(groupName => {
+							const groupEl = document.createElement('div');
+							groupEl.className = 'flex justify-between items-center py-0.5 px-2 border rounded-md hover:bg-gray-100';
+							
+							const nameSpan = document.createElement('span');
+							nameSpan.textContent = groupName;
+							
+							const deleteBtn = document.createElement('button');
+							deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+							deleteBtn.className = 'p-1';
+							deleteBtn.title = `Delete group: ${groupName}`;
+							deleteBtn.onclick = (e) => {
+								e.stopPropagation();
+								deleteGroup(groupName);
+							};
+
+							groupEl.appendChild(nameSpan);
+							groupEl.appendChild(deleteBtn);
+							groupListDiv.appendChild(groupEl);
+						});
+					}
+					modalOverlay.classList.remove('hidden');
+					manageGroupsModal.classList.remove('hidden');
+				}
+
+				function deleteGroup(groupName) {
+					if (!activeProject || !activeProject.metadata.fg_groups) return;
+					
+					activeProject.metadata.fg_groups = activeProject.metadata.fg_groups.filter(g => g !== groupName);
+					
+					// Check if any NPC was using this group and reset it
+					activeProject.npcs.forEach(npc => {
+						if (npc.fg_group === groupName) {
+							npc.fg_group = activeProject.projectName;
+						}
+					});
+
+					saveActiveProjectToDB();
+					showManageGroupsModal(); // Refresh modal list
+					updateFormFromActiveNPC(); // Refresh main dropdown
+				}
+
+				function addNewGroup() {
+					const newName = newGroupNameInput.value.trim();
+					if (!newName) return;
+
+					if (!activeProject.metadata.fg_groups) {
+						activeProject.metadata.fg_groups = [];
+					}
+					
+					const isDuplicate = newName.toLowerCase() === activeProject.projectName.toLowerCase() || activeProject.metadata.fg_groups.some(g => g.toLowerCase() === newName.toLowerCase());
+
+					if (isDuplicate) {
+						alert(`A group named "${newName}" already exists.`);
+						return;
+					}
+
+					activeProject.metadata.fg_groups.push(newName);
+					saveActiveProjectToDB();
+					newGroupNameInput.value = '';
+					showManageGroupsModal(); // Refresh list
+					updateFormFromActiveNPC(); // Refresh main dropdown
+				}
+
 
 				// --- EVENT LISTENERS ---
 				
@@ -1651,7 +1886,6 @@ Double-click to open a window that will help build a correct expression.">
 				newNpcBtn.addEventListener("click", createNewNpc);
 				importNpcBtn.addEventListener("click", importNpc);
 				exportNpcBtn.addEventListener("click", exportNpc);
-				deleteNpcBtn.addEventListener('click', deleteCurrentNpc);
 				
 				// Menu Items
 				menuNewProject.addEventListener('click', (e) => { e.preventDefault(); showNewProjectModal(); mainMenu.classList.add('hidden'); });
@@ -1680,6 +1914,14 @@ Double-click to open a window that will help build a correct expression.">
 				newProjectNameInput.addEventListener('keyup', (e) => {
 					if (e.key === 'Enter') createProjectBtn.click();
 				});
+				manageGroupsBtn.addEventListener('click', showManageGroupsModal);
+				addGroupBtn.addEventListener('click', addNewGroup);
+				newGroupNameInput.addEventListener('keyup', (e) => {
+					if (e.key === 'Enter') {
+						addNewGroup();
+					}
+				});
+
 				
 				// NPC Selector
 				npcSelector.addEventListener('change', (e) => {
@@ -1695,7 +1937,10 @@ Double-click to open a window that will help build a correct expression.">
 				});
 
 				document.querySelectorAll('.card-header').forEach((header) => {
-					header.addEventListener("click", () => {
+					header.addEventListener("click", (e) => {
+						if (e.target.closest('#fantasy-grounds-group') || e.target.closest('#manage-groups-btn')) {
+							return;
+						}
 						const cardBody = header.nextElementSibling;
 						if (cardBody) {
 							if (cardBody.classList.contains('open')) {
@@ -1723,7 +1968,6 @@ Double-click to open a window that will help build a correct expression.">
 					const profBonus = calculateProficiencyBonus(selectedCr);
 					proficiencyBonusDisplay.textContent = `+${profBonus}`;
 					updateActiveNPCFromForm();
-					updateSavingThrows();
 				});
 
 				document.querySelector("trix-editor").addEventListener("trix-change", updateActiveNPCFromForm);
@@ -1798,4 +2042,5 @@ Double-click to open a window that will help build a correct expression.">
 		</script>
 	</body>
 </html>
+
 
