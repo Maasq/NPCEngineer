@@ -1,0 +1,275 @@
+body { /* A simple style for our application font */
+	font-family: "Lexend", sans-serif;
+}
+.card-body { /* Custom styles for the card collapse/expand transition */
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+.card-body.open { /* A large max-height to allow content to expand fully */
+	max-height: 70rem; /* Increased to accommodate new section */
+}
+.card-font-style { /* Sets font size for card content */
+	font-size: 11pt;
+}
+.custom-shadow { /* Custom shadow style */
+	box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+}
+.input-field {
+	@apply w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+}
+.label-text {
+	@apply block text-sm font-medium text-gray-700;
+}
+.bordered-container { /* A reusable class for black borders */
+	border: 1px solid black;
+}
+.info-input, .info-select { /* Custom style for specific input boxes and dropdowns */
+	background-color: #F8FAFC; /* Lighter input background */
+	border: 1px solid #CBD5E1; /* Adjusted darker shade for the border */
+	border-radius: 2px;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+	font-size: 10pt; /* Set font size for input fields */
+}
+
+/* --- Trix Editor Styles --- */
+trix-toolbar .trix-button-group button {
+	tabindex: -1; /* Remove Trix toolbar buttons from tab order */
+}
+.trix-content {
+	min-height: 250px;
+	background-color: #F8FAFC;
+	border: 1px solid #CBD5E1;
+	border-top: none; /* The toolbar has a bottom border already */
+	border-radius: 0 0 2px 2px;
+	padding: 0.5rem;
+}
+trix-toolbar {
+	background-color: #F8FAFC;
+}
+
+/* --- Viewport Styles --- */
+div.container {
+	margin: auto;
+	width: 10.3cm;
+	box-shadow: 8px 8px 20px #472737;
+	background-image: url("graphics/statblock texture.jpg");
+	background-color: #FDF1E6; /* Pale yellow fallback */
+}
+div.cap {
+	margin: auto;
+	height: 0.2cm;
+	width: 10.3cm;
+	background: #e0851d; /* App title green color */
+	border-style: solid;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-top-width: 1px;
+	border-bottom-width: 1px;
+	border-right-color: #000000;
+	border-left-color: #000000;
+	border-top-color: #000000;
+	border-bottom-color: #000000;
+	background-image: url("graphics/statblock cap.jpg");
+}
+div.npcname {
+	margin: auto;
+	width: 10.3cm;
+	background: rgba(0, 0, 0, 0.0);
+	color: #7A200D;
+	font-family: "Cormorant SC", serif;
+	font-size: 21pt;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: none;
+	border-bottom-style: none;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-right-color: #BA4E3B;
+	border-left-color: #BA4E3B;
+	padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npctype {
+	margin: auto;
+	width: 10.3cm;
+	background: rgba(0, 0, 0, 0.0);
+	color: #000000;
+	font-family: "Questrial", sans-serif;
+	font-size: 9pt;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: none;
+	border-bottom-style: none;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-right-color: #BA4E3B;
+	border-left-color: #BA4E3B;
+	padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npctop {
+	margin: auto;
+	width: 10.3cm;
+	background: rgba(0, 0, 0, 0.0);
+	color: #7A200D;
+	font-family: "Questrial", sans-serif;
+	font-size: 10.5pt;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: none;
+	border-bottom-style: none;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-right-color: #BA4E3B;
+	border-left-color: #BA4E3B;
+	padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npcbottom {
+	margin: auto;
+	width: 10.3cm;
+	background: rgba(0, 0, 0, 0.0);
+	color: #000000;
+	font-family: "Questrial", sans-serif;
+	font-size: 10pt;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: none;
+	border-bottom-style: none;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-right-color: #BA4E3B;
+	border-left-color: #BA4E3B;
+	padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npcdescrip {
+	margin: auto;
+	background-color: transparent; /* Removes color */
+	background-image: none;        /* Removes image */
+  	background: rgba(255, 255, 255, 0.0);
+	color: #000000;
+	font-family: "Questrial", sans-serif;
+	font-size: 12pt;
+	padding: 0.4cm 0.1cm 0cm 0.1cm;
+}
+div.npcdescrip .trix-content { /* Override Trix's default padding for the viewport */
+	padding: 0;
+}
+.heading {
+	background: rgba(0, 0, 0, 0.0);
+	color: #7A200D;
+	font-size: 16pt;
+	font-weight: bold;
+}
+.post-container {
+	margin: 20px 20px 0 0;
+	overflow: auto;
+	padding: 0cm 0.15cm 0cm 0cm;
+}
+.post-thumb {
+	float: left;
+}
+.post-thumb img {
+	display: block;
+}
+.post-content {
+	background: #FDF1E6;
+	color: #000000;
+	font-family: "Questrial", sans-serif;
+	font-size: 10pt;
+	border: 1px solid #7A200D;
+	margin-left: 1cm;
+	padding: 0.15cm 0.15cm 0cm 0.15cm;
+	box-shadow: 4px 4px 8px #472737;
+}
+div.npcdiv {
+	margin: auto;
+	width: 10.3cm;
+	background: rgba(0, 0, 0, 0.0);
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: none;
+	border-bottom-style: none;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-right-color: #BA4E3B;
+	border-left-color: #BA4E3B;
+	padding: 0cm 0.15cm 0cm 0.15cm;
+}
+.whoosh { /* This class is now used on an SVG polyline, styled via attributes */ }
+table.attr {
+	background: rgba(0, 0, 0, 0.0);
+	color: #7A200D;
+	font-family: "Lato", sans-serif;
+	font-size: 11pt;
+	border-style: none;
+	border-collapse: collapse;
+	text-align: center;
+	padding: 0cm 0cm 0cm 0cm;
+}
+div.npcdiv2 {
+	margin: auto;
+	width: 10.3cm;
+	background: rgba(0, 0, 0, 0.0);
+	border-left-style: solid;
+	border-right-style: solid;
+	border-top-style: none;
+	border-bottom-style: none;
+	border-right-width: 1px;
+	border-left-width: 1px;
+	border-right-color: #BA4E3B;
+	border-left-color: #BA4E3B;
+	padding: 0cm 0.15cm 0.2cm 0.15cm;
+}
+table.spell {
+	background: #FDF1E6;
+	color: #000000;
+	font-family: "Lato", sans-serif;
+	font-size: 11pt;
+	border: 1px solid #7A200D;
+	border-collapse: collapse;
+	text-align: left;
+	padding: 0.2cm 0.2cm 0.2cm 0.2cm;
+	box-shadow: 3px 3px #DDDDDD;
+}
+table.spell th {
+	background-color: #7A200D;
+	color: #FFFFFF;
+	padding: 0.1cm;
+	border: 1px solid #7A200D;
+	border-collapse: collapse;
+}
+table.spell td {
+	padding: 0.1cm;
+	border: 1px solid #7A200D;
+	border-collapse: collapse;
+}
+
+/* --- Drag & Drop highlight --- */
+.drag-over {
+	border: 2px dashed #87CC24 !important;
+	background-color: #f0fff4 !important;
+}
+#npc-token, #npc-image {
+	padding: 0;
+}
+.menu-item.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.menu-item.disabled:hover {
+	background-color: transparent;
+}
+.stat-header {
+	color: #8B575C; /* Desaturated dark red */
+}
+.drop-cap::first-letter {
+	font-family: 'Macondo Swash Caps', serif;
+	font-size: 3em;
+	float: left;
+	line-height: 0.8;
+	padding-top: 4px; /* Adjust vertical alignment */
+	padding-right: 4px;
+	color: #7A200D;
+}

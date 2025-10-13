@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.03.09" />
+		<meta name="version" content="0.03.01" />
 		<meta name="date" content="2025-10-12" />
 		
 		<title>NPC Engineer</title>
@@ -40,12 +40,12 @@
 			.card-body { /* Custom styles for the card collapse/expand transition */
 				max-height: 0;
 				overflow: hidden;
-				transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+				transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
 				padding-top: 0;
 				padding-bottom: 0;
 			}
 			.card-body.open { /* A large max-height to allow content to expand fully */
-				max-height: 70rem; /* Increased to accommodate new section */
+				max-height: 40rem; /* Corresponds to 640px */
 			}
 			.card-font-style { /* Sets font size for card content */
 				font-size: 11pt;
@@ -327,17 +327,17 @@
 							</svg>
 						</button>
 						<div id="main-menu" class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden">
-							<!-- Bestiaries Sub-Menu -->
-							<div class="relative group/bestiaries">
+							<!-- Projects Sub-Menu -->
+							<div class="relative group/projects">
 								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
-									<span>Bestiaries</span>
+									<span>Projects</span>
 									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
 								</div>
-								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/bestiaries:block">
-									<a href="#" id="menu-new-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New Bestiary</a>
-									<a href="#" id="menu-load-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Select Bestiary</a>
-									<a href="#" id="menu-import-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import Bestiary</a>
-									<a href="#" id="menu-export-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Bestiary</a>
+								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/projects:block">
+									<a href="#" id="menu-new-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New Project</a>
+									<a href="#" id="menu-load-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Select Project</a>
+									<a href="#" id="menu-import-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import Project</a>
+									<a href="#" id="menu-export-project" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Project</a>
 								</div>
 							</div>
 							<hr class="my-1"/>
@@ -366,32 +366,32 @@
 					<img src="graphics/npc engineer.webp" alt="NPC Engineer Logo" class="absolute w-32 h-32 rounded-full z-30" style="top: 16px; left: 28px" />
 					
 					
-					<!-- Bestiary Management Buttons -->
-					<div id="bestiary-buttons" class="absolute right-3 top-[15px] z-30 flex items-center space-x-4">
-						<span id="bestiary-status" class="text-sm font-medium text-gray-600 mr-2">No Bestiary Loaded</span>
-						<!-- New Bestiary Button -->
-						<button id="newBestiaryBtn" title="Create a new Bestiary" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+					<!-- Project Management Buttons -->
+					<div id="project-buttons" class="absolute right-3 top-[15px] z-30 flex items-center space-x-4">
+						<span id="project-status" class="text-sm font-medium text-gray-600 mr-2">No Project Loaded</span>
+						<!-- New Project Button -->
+						<button id="newProjectBtn" title="Create a new Project" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
 								<path d="M11 19.913c-4.966-.084-8-1.388-8-2.334v-6.248C4.643 12.429 8.082 13 11.5 13s6.857-.57 8.5-1.67V14h1V5c0-1.97-4.78-3-9.5-3S2 3.03 2 5v12.58c0 2.116 4.448 3.255 9 3.333zM11.5 3C17 3 20 4.321 20 5s-3 2-8.5 2S3 5.679 3 5s3-2 8.5-2zM3 6.411C4.643 7.457 8.082 8 11.5 8s6.857-.543 8.5-1.589v3.437C20 10.726 16.689 12 11.5 12S3 10.726 3 9.848zM18 15l-1-1h-3l-1 1h-1v8h11v-8zm4 7h-9v-4h9zm-9-5v-1h.414l1-1h2.172l1 1H22v1z"/>
 								<path fill="none" d="M0 0h24v24H0z"/>
 							</svg>
 						</button>
-						<!-- Load Bestiary Button -->
-						<button id="loadBestiaryBtn" title="Select one of your Bestiaries to edit" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+						<!-- Load Project Button -->
+						<button id="loadProjectBtn" title="Select one of your Projects to edit" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
 								<path d="M4 4H3v1h2V2h1v20H5v-1H4v2h18V1H4zm3-2h14v20H7zM5 20H3v-1h1v-1h1zm0-6H3v-1h1v-1h1zm0-6H3V7h1V6h1zm0 3H3v-1h1V9h1zm0 6H3v-1h1v-1h1zm10.5-5h-3A3.504 3.504 0 0 0 9 15.5V18h10v-2.5a3.504 3.504 0 0 0-3.5-3.5zm2.5 5h-8v-1.5a2.503 2.503 0 0 1 2.5-2.5h3a2.503 2.503 0 0 1 2.5 2.5zm-4-6a3 3 0 1 0-3-3 3.003 3.003 0 0 0 3 3zm0-5a2 2 0 1 1-2 2 2.002 2.002 0 0 1 2-2z"/>
 								<path fill="none" d="M0 0h24v24H0z"/>
 							</svg>
 						</button>
-						<!-- Import Bestiary Button -->
-						<button id="importBestiaryBtn" title="Import Bestiary (JSON) from Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+						<!-- Import Project Button -->
+						<button id="importProjectBtn" title="Import Project (JSON) from Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
 								<path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.205 2.205 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-.293l2.646 2.646.707-.707L12.5 9.793l-3.854 3.853.707.707L12 11.707V22h1z"/>
 								<path fill="none" d="M0 0h24v24H0z"/>
 							</svg>
 						</button>
-						<!-- Export Bestiary Button -->
-						<button id="exportBestiaryBtn" title="Export Bestiary (JSON) to Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
+						<!-- Export Project Button -->
+						<button id="exportProjectBtn" title="Export Project (JSON) to Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
 								<path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.206 2.206 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-1h-1v10.292l-2.646-2.646-.707.707 3.854 3.854 3.853-3.852-.707-.707L13 21.294z"/>
 								<path fill="none" d="M0 0h24v24H0z"/>
@@ -872,34 +872,6 @@ Double-click to open a window that will help build a correct expression.">
 											<div class="flex flex-col items-center text-center px-1"><label for="res-piercing" class="label-text text-[8pt] leading-tight">Piercing</label><input type="checkbox" id="res-piercing" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
 											<div class="flex flex-col items-center text-center px-1"><label for="res-slashing" class="label-text text-[8pt] leading-tight">Slashing</label><input type="checkbox" id="res-slashing" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
 										</div>
-										<div class="mt-4 pt-2 border-t border-gray-300">
-											<div class="flex flex-col space-y-1 text-sm">
-												<div class="flex items-center">
-													<input type="radio" id="wr-none" name="weapon-resistance" value="none" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wr-none" class="ml-2 label-text">No special weapon resistances.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wr-nonmagical" name="weapon-resistance" value="nonmagical" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wr-nonmagical" class="ml-2 label-text">Resistant to nonmagical weapons.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wr-silvered" name="weapon-resistance" value="silvered" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wr-silvered" class="ml-2 label-text">Resistant to nonmagical weapons that aren't silvered.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wr-adamantine" name="weapon-resistance" value="adamantine" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wr-adamantine" class="ml-2 label-text">Resistant to nonmagical weapons that aren't adamantine.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wr-cold-forged" name="weapon-resistance" value="cold-forged" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wr-cold-forged" class="ml-2 label-text">Resistant to nonmagical weapons that aren't cold-forged iron.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wr-magical" name="weapon-resistance" value="magical" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wr-magical" class="ml-2 label-text">Resistant to magical weapons.</label>
-												</div>
-											</div>
-										</div>
 									</div>
 								</div>
 
@@ -921,54 +893,6 @@ Double-click to open a window that will help build a correct expression.">
 											<div class="flex flex-col items-center text-center px-1"><label for="imm-bludgeoning" class="label-text text-[8pt] leading-tight">Bludgeoning</label><input type="checkbox" id="imm-bludgeoning" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
 											<div class="flex flex-col items-center text-center px-1"><label for="imm-piercing" class="label-text text-[8pt] leading-tight">Piercing</label><input type="checkbox" id="imm-piercing" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
 											<div class="flex flex-col items-center text-center px-1"><label for="imm-slashing" class="label-text text-[8pt] leading-tight">Slashing</label><input type="checkbox" id="imm-slashing" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"></div>
-										</div>
-										<div class="mt-4 pt-2 border-t border-gray-300">
-											<div class="flex flex-col space-y-1 text-sm">
-												<div class="flex items-center">
-													<input type="radio" id="wi-none" name="weapon-immunity" value="none" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wi-none" class="ml-2 label-text">No special weapon immunities.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wi-nonmagical" name="weapon-immunity" value="nonmagical" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wi-nonmagical" class="ml-2 label-text">Immune to nonmagical weapons.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wi-silvered" name="weapon-immunity" value="silvered" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wi-silvered" class="ml-2 label-text">Immune to nonmagical weapons that aren't silvered.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wi-adamantine" name="weapon-immunity" value="adamantine" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wi-adamantine" class="ml-2 label-text">Immune to nonmagical weapons that aren't adamantine.</label>
-												</div>
-												<div class="flex items-center">
-													<input type="radio" id="wi-cold-forged" name="weapon-immunity" value="cold-forged" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
-													<label for="wi-cold-forged" class="ml-2 label-text">Immune to nonmagical weapons that aren't cold-forged iron.</label>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-								
-								<!-- Condition Immunity Section -->
-								<div class="relative mt-6">
-									<h3 class="font-bold text-gray-800 absolute -top-2.5 left-4 bg-white px-1">Condition Immunity</h3>
-									<div class="border border-gray-400 rounded-lg p-4 pt-5">
-										<div class="grid grid-cols-3 gap-x-8 gap-y-1 text-sm">
-											<div class="flex items-center"><input type="checkbox" id="ci-blinded" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-blinded" class="ml-2 label-text">blinded</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-charmed" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-charmed" class="ml-2 label-text">charmed</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-deafened" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-deafened" class="ml-2 label-text">deafened</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-exhaustion" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-exhaustion" class="ml-2 label-text">exhaustion</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-frightened" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-frightened" class="ml-2 label-text">frightened</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-grappled" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-grappled" class="ml-2 label-text">grappled</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-incapacitated" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-incapacitated" class="ml-2 label-text">incapacitated</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-invisible" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-invisible" class="ml-2 label-text">invisible</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-paralyzed" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-paralyzed" class="ml-2 label-text">paralyzed</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-petrified" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-petrified" class="ml-2 label-text">petrified</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-poisoned" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-poisoned" class="ml-2 label-text">poisoned</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-prone" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-prone" class="ml-2 label-text">prone</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-restrained" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-restrained" class="ml-2 label-text">restrained</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-stunned" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-stunned" class="ml-2 label-text">stunned</label></div>
-											<div class="flex items-center"><input type="checkbox" id="ci-unconscious" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"><label for="ci-unconscious" class="ml-2 label-text">unconscious</label></div>
 										</div>
 									</div>
 								</div>
@@ -1053,31 +977,31 @@ Double-click to open a window that will help build a correct expression.">
 		<!-- Modals -->
 		<div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
 			
-			<!-- New Bestiary Modal -->
-			<div id="new-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden">
+			<!-- New Project Modal -->
+			<div id="new-project-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden">
 				<div class="flex justify-between items-center mb-2">
-					<h3 class="font-bold text-slate-700">Create New Bestiary</h3>
+					<h3 class="font-bold text-slate-700">Create New Project</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
 				</div>
 				<div class="space-y-2">
 					<div>
-						<label for="new-bestiary-name" class="label-text">Bestiary Name</label>
-						<input type="text" id="new-bestiary-name" class="info-input w-full">
+						<label for="new-project-name" class="label-text">Project Name</label>
+						<input type="text" id="new-project-name" class="info-input w-full">
 					</div>
 				</div>
 				<div class="text-right pt-2">
-					<button id="create-bestiary-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Create</button>
+					<button id="create-project-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Create</button>
 				</div>
 			</div>
 
-			<!-- Load Bestiary Modal -->
-			<div id="load-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+			<!-- Load Project Modal -->
+			<div id="load-project-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
-					<h3 class="font-bold text-slate-700">Load Bestiary</h3>
+					<h3 class="font-bold text-slate-700">Load Project</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
 				</div>
-				<div id="bestiary-list" class="space-y-2 max-h-80 overflow-y-auto">
-					<!-- Bestiary items will be injected here -->
+				<div id="project-list" class="space-y-2 max-h-80 overflow-y-auto">
+					<!-- Project items will be injected here -->
 				</div>
 			</div>
 			
@@ -1099,26 +1023,26 @@ Double-click to open a window that will help build a correct expression.">
 			<!-- Settings Modal -->
 			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
-					<h3 class="font-bold text-slate-700">Bestiary Default Settings</h3>
+					<h3 class="font-bold text-slate-700">Project Default Settings</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
 				</div>
 				<div class="space-y-2 border-t pt-2 mt-2">
-					<p class="text-xs text-gray-500">These settings are applied to all new NPCs created in this bestiary.</p>
+					<p class="text-xs text-gray-500">These settings are applied to all new NPCs created in this project.</p>
 					<div class="flex items-center">
-						<input type="checkbox" id="bestiary-add-description" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-						<label for="bestiary-add-description" class="ml-2 label-text">Add description to the NPC</label>
+						<input type="checkbox" id="project-add-description" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-add-description" class="ml-2 label-text">Add description to the NPC</label>
 					</div>
 					<div class="flex items-center">
-						<input type="checkbox" id="bestiary-add-title" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-						<label for="bestiary-add-title" class="ml-2 label-text">Add a title</label>
+						<input type="checkbox" id="project-add-title" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-add-title" class="ml-2 label-text">Add a title</label>
 					</div>
 					<div class="flex items-center">
-						<input type="checkbox" id="bestiary-add-image-link" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-						<label for="bestiary-add-image-link" class="ml-2 label-text">Add an image link</label>
+						<input type="checkbox" id="project-add-image-link" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-add-image-link" class="ml-2 label-text">Add an image link</label>
 					</div>
 					<div class="flex items-center">
-						<input type="checkbox" id="bestiary-use-drop-cap" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-						<label for="bestiary-use-drop-cap" class="ml-2 label-text">Use a drop cap in the description</label>
+						<input type="checkbox" id="project-use-drop-cap" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+						<label for="project-use-drop-cap" class="ml-2 label-text">Use a drop cap in the description</label>
 					</div>
 				</div>
 				<div class="text-right pt-2">
@@ -1167,7 +1091,7 @@ Double-click to open a window that will help build a correct expression.">
 				// --- DATABASE SETUP ---
 				const db = new Dexie('npcEngineerDB');
 				db.version(1).stores({
-					projects: '++id, projectName' // NOTE: This is kept as 'projects' for backward compatibility.
+					projects: '++id, projectName' // Primary key and index
 				});
 
 				// --- DATA & STATE ---
@@ -1175,13 +1099,8 @@ Double-click to open a window that will help build a correct expression.">
 					'acid', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'poison',
 					'psychic', 'radiant', 'thunder', 'bludgeoning', 'piercing', 'slashing'
 				];
-				const conditions = [
-					'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened', 'grappled', 
-					'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 
-					'prone', 'restrained', 'stunned', 'unconscious'
-				];
 				
-				let activeBestiary = null;
+				let activeProject = null;
 				let activeNPC = null;
 				let activeNPCIndex = -1;
 				let isUpdatingForm = false;
@@ -1203,9 +1122,7 @@ Double-click to open a window that will help build a correct expression.">
 					addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
 					speedBase: 30, speedFly: 0, flyHover: false, speedClimb: 0, speedSwim: 0, speedBurrow: 0,
 					senseBlindsight: 0, blindBeyond: false, senseDarkvision: 0, senseTremorsense: 0, senseTruesight: 0,
-					passivePerception: 10, fg_group: "",
-					weaponResistance: 'none',
-					weaponImmunity: 'none'
+					passivePerception: 10, fg_group: ""
 				};
 				
 				// Dynamically create the full defaultNPC object with resistance properties
@@ -1214,9 +1131,6 @@ Double-click to open a window that will help build a correct expression.">
 					defaultNPC[`vulnerability_${type}`] = false;
 					defaultNPC[`resistance_${type}`] = false;
 					defaultNPC[`immunity_${type}`] = false;
-				});
-				conditions.forEach(condition => {
-					defaultNPC[`ci_${condition}`] = false;
 				});
 
 
@@ -1243,13 +1157,13 @@ Double-click to open a window that will help build a correct expression.">
 				// --- UI ELEMENTS ---
 				const mainContentColumn = document.getElementById('main-content-column');
 				const viewport = document.getElementById("viewport");
-				const bestiaryStatusEl = document.getElementById("bestiary-status");
+				const projectStatusEl = document.getElementById("project-status");
 				
-				// Bestiary Buttons
-				const newBestiaryBtn = document.getElementById("newBestiaryBtn");
-				const loadBestiaryBtn = document.getElementById("loadBestiaryBtn");
-				const exportBestiaryBtn = document.getElementById("exportBestiaryBtn");
-				const importBestiaryBtn = document.getElementById("importBestiaryBtn");
+				// Project Buttons
+				const newProjectBtn = document.getElementById("newProjectBtn");
+				const loadProjectBtn = document.getElementById("loadProjectBtn");
+				const exportProjectBtn = document.getElementById("exportProjectBtn");
+				const importProjectBtn = document.getElementById("importProjectBtn");
 
 				// NPC Buttons
 				const newNpcBtn = document.getElementById("newNpcBtn");
@@ -1261,10 +1175,10 @@ Double-click to open a window that will help build a correct expression.">
 				// Menu Items
 				const hamburgerBtn = document.getElementById('hamburger-btn');
 				const mainMenu = document.getElementById('main-menu');
-				const menuNewBestiary = document.getElementById('menu-new-bestiary');
-				const menuLoadBestiary = document.getElementById('menu-load-bestiary');
-				const menuImportBestiary = document.getElementById('menu-import-bestiary');
-				const menuExportBestiary = document.getElementById('menu-export-bestiary');
+				const menuNewProject = document.getElementById('menu-new-project');
+				const menuLoadProject = document.getElementById('menu-load-project');
+				const menuImportProject = document.getElementById('menu-import-project');
+				const menuExportProject = document.getElementById('menu-export-project');
 				const menuNewNpc = document.getElementById('menu-new-npc');
 				const menuDuplicateNpc = document.getElementById('menu-duplicate-npc');
 				const menuImportNpc = document.getElementById('menu-import-npc');
@@ -1279,15 +1193,15 @@ Double-click to open a window that will help build a correct expression.">
 
 				// Modals & Overlays
 				const modalOverlay = document.getElementById("modal-overlay");
-				const newBestiaryModal = document.getElementById("new-bestiary-modal");
-				const loadBestiaryModal = document.getElementById("load-bestiary-modal");
+				const newProjectModal = document.getElementById("new-project-modal");
+				const loadProjectModal = document.getElementById("load-project-modal");
 				const hpModal = document.getElementById("hp-modal");
 				const settingsModal = document.getElementById('settings-modal');
 				
 				// Modal-specific elements
-				const createBestiaryBtn = document.getElementById("create-bestiary-btn");
-				const newBestiaryNameInput = document.getElementById("new-bestiary-name");
-				const bestiaryListDiv = document.getElementById("bestiary-list");
+				const createProjectBtn = document.getElementById("create-project-btn");
+				const newProjectNameInput = document.getElementById("new-project-name");
+				const projectListDiv = document.getElementById("project-list");
 				const manageGroupsBtn = document.getElementById('manage-groups-btn');
 				const manageGroupsModal = document.getElementById('manage-groups-modal');
 				const addGroupBtn = document.getElementById('add-group-btn');
@@ -1309,11 +1223,11 @@ Double-click to open a window that will help build a correct expression.">
 				const proficiencyBonusDisplay = document.getElementById("npc-proficiency-bonus-display");
 
 				// Settings Checkboxes
-				const bestiarySettingsCheckboxes = {
-					addDescription: document.getElementById('bestiary-add-description'),
-					addTitle: document.getElementById('bestiary-add-title'),
-					addImageLink: document.getElementById('bestiary-add-image-link'),
-					useDropCap: document.getElementById('bestiary-use-drop-cap'),
+				const projectSettingsCheckboxes = {
+					addDescription: document.getElementById('project-add-description'),
+					addTitle: document.getElementById('project-add-title'),
+					addImageLink: document.getElementById('project-add-image-link'),
+					useDropCap: document.getElementById('project-use-drop-cap'),
 				};
 				const npcSettingsCheckboxes = {
 					addDescription: document.getElementById('npc-add-description'),
@@ -1357,39 +1271,29 @@ Double-click to open a window that will help build a correct expression.">
 				};
 
 				// --- FUNCTIONS ---
-				
-				function findUniqueNpcName(baseName) {
-					if (!activeBestiary) return baseName;
-					let newName = baseName;
-					let counter = 1;
-					while (activeBestiary.npcs.some(npc => npc.name.toLowerCase() === newName.toLowerCase())) {
-						counter++;
-						newName = `${baseName} ${counter}`;
-					}
-					return newName;
-				}
 
-				// --- Bestiary Management ---
-				function showNewBestiaryModal() {
+				// --- Project Management ---
+				function showNewProjectModal() {
 					modalOverlay.classList.remove('hidden');
-					newBestiaryModal.classList.remove('hidden');
-					newBestiaryNameInput.focus();
+					newProjectModal.classList.remove('hidden');
+					newProjectNameInput.focus();
 				}
 
-				async function createNewBestiary() {
-					const bestiaryName = newBestiaryNameInput.value.trim();
-					if (!bestiaryName) {
-						alert("Bestiary name cannot be empty.");
+				async function createNewProject() {
+					const projectName = newProjectNameInput.value.trim();
+					if (!projectName) {
+						alert("Project name cannot be empty.");
 						return;
 					}
-					const existingBestiary = await db.projects.where('projectName').equalsIgnoreCase(bestiaryName).first();
-					if (existingBestiary) {
-						alert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`);
+					const existingProject = await db.projects.where('projectName').equalsIgnoreCase(projectName).first();
+					if (existingProject) {
+						alert(`A project named "${projectName}" already exists. Please choose a unique name.`);
 						return;
 					}
-					
-					const newBestiary = {
-						projectName: bestiaryName, // This remains projectName for DB compatibility
+
+
+					const newProject = {
+						projectName: projectName,
 						metadata: { 
 							createdAt: new Date(),
 							addDescription: true,
@@ -1398,192 +1302,193 @@ Double-click to open a window that will help build a correct expression.">
 							useDropCap: true,
 							fg_groups: []
 						},
-						npcs: [{ ...defaultNPC, name: "New NPC", fg_group: bestiaryName }]
+						npcs: [{ ...defaultNPC, fg_group: projectName }]
 					};
 
 					try {
-						const newId = await db.projects.add(newBestiary);
-						newBestiary.id = newId;
-						loadBestiary(newBestiary);
+						const newId = await db.projects.add(newProject);
+						newProject.id = newId;
+						loadProject(newProject);
 						hideAllModals();
-						newBestiaryNameInput.value = "";
+						newProjectNameInput.value = "";
 					} catch (error) {
-						console.error("Failed to create bestiary:", error);
-						alert("Error: Could not create bestiary. Check console for details.");
+						console.error("Failed to create project:", error);
+						alert("Error: Could not create project. Check console for details.");
 					}
 				}
 
-				function loadBestiary(bestiary) {
+				function loadProject(project) {
 					// Backward compatibility for booleans
 					const propsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
 					
 					propsToConvert.forEach(prop => {
-						if (typeof bestiary.metadata[prop] === 'number') {
-							bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
-						} else if (bestiary.metadata[prop] === undefined) {
-							bestiary.metadata[prop] = true;
+						if (typeof project.metadata[prop] === 'number') {
+							project.metadata[prop] = project.metadata[prop] === 1;
+						} else if (project.metadata[prop] === undefined) {
+							project.metadata[prop] = true;
 						}
 					});
 
-					// Data Healing: Assign names to any unnamed NPCs from older versions
-					let unnamedCounter = 1;
-					bestiary.npcs.forEach(npc => {
+					project.npcs.forEach(npc => {
 						propsToConvert.forEach(prop => {
 							if (typeof npc[prop] === 'number') {
 								npc[prop] = npc[prop] === 1;
 							} else if (npc[prop] === undefined) {
-								npc[prop] = bestiary.metadata[prop];
+								npc[prop] = project.metadata[prop];
 							}
 						});
-						
-						if (!npc.name || npc.name.trim() === "") {
-							let uniqueName = `Unnamed NPC`;
-							if (unnamedCounter > 1) uniqueName += ` ${unnamedCounter}`;
-							while (bestiary.npcs.some(n => n.name === uniqueName)) {
-								unnamedCounter++;
-								uniqueName = `Unnamed NPC ${unnamedCounter}`;
-							}
-							npc.name = uniqueName;
-						}
 					});
 
-					activeBestiary = bestiary;
+					activeProject = project;
 					sortAndSwitchToNpc(null);
-					updateUIForActiveBestiary();
+					updateUIForActiveProject();
 				}
 				
 				function switchActiveNPC(index) {
-					if (activeBestiary && index >= 0 && index < activeBestiary.npcs.length) {
+					if (activeProject && index >= 0 && index < activeProject.npcs.length) {
 						activeNPCIndex = index;
-						activeNPC = activeBestiary.npcs[index];
+						activeNPC = activeProject.npcs[index];
 						updateFormFromActiveNPC();
-					} else if (activeBestiary && activeBestiary.npcs.length > 0) {
+					} else if (activeProject && activeProject.npcs.length > 0) {
 						// Fallback to the first NPC if index is out of bounds
 						activeNPCIndex = 0;
-						activeNPC = activeBestiary.npcs[0];
+						activeNPC = activeProject.npcs[0];
 						updateFormFromActiveNPC();
 					}
 				}
 
-				async function saveActiveBestiaryToDB() {
-					if (activeBestiary && activeBestiary.id) {
+				async function saveActiveProjectToDB() {
+					if (activeProject && activeProject.id) {
 						try {
-							await db.projects.put(activeBestiary);
+							await db.projects.put(activeProject);
 						} catch (error) {
-							console.error("Failed to save bestiary to DB:", error);
+							console.error("Failed to save project to DB:", error);
 						}
 					}
 				}
 				
 				function sortAndSwitchToNpc(targetNpc) {
-					if (!activeBestiary) return;
+					if (!activeProject) return;
 
-					// Sort the array alphabetically by name, case-insensitive.
-					activeBestiary.npcs.sort((a, b) => {
-						return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: 'base' });
+					// Sort the array alphabetically by name, case-insensitive. Unnamed NPCs go to the top.
+					activeProject.npcs.sort((a, b) => {
+						const nameA = a.name || "";
+						const nameB = b.name || "";
+						if (nameA === "" && nameB === "") return 0;
+						if (nameA === "") return -1;
+						if (nameB === "") return 1;
+						return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
 					});
 
 					// Find the index of the target NPC in the newly sorted array.
-					const newIndex = targetNpc ? activeBestiary.npcs.findIndex(npc => npc === targetNpc) : 0;
+					const newIndex = targetNpc ? activeProject.npcs.findIndex(npc => npc === targetNpc) : 0;
 					
 					// Switch to that index (or the first one if no target).
 					switchActiveNPC(newIndex >= 0 ? newIndex : 0);
 				}
 
 
-				async function exportBestiary() {
-					if (!activeBestiary) return;
+				async function exportProject() {
+					if (!activeProject) return;
 					
-					const bestiaryJson = JSON.stringify(activeBestiary, null, 2);
+					const projectJson = JSON.stringify(activeProject, null, 2);
 					try {
 						const handle = await window.showSaveFilePicker({
-							suggestedName: `Bestiary-${activeBestiary.projectName}.json`,
+							suggestedName: `Project-${activeProject.projectName}.json`,
 							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
 						});
 						const writable = await handle.createWritable();
-						await writable.write(bestiaryJson);
+						await writable.write(projectJson);
 						await writable.close();
 					} catch (err) {
-						if (err.name !== "AbortError") console.error("Error exporting bestiary:", err);
+						if (err.name !== "AbortError") console.error("Error exporting project:", err);
 					}
 				}
 
-				async function importBestiary() {
+				async function importProject() {
 					try {
 						const [handle] = await window.showOpenFilePicker({
 							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
 						});
 						const file = await handle.getFile();
 						const content = await file.text();
-						const importedBestiary = JSON.parse(content);
+						const importedProject = JSON.parse(content);
 						
 						// Remove existing ID to ensure a new one is created on import
-						delete importedBestiary.id; 
+						delete importedProject.id; 
 
-						// Check for existing bestiary with the same name
-						const existing = await db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
+						// Check for existing project with the same name
+						const existing = await db.projects.where('projectName').equalsIgnoreCase(importedProject.projectName).first();
 						if (existing) {
-							alert(`A bestiary named "${importedBestiary.projectName}" already exists.`);
+							alert(`A project named "${importedProject.projectName}" already exists.`);
 							return;
 						}
 
-						const newId = await db.projects.add(importedBestiary);
-						importedBestiary.id = newId;
-						loadBestiary(importedBestiary);
-						alert(`Bestiary "${importedBestiary.projectName}" imported successfully!`);
+						const newId = await db.projects.add(importedProject);
+						importedProject.id = newId;
+						loadProject(importedProject);
+						alert(`Project "${importedProject.projectName}" imported successfully!`);
 					} catch (err) {
 						if (err.name !== "AbortError") {
-							console.error("Error importing bestiary:", err);
-							alert("Failed to import bestiary.");
+							console.error("Error importing project:", err);
+							alert("Failed to import project.");
 						}
 					}
 				}
 				
 				// --- NPC Management ---
 				function createNewNpc() {
-					if (!activeBestiary) return;
+					if (!activeProject) return;
 					const newNpc = { 
 						...defaultNPC,
-						name: findUniqueNpcName("New NPC"),
-						useDropCap: activeBestiary.metadata.useDropCap,
-						addDescription: activeBestiary.metadata.addDescription,
-						addTitle: activeBestiary.metadata.addTitle,
-						addImageLink: activeBestiary.metadata.addImageLink,
-						fg_group: activeBestiary.projectName // Set default group
+						useDropCap: activeProject.metadata.useDropCap,
+						addDescription: activeProject.metadata.addDescription,
+						addTitle: activeProject.metadata.addTitle,
+						addImageLink: activeProject.metadata.addImageLink,
+						fg_group: activeProject.projectName // Set default group
 					};
-					activeBestiary.npcs.push(newNpc);
+					activeProject.npcs.push(newNpc);
 					sortAndSwitchToNpc(newNpc);
-					saveActiveBestiaryToDB();
+					saveActiveProjectToDB();
 					inputs.name.focus();
 				}
 
 				function duplicateCurrentNpc() {
-					if (!activeBestiary || !activeNPC) return;
+					if (!activeProject || !activeNPC) return;
 
 					// Create a deep copy
 					const newNpc = JSON.parse(JSON.stringify(activeNPC));
-					newNpc.name = findUniqueNpcName(`${activeNPC.name} (Copy)`);
 
-					// Add to bestiary and switch
-					activeBestiary.npcs.push(newNpc);
+					// Find a unique name
+					let baseName = activeNPC.name || 'Unnamed';
+					let newName = `${baseName} (copy)`;
+					let counter = 1;
+					while (activeProject.npcs.some(npc => npc.name === newName)) {
+						counter++;
+						newName = `${baseName} (copy ${counter})`;
+					}
+					newNpc.name = newName;
+
+					// Add to project and switch
+					activeProject.npcs.push(newNpc);
 					sortAndSwitchToNpc(newNpc);
-					saveActiveBestiaryToDB();
+					saveActiveProjectToDB();
 					inputs.name.focus();
 				}
 				
 				function deleteCurrentNpc() {
-					if (!activeBestiary || activeBestiary.npcs.length <= 1) return;
+					if (!activeProject || activeProject.npcs.length <= 1) return;
 
 					// Find the NPC to be deleted and remove it
 					const npcToDelete = activeNPC;
-					activeBestiary.npcs = activeBestiary.npcs.filter(npc => npc !== npcToDelete);
+					activeProject.npcs = activeProject.npcs.filter(npc => npc !== npcToDelete);
 					
 					sortAndSwitchToNpc(null); // Sort and switch to the first NPC
-					saveActiveBestiaryToDB();
+					saveActiveProjectToDB();
 				}
 
 				async function importNpc() {
-					if (!activeBestiary) return;
+					if (!activeProject) return;
 					
 					try {
 						const [handle] = await window.showOpenFilePicker({
@@ -1595,9 +1500,9 @@ Double-click to open a window that will help build a correct expression.">
 						
 						const newNpc = { ...defaultNPC, ...loadedNPC };
 						
-						activeBestiary.npcs.push(newNpc);
+						activeProject.npcs.push(newNpc);
 						sortAndSwitchToNpc(newNpc);
-						saveActiveBestiaryToDB();
+						saveActiveProjectToDB();
 						
 					} catch (err) {
 						if (err.name !== "AbortError") console.error("Error importing NPC:", err);
@@ -1623,28 +1528,28 @@ Double-click to open a window that will help build a correct expression.">
 				
 				// --- UI & State Update Functions ---
 				function updateMenuState() {
-					const hasActiveBestiary = !!activeBestiary;
+					const hasActiveProject = !!activeProject;
 					const menuItemsToToggle = [
-						menuExportBestiary, menuNewNpc, menuDuplicateNpc, menuImportNpc,
+						menuExportProject, menuNewNpc, menuDuplicateNpc, menuImportNpc,
 						menuExportNpc, menuDeleteNpc, menuSettings
 					];
 
 					menuItemsToToggle.forEach(item => {
-						if (hasActiveBestiary) {
+						if (hasActiveProject) {
 							item.classList.remove('disabled');
 						} else {
 							item.classList.add('disabled');
 						}
 					});
 					
-					if (hasActiveBestiary && activeBestiary.npcs.length <= 1) {
+					if (hasActiveProject && activeProject.npcs.length <= 1) {
 						menuDeleteNpc.classList.add('disabled');
 					}
 				}
 
-				function updateUIForActiveBestiary() {
-					if (activeBestiary) {
-						bestiaryStatusEl.innerHTML = `Bestiary: <span class="font-bold text-red-700">${activeBestiary.projectName} (${activeBestiary.npcs.length} NPCs)</span>`;
+				function updateUIForActiveProject() {
+					if (activeProject) {
+						projectStatusEl.textContent = `Project: ${activeProject.projectName} (${activeProject.npcs.length} NPCs)`;
 						mainContentColumn.style.opacity = '1';
 						mainContentColumn.style.pointerEvents = 'auto';
 						npcSelector.classList.remove('hidden');
@@ -1652,7 +1557,7 @@ Double-click to open a window that will help build a correct expression.">
 						npcOptionsContainer.classList.remove('hidden');
 						[newNpcBtn, duplicateNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = false);
 					} else {
-						bestiaryStatusEl.textContent = "No Bestiary Loaded";
+						projectStatusEl.textContent = "No Project Loaded";
 						mainContentColumn.style.opacity = '0.3';
 						mainContentColumn.style.pointerEvents = 'none';
 						npcSelector.classList.add('hidden');
@@ -1665,21 +1570,25 @@ Double-click to open a window that will help build a correct expression.">
 				}
 				
 				function updateNpcSelector() {
-					if (!activeBestiary) return;
+					if (!activeProject) return;
 					
 					npcSelector.innerHTML = '';
 					
-					activeBestiary.npcs.forEach((npc, index) => {
+					activeProject.npcs.forEach((npc, index) => {
 						const option = document.createElement('option');
 						option.value = index;
-						option.textContent = npc.name;
+						option.textContent = npc.name || "Unnamed NPC";
 						if (index === activeNPCIndex) {
 							option.selected = true;
+						}
+						if (!npc.name) {
+							// Make the unnamed option stand out a bit
+							option.classList.add('text-gray-500', 'italic');
 						}
 						npcSelector.appendChild(option);
 					});
 
-					deleteNpcBtn.disabled = activeBestiary.npcs.length <= 1;
+					deleteNpcBtn.disabled = activeProject.npcs.length <= 1;
 				}
 
 				
@@ -1747,42 +1656,22 @@ Double-click to open a window that will help build a correct expression.">
 							document.getElementById(`res-${type}`).checked = activeNPC[`resistance_${type}`] || false;
 							document.getElementById(`imm-${type}`).checked = activeNPC[`immunity_${type}`] || false;
 						});
-						
-						conditions.forEach(condition => {
-							document.getElementById(`ci-${condition}`).checked = activeNPC[`ci_${condition}`] || false;
-						});
-
-						const weaponResValue = activeNPC.weaponResistance || 'none';
-						const weaponResRadio = document.querySelector(`input[name="weapon-resistance"][value="${weaponResValue}"]`);
-						if (weaponResRadio) {
-							weaponResRadio.checked = true;
-						} else { 
-							document.getElementById('wr-none').checked = true;
-						}
-						
-						const weaponImmValue = activeNPC.weaponImmunity || 'none';
-						const weaponImmRadio = document.querySelector(`input[name="weapon-immunity"][value="${weaponImmValue}"]`);
-						if (weaponImmRadio) {
-							weaponImmRadio.checked = true;
-						} else {
-							document.getElementById('wi-none').checked = true;
-						}
 
 
 						// Populate FG groups dropdown
 						const fgGroupDropdown = document.getElementById('fantasy-grounds-group');
 						fgGroupDropdown.innerHTML = '';
-						const bestiaryOption = document.createElement('option');
-						bestiaryOption.value = activeBestiary.projectName;
-						bestiaryOption.textContent = activeBestiary.projectName;
-						fgGroupDropdown.appendChild(bestiaryOption);
-						(activeBestiary.metadata.fg_groups || []).forEach(group => {
+						const projectOption = document.createElement('option');
+						projectOption.value = activeProject.projectName;
+						projectOption.textContent = activeProject.projectName;
+						fgGroupDropdown.appendChild(projectOption);
+						(activeProject.metadata.fg_groups || []).forEach(group => {
 							const groupOption = document.createElement('option');
 							groupOption.value = group;
 							groupOption.textContent = group;
 							fgGroupDropdown.appendChild(groupOption);
 						});
-						fgGroupDropdown.value = activeNPC.fg_group || activeBestiary.projectName;
+						fgGroupDropdown.value = activeNPC.fg_group || activeProject.projectName;
 
 						experienceDisplay.textContent = activeNPC.experience || '';
 						proficiencyBonusDisplay.textContent = `+${activeNPC.proficiencyBonus}` || '+2';
@@ -1802,12 +1691,12 @@ Double-click to open a window that will help build a correct expression.">
 
 					const newName = inputs.name.value.trim();
 					if (newName && newName.toLowerCase() !== (activeNPC.name || "").toLowerCase()) {
-						const isDuplicate = activeBestiary.npcs.some((npc, index) => 
+						const isDuplicate = activeProject.npcs.some((npc, index) => 
 							index !== activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
 						);
 
 						if (isDuplicate) {
-							alert(`An NPC named "${newName}" already exists in this bestiary.`);
+							alert(`An NPC named "${newName}" already exists in this project.`);
 							inputs.name.value = activeNPC.name; // Revert to the old name
 							return; // Stop the update
 						}
@@ -1850,20 +1739,6 @@ Double-click to open a window that will help build a correct expression.">
 						activeNPC[`immunity_${type}`] = document.getElementById(`imm-${type}`).checked;
 					});
 
-					conditions.forEach(condition => {
-						activeNPC[`ci_${condition}`] = document.getElementById(`ci-${condition}`).checked;
-					});
-
-					const selectedWeaponRes = document.querySelector('input[name="weapon-resistance"]:checked');
-					if (selectedWeaponRes) {
-						activeNPC.weaponResistance = selectedWeaponRes.value;
-					}
-
-					const selectedWeaponImm = document.querySelector('input[name="weapon-immunity"]:checked');
-					if (selectedWeaponImm) {
-						activeNPC.weaponImmunity = selectedWeaponImm.value;
-					}
-
 					activeNPC.experience = experienceDisplay.textContent;
 					activeNPC.proficiencyBonus = parseInt(proficiencyBonusDisplay.textContent.replace('+', ''), 10);
 					
@@ -1874,10 +1749,10 @@ Double-click to open a window that will help build a correct expression.">
 					// Just update the name in the dropdown, don't re-sort on every keystroke
 					const currentOption = npcSelector.options[npcSelector.selectedIndex];
 					if(currentOption) {
-						currentOption.textContent = activeNPC.name;
+						currentOption.textContent = activeNPC.name || "Unnamed NPC";
 					}
 
-					saveActiveBestiaryToDB(); // Auto-save on any change
+					saveActiveProjectToDB(); // Auto-save on any change
 				}
 
 				function calculateAbilityBonus(score) {
@@ -1948,58 +1823,12 @@ Double-click to open a window that will help build a correct expression.">
 							immunities.push(type);
 						}
 					});
-					
-					let resistanceString = resistances.join(', ');
-					let immunityString = immunities.join(', ');
-					
-					const weaponResTextMap = {
-						'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
-						'silvered': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
-						'adamantine': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
-						'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron",
-						'magical': "bludgeoning, piercing, and slashing from magical attacks",
-					};
-					const weaponResText = weaponResTextMap[npc.weaponResistance];
-					if (weaponResText) {
-						if (resistanceString) {
-							resistanceString += '; ' + weaponResText;
-						} else {
-							resistanceString = weaponResText;
-						}
-					}
-					
-					const weaponImmTextMap = {
-						'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
-						'silvered': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
-						'adamantine': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
-						'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron",
-					};
-					const weaponImmText = weaponImmTextMap[npc.weaponImmunity];
-					if (weaponImmText) {
-						if (immunityString) {
-							immunityString += '; ' + weaponImmText;
-						} else {
-							immunityString = weaponImmText;
-						}
-					}
-
 
 					return {
 						vulnerabilities: vulnerabilities.join(', '),
-						resistances: resistanceString,
-						immunities: immunityString
+						resistances: resistances.join(', '),
+						immunities: immunities.join(', ')
 					};
-				}
-				
-				function calculateConditionImmunitiesString(npc) {
-					if (!npc) return "";
-					const immuneConditions = [];
-					conditions.forEach(condition => {
-						if (npc[`ci_${condition}`]) {
-							immuneConditions.push(condition);
-						}
-					});
-					return immuneConditions.join(', ');
 				}
 
 				function calculateAllStats() {
@@ -2073,7 +1902,6 @@ Double-click to open a window that will help build a correct expression.">
 					} = activeNPC;
 					
 					const { vulnerabilities, resistances, immunities } = calculateDamageModifiersString(activeNPC);
-					const conditionImmunities = calculateConditionImmunitiesString(activeNPC);
 
 					const NPCName = name || "";
 					const NPCac = armorClass || "";
@@ -2142,7 +1970,6 @@ Double-click to open a window that will help build a correct expression.">
 							${vulnerabilities ? `<div class="npctop"><b>Damage Vulnerabilities</b> ${vulnerabilities}</div>` : ''}
 							${resistances ? `<div class="npctop"><b>Damage Resistances</b> ${resistances}</div>` : ''}
 							${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
-							${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
 							<div class="npcdiv">
 								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
 									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
@@ -2250,21 +2077,6 @@ Double-click to open a window that will help build a correct expression.">
 					});
 				}
 
-				function setupWeaponModifierListeners() {
-					document.querySelectorAll('input[name="weapon-resistance"]').forEach(radio => {
-						radio.addEventListener('input', updateActiveNPCFromForm);
-					});
-					document.querySelectorAll('input[name="weapon-immunity"]').forEach(radio => {
-						radio.addEventListener('input', updateActiveNPCFromForm);
-					});
-				}
-
-				function setupConditionImmunityListeners() {
-					conditions.forEach(condition => {
-						document.getElementById(`ci-${condition}`).addEventListener('input', updateActiveNPCFromForm);
-					});
-				}
-
 
 				function setupDragAndDrop(box, validTypes, npcKey, updateFn) {
 					["dragenter","dragover","dragleave","drop"].forEach(eventName => {
@@ -2284,7 +2096,7 @@ Double-click to open a window that will help build a correct expression.">
 							reader.onload = ev => {
 								activeNPC[npcKey] = ev.target.result;
 								updateFn();
-								saveActiveBestiaryToDB();
+								saveActiveProjectToDB();
 							};
 							reader.readAsDataURL(file);
 						} else {
@@ -2296,20 +2108,20 @@ Double-click to open a window that will help build a correct expression.">
 				// --- Modal Handling ---
 				function hideAllModals() {
 					modalOverlay.classList.add('hidden');
-					newBestiaryModal.classList.add('hidden');
-					loadBestiaryModal.classList.add('hidden');
+					newProjectModal.classList.add('hidden');
+					loadProjectModal.classList.add('hidden');
 					hpModal.classList.add('hidden');
 					manageGroupsModal.classList.add('hidden');
 					settingsModal.classList.add('hidden');
 				}
 
-				async function showLoadBestiaryModal() {
-					const bestiaries = await db.projects.toArray();
-					bestiaryListDiv.innerHTML = ''; // Clear previous list
-					if (bestiaries.length === 0) {
-						bestiaryListDiv.innerHTML = '<p class="text-gray-500">No bestiaries found.</p>';
+				async function showLoadProjectModal() {
+					const projects = await db.projects.toArray();
+					projectListDiv.innerHTML = ''; // Clear previous list
+					if (projects.length === 0) {
+						projectListDiv.innerHTML = '<p class="text-gray-500">No projects found.</p>';
 					} else {
-						bestiaries.forEach(proj => {
+						projects.forEach(proj => {
 							const projEl = document.createElement('div');
 							projEl.className = 'flex justify-between items-center py-1 px-2 border rounded-md hover:bg-gray-100';
 
@@ -2317,7 +2129,7 @@ Double-click to open a window that will help build a correct expression.">
 							nameSpan.textContent = proj.projectName;
 							nameSpan.className = 'cursor-pointer flex-grow';
 							nameSpan.onclick = () => {
-								loadBestiary(proj);
+								loadProject(proj);
 								hideAllModals();
 							};
 
@@ -2328,29 +2140,29 @@ Double-click to open a window that will help build a correct expression.">
 							deleteBtn.onclick = async (e) => {
 								e.stopPropagation();
 								await db.projects.delete(proj.id);
-								if(activeBestiary && activeBestiary.id === proj.id) {
-									activeBestiary = null;
+								if(activeProject && activeProject.id === proj.id) {
+									activeProject = null;
 									activeNPC = null;
 									activeNPCIndex = -1;
-									updateUIForActiveBestiary();
+									updateUIForActiveProject();
 								}
-								showLoadBestiaryModal(); // Refresh list
+								showLoadProjectModal(); // Refresh list
 							};
 							
 							projEl.appendChild(nameSpan);
 							projEl.appendChild(deleteBtn);
-							bestiaryListDiv.appendChild(projEl);
+							projectListDiv.appendChild(projEl);
 						});
 					}
 					modalOverlay.classList.remove('hidden');
-					loadBestiaryModal.classList.remove('hidden');
+					loadProjectModal.classList.remove('hidden');
 				}
 				
 				async function showManageGroupsModal() {
-					if (!activeBestiary) return;
+					if (!activeProject) return;
 					groupListDiv.innerHTML = '';
 
-					const groups = activeBestiary.metadata.fg_groups || [];
+					const groups = activeProject.metadata.fg_groups || [];
 					if (groups.length === 0) {
 						groupListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom groups created.</p>';
 					} else {
@@ -2380,10 +2192,10 @@ Double-click to open a window that will help build a correct expression.">
 				}
 
 				function showSettingsModal() {
-					if (!activeBestiary) return;
+					if (!activeProject) return;
 
-					for (const key in bestiarySettingsCheckboxes) {
-						bestiarySettingsCheckboxes[key].checked = activeBestiary.metadata[key];
+					for (const key in projectSettingsCheckboxes) {
+						projectSettingsCheckboxes[key].checked = activeProject.metadata[key];
 					}
 
 					modalOverlay.classList.remove('hidden');
@@ -2391,18 +2203,18 @@ Double-click to open a window that will help build a correct expression.">
 				}
 
 				function deleteGroup(groupName) {
-					if (!activeBestiary || !activeBestiary.metadata.fg_groups) return;
+					if (!activeProject || !activeProject.metadata.fg_groups) return;
 					
-					activeBestiary.metadata.fg_groups = activeBestiary.metadata.fg_groups.filter(g => g !== groupName);
+					activeProject.metadata.fg_groups = activeProject.metadata.fg_groups.filter(g => g !== groupName);
 					
 					// Check if any NPC was using this group and reset it
-					activeBestiary.npcs.forEach(npc => {
+					activeProject.npcs.forEach(npc => {
 						if (npc.fg_group === groupName) {
-							npc.fg_group = activeBestiary.projectName;
+							npc.fg_group = activeProject.projectName;
 						}
 					});
 
-					saveActiveBestiaryToDB();
+					saveActiveProjectToDB();
 					showManageGroupsModal(); // Refresh modal list
 					updateFormFromActiveNPC(); // Refresh main dropdown
 				}
@@ -2411,19 +2223,19 @@ Double-click to open a window that will help build a correct expression.">
 					const newName = newGroupNameInput.value.trim();
 					if (!newName) return;
 
-					if (!activeBestiary.metadata.fg_groups) {
-						activeBestiary.metadata.fg_groups = [];
+					if (!activeProject.metadata.fg_groups) {
+						activeProject.metadata.fg_groups = [];
 					}
 					
-					const isDuplicate = newName.toLowerCase() === activeBestiary.projectName.toLowerCase() || activeBestiary.metadata.fg_groups.some(g => g.toLowerCase() === newName.toLowerCase());
+					const isDuplicate = newName.toLowerCase() === activeProject.projectName.toLowerCase() || activeProject.metadata.fg_groups.some(g => g.toLowerCase() === newName.toLowerCase());
 
 					if (isDuplicate) {
 						alert(`A group named "${newName}" already exists.`);
 						return;
 					}
 
-					activeBestiary.metadata.fg_groups.push(newName);
-					saveActiveBestiaryToDB();
+					activeProject.metadata.fg_groups.push(newName);
+					saveActiveProjectToDB();
 					newGroupNameInput.value = '';
 					showManageGroupsModal(); // Refresh list
 					updateFormFromActiveNPC(); // Refresh main dropdown
@@ -2455,10 +2267,10 @@ Double-click to open a window that will help build a correct expression.">
 				// --- EVENT LISTENERS ---
 				
 				// Icon Buttons
-				newBestiaryBtn.addEventListener('click', showNewBestiaryModal);
-				loadBestiaryBtn.addEventListener('click', showLoadBestiaryModal);
-				importBestiaryBtn.addEventListener('click', importBestiary);
-				exportBestiaryBtn.addEventListener('click', exportBestiary);
+				newProjectBtn.addEventListener('click', showNewProjectModal);
+				loadProjectBtn.addEventListener('click', showLoadProjectModal);
+				importProjectBtn.addEventListener('click', importProject);
+				exportProjectBtn.addEventListener('click', exportProject);
 				newNpcBtn.addEventListener("click", createNewNpc);
 				duplicateNpcBtn.addEventListener("click", duplicateCurrentNpc);
 				importNpcBtn.addEventListener("click", importNpc);
@@ -2466,10 +2278,10 @@ Double-click to open a window that will help build a correct expression.">
 				deleteNpcBtn.addEventListener('click', deleteCurrentNpc);
 				
 				// Menu Items
-				menuNewBestiary.addEventListener('click', (e) => { e.preventDefault(); showNewBestiaryModal(); mainMenu.classList.add('hidden'); });
-				menuLoadBestiary.addEventListener('click', (e) => { e.preventDefault(); showLoadBestiaryModal(); mainMenu.classList.add('hidden'); });
-				menuImportBestiary.addEventListener('click', (e) => { e.preventDefault(); importBestiary(); mainMenu.classList.add('hidden'); });
-				menuExportBestiary.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportBestiary.classList.contains('disabled')) exportBestiary(); mainMenu.classList.add('hidden'); });
+				menuNewProject.addEventListener('click', (e) => { e.preventDefault(); showNewProjectModal(); mainMenu.classList.add('hidden'); });
+				menuLoadProject.addEventListener('click', (e) => { e.preventDefault(); showLoadProjectModal(); mainMenu.classList.add('hidden'); });
+				menuImportProject.addEventListener('click', (e) => { e.preventDefault(); importProject(); mainMenu.classList.add('hidden'); });
+				menuExportProject.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportProject.classList.contains('disabled')) exportProject(); mainMenu.classList.add('hidden'); });
 				menuNewNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuNewNpc.classList.contains('disabled')) createNewNpc(); mainMenu.classList.add('hidden'); });
 				menuDuplicateNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuDuplicateNpc.classList.contains('disabled')) duplicateCurrentNpc(); mainMenu.classList.add('hidden'); });
 				menuImportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuImportNpc.classList.contains('disabled')) importNpc(); mainMenu.classList.add('hidden'); });
@@ -2490,9 +2302,9 @@ Double-click to open a window that will help build a correct expression.">
 				});
 				
 				// Modal Buttons
-				createBestiaryBtn.addEventListener('click', createNewBestiary);
-				newBestiaryNameInput.addEventListener('keyup', (e) => {
-					if (e.key === 'Enter') createBestiaryBtn.click();
+				createProjectBtn.addEventListener('click', createNewProject);
+				newProjectNameInput.addEventListener('keyup', (e) => {
+					if (e.key === 'Enter') createProjectBtn.click();
 				});
 				manageGroupsBtn.addEventListener('click', showManageGroupsModal);
 				addGroupBtn.addEventListener('click', addNewGroup);
@@ -2545,18 +2357,18 @@ Double-click to open a window that will help build a correct expression.">
 				
 				// Re-sort the list when the name input loses focus
 				inputs.name.addEventListener('blur', () => {
-					if (activeBestiary) {
+					if (activeProject) {
 						sortAndSwitchToNpc(activeNPC);
 					}
 				});
 
 
 				// Settings Checkbox Listeners
-				for (const key in bestiarySettingsCheckboxes) {
-					bestiarySettingsCheckboxes[key].addEventListener('input', () => {
-						if (activeBestiary) {
-							activeBestiary.metadata[key] = bestiarySettingsCheckboxes[key].checked;
-							saveActiveBestiaryToDB();
+				for (const key in projectSettingsCheckboxes) {
+					projectSettingsCheckboxes[key].addEventListener('input', () => {
+						if (activeProject) {
+							activeProject.metadata[key] = projectSettingsCheckboxes[key].checked;
+							saveActiveProjectToDB();
 						}
 					});
 				}
@@ -2565,7 +2377,7 @@ Double-click to open a window that will help build a correct expression.">
 						if (activeNPC) {
 							activeNPC[key] = npcSettingsCheckboxes[key].checked;
 							updateViewport();
-							saveActiveBestiaryToDB();
+							saveActiveProjectToDB();
 						}
 					});
 				}
@@ -2589,7 +2401,7 @@ Double-click to open a window that will help build a correct expression.">
 						reader.onload = function(e) {
 							activeNPC.token = e.target.result;
 							updateTokenDisplay();
-							saveActiveBestiaryToDB();
+							saveActiveProjectToDB();
 						};
 						reader.readAsDataURL(file);
 					}
@@ -2603,7 +2415,7 @@ Double-click to open a window that will help build a correct expression.">
 						reader.onload = function(e) {
 							activeNPC.image = e.target.result;
 							updateImageDisplay();
-							saveActiveBestiaryToDB();
+							saveActiveProjectToDB();
 						};
 						reader.readAsDataURL(file);
 					}
@@ -2644,9 +2456,7 @@ Double-click to open a window that will help build a correct expression.">
 				setupCustomToggles();
 				setupSavingThrowListeners();
 				setupResistanceListeners();
-				setupWeaponModifierListeners();
-				setupConditionImmunityListeners();
-				updateUIForActiveBestiary(); // Initial setup for no bestiary loaded
+				updateUIForActiveProject(); // Initial setup for no project loaded
 
 				document.querySelectorAll('.card-body').forEach(cardBody => {
 					cardBody.classList.add('open');

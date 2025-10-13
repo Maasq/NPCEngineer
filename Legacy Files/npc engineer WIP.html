@@ -5,28 +5,311 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.04.00" />
-		<meta name="date" content="2025-10-13" />
+		<meta name="version" content="0.03.09" />
+		<meta name="date" content="2025-10-12" />
 		
 		<title>NPC Engineer</title>
 		
-		<!-- External Libraries -->
+		<!-- Tailwind CSS for styling -->
 		<script src="https://cdn.tailwindcss.com"></script>
+		<!-- Dexie.js for IndexedDB -->
 		<script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+		
+		<!-- Trix Editor for WYSIWYG -->
 		<link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
 		<script type="text/javascript" src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
 		
 		<!-- Google Fonts -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!-- Lexend used for application cards -->
 		<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet" />
+		<!-- Cormorant used for NPC name -->
 		<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+		<!-- Questrial used for HTML -->
 		<link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet" />
+		<!-- Lato used for Description maybe? -->
 		<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet" />
+		<!-- Macondo Swash Caps used for drop caps -->
 		<link href="https://fonts.googleapis.com/css2?family=Macondo+Swash+Caps&display=swap" rel="stylesheet" />
 		
-		<!-- Local Stylesheet -->
-		<link rel="stylesheet" href="style.css">
+		<style>
+			body { /* A simple style for our application font */
+				font-family: "Lexend", sans-serif;
+			}
+			.card-body { /* Custom styles for the card collapse/expand transition */
+				max-height: 0;
+				overflow: hidden;
+				transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+				padding-top: 0;
+				padding-bottom: 0;
+			}
+			.card-body.open { /* A large max-height to allow content to expand fully */
+				max-height: 70rem; /* Increased to accommodate new section */
+			}
+			.card-font-style { /* Sets font size for card content */
+				font-size: 11pt;
+			}
+			.custom-shadow { /* Custom shadow style */
+				box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+			}
+			.input-field {
+				@apply w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+			}
+			.label-text {
+				@apply block text-sm font-medium text-gray-700;
+			}
+			.bordered-container { /* A reusable class for black borders */
+				border: 1px solid black;
+			}
+			.info-input, .info-select { /* Custom style for specific input boxes and dropdowns */
+				background-color: #F8FAFC; /* Lighter input background */
+				border: 1px solid #CBD5E1; /* Adjusted darker shade for the border */
+				border-radius: 2px;
+				padding-left: 0.5rem;
+				padding-right: 0.5rem;
+				font-size: 10pt; /* Set font size for input fields */
+			}
+
+			/* --- Trix Editor Styles --- */
+			trix-toolbar .trix-button-group button {
+				tabindex: -1; /* Remove Trix toolbar buttons from tab order */
+			}
+			.trix-content {
+				min-height: 250px;
+				background-color: #F8FAFC;
+				border: 1px solid #CBD5E1;
+				border-top: none; /* The toolbar has a bottom border already */
+				border-radius: 0 0 2px 2px;
+				padding: 0.5rem;
+			}
+			trix-toolbar {
+				background-color: #F8FAFC;
+			}
+
+			/* --- Viewport Styles --- */
+			div.container {
+				margin: auto;
+				width: 10.3cm;
+				box-shadow: 8px 8px 20px #472737;
+				background-image: url("graphics/statblock texture.jpg");
+				background-color: #FDF1E6; /* Pale yellow fallback */
+			}
+			div.cap {
+				margin: auto;
+				height: 0.2cm;
+				width: 10.3cm;
+				background: #e0851d; /* App title green color */
+				border-style: solid;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-top-width: 1px;
+				border-bottom-width: 1px;
+				border-right-color: #000000;
+				border-left-color: #000000;
+				border-top-color: #000000;
+				border-bottom-color: #000000;
+				background-image: url("graphics/statblock cap.jpg");
+			}
+			div.npcname {
+				margin: auto;
+				width: 10.3cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-family: "Cormorant SC", serif;
+				font-size: 21pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npctype {
+				margin: auto;
+				width: 10.3cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 9pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npctop {
+				margin: auto;
+				width: 10.3cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-family: "Questrial", sans-serif;
+				font-size: 10.5pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npcbottom {
+				margin: auto;
+				width: 10.3cm;
+				background: rgba(0, 0, 0, 0.0);
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 10pt;
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			div.npcdescrip {
+				margin: auto;
+				background-color: transparent; /* Removes color */
+				background-image: none;        /* Removes image */
+  				background: rgba(255, 255, 255, 0.0);
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 12pt;
+				padding: 0.4cm 0.1cm 0cm 0.1cm;
+			}
+			div.npcdescrip .trix-content { /* Override Trix's default padding for the viewport */
+				padding: 0;
+			}
+			.heading {
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-size: 16pt;
+				font-weight: bold;
+			}
+			.post-container {
+				margin: 20px 20px 0 0;
+				overflow: auto;
+				padding: 0cm 0.15cm 0cm 0cm;
+			}
+			.post-thumb {
+				float: left;
+			}
+			.post-thumb img {
+				display: block;
+			}
+			.post-content {
+				background: #FDF1E6;
+				color: #000000;
+				font-family: "Questrial", sans-serif;
+				font-size: 10pt;
+				border: 1px solid #7A200D;
+				margin-left: 1cm;
+				padding: 0.15cm 0.15cm 0cm 0.15cm;
+				box-shadow: 4px 4px 8px #472737;
+			}
+			div.npcdiv {
+				margin: auto;
+				width: 10.3cm;
+				background: rgba(0, 0, 0, 0.0);
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0cm 0.15cm;
+			}
+			.whoosh { /* This class is now used on an SVG polyline, styled via attributes */ }
+			table.attr {
+				background: rgba(0, 0, 0, 0.0);
+				color: #7A200D;
+				font-family: "Lato", sans-serif;
+				font-size: 11pt;
+				border-style: none;
+				border-collapse: collapse;
+				text-align: center;
+				padding: 0cm 0cm 0cm 0cm;
+			}
+			div.npcdiv2 {
+				margin: auto;
+				width: 10.3cm;
+				background: rgba(0, 0, 0, 0.0);
+				border-left-style: solid;
+				border-right-style: solid;
+				border-top-style: none;
+				border-bottom-style: none;
+				border-right-width: 1px;
+				border-left-width: 1px;
+				border-right-color: #BA4E3B;
+				border-left-color: #BA4E3B;
+				padding: 0cm 0.15cm 0.2cm 0.15cm;
+			}
+			table.spell {
+				background: #FDF1E6;
+				color: #000000;
+				font-family: "Lato", sans-serif;
+				font-size: 11pt;
+				border: 1px solid #7A200D;
+				border-collapse: collapse;
+				text-align: left;
+				padding: 0.2cm 0.2cm 0.2cm 0.2cm;
+				box-shadow: 3px 3px #DDDDDD;
+			}
+			table.spell th {
+				background-color: #7A200D;
+				color: #FFFFFF;
+				padding: 0.1cm;
+				border: 1px solid #7A200D;
+				border-collapse: collapse;
+			}
+			table.spell td {
+				padding: 0.1cm;
+				border: 1px solid #7A200D;
+				border-collapse: collapse;
+			}
+
+			/* --- Drag & Drop highlight --- */
+			.drag-over {
+				border: 2px dashed #87CC24 !important;
+				background-color: #f0fff4 !important;
+			}
+			#npc-token, #npc-image {
+				padding: 0;
+			}
+			.menu-item.disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+			.menu-item.disabled:hover {
+				background-color: transparent;
+			}
+			.stat-header {
+				color: #8B575C; /* Desaturated dark red */
+			}
+			.drop-cap::first-letter {
+				font-family: 'Macondo Swash Caps', serif;
+				font-size: 3em;
+				float: left;
+				line-height: 0.8;
+				padding-top: 4px; /* Adjust vertical alignment */
+				padding-right: 4px;
+				color: #7A200D;
+			}
+		</style>
 	</head>
 	<body class="bg-[#E2E8F0]">
 		<!-- Centering Container with a max-width. -->
@@ -700,160 +983,7 @@ Double-click to open a window that will help build a correct expression.">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Skills</h2>
 						</div>
 						<div class="card-body">
-							<div class="p-4 grid grid-cols-2 gap-x-8">
-								<!-- Column 1 -->
-								<div class="space-y-1">
-									<!-- Headers -->
-									<div class="flex items-center font-semibold text-xs text-gray-500 mb-1">
-										<span class="w-28 text-left">Skill</span>
-										<span class="w-10 text-center">Attr</span>
-										<span class="w-8 text-center">Prof</span>
-										<span class="w-8 text-center">Exp</span>
-										<span class="w-16 text-center">Adjust</span>
-										<span class="w-12 text-center">Total</span>
-									</div>
-									<!-- Skills 1-9 -->
-									<div class="skill-row flex items-center h-6" data-skill="acrobatics" data-attr="dexterity">
-										<label for="skill-acrobatics-prof" class="w-28 text-sm">Acrobatics</label><span class="w-10 text-center text-xs text-gray-500">(DEX)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-acrobatics-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Acrobatics."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-acrobatics-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Acrobatics."></span>
-										<input type="number" id="skill-acrobatics-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Acrobatics.">
-										<span id="skill-acrobatics-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="animal_handling" data-attr="wisdom">
-										<label for="skill-animal_handling-prof" class="w-28 text-sm">Animal Handling</label><span class="w-10 text-center text-xs text-gray-500">(WIS)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-animal_handling-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Animal Handling."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-animal_handling-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Animal Handling."></span>
-										<input type="number" id="skill-animal_handling-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Animal Handling.">
-										<span id="skill-animal_handling-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="arcana" data-attr="intelligence">
-										<label for="skill-arcana-prof" class="w-28 text-sm">Arcana</label><span class="w-10 text-center text-xs text-gray-500">(INT)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-arcana-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Arcana."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-arcana-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Arcana."></span>
-										<input type="number" id="skill-arcana-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Arcana.">
-										<span id="skill-arcana-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="athletics" data-attr="strength">
-										<label for="skill-athletics-prof" class="w-28 text-sm">Athletics</label><span class="w-10 text-center text-xs text-gray-500">(STR)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-athletics-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Athletics."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-athletics-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Athletics."></span>
-										<input type="number" id="skill-athletics-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Athletics.">
-										<span id="skill-athletics-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="deception" data-attr="charisma">
-										<label for="skill-deception-prof" class="w-28 text-sm">Deception</label><span class="w-10 text-center text-xs text-gray-500">(CHA)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-deception-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Deception."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-deception-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Deception."></span>
-										<input type="number" id="skill-deception-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Deception.">
-										<span id="skill-deception-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="history" data-attr="intelligence">
-										<label for="skill-history-prof" class="w-28 text-sm">History</label><span class="w-10 text-center text-xs text-gray-500">(INT)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-history-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in History."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-history-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in History."></span>
-										<input type="number" id="skill-history-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for History.">
-										<span id="skill-history-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="insight" data-attr="wisdom">
-										<label for="skill-insight-prof" class="w-28 text-sm">Insight</label><span class="w-10 text-center text-xs text-gray-500">(WIS)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-insight-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Insight."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-insight-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Insight."></span>
-										<input type="number" id="skill-insight-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Insight.">
-										<span id="skill-insight-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="intimidation" data-attr="charisma">
-										<label for="skill-intimidation-prof" class="w-28 text-sm">Intimidation</label><span class="w-10 text-center text-xs text-gray-500">(CHA)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-intimidation-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Intimidation."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-intimidation-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Intimidation."></span>
-										<input type="number" id="skill-intimidation-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Intimidation.">
-										<span id="skill-intimidation-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="investigation" data-attr="intelligence">
-										<label for="skill-investigation-prof" class="w-28 text-sm">Investigation</label><span class="w-10 text-center text-xs text-gray-500">(INT)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-investigation-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Investigation."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-investigation-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Investigation."></span>
-										<input type="number" id="skill-investigation-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Investigation.">
-										<span id="skill-investigation-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-								</div>
-								<!-- Column 2 -->
-								<div class="space-y-1">
-									<!-- Headers -->
-									<div class="flex items-center font-semibold text-xs text-gray-500 mb-1">
-										<span class="w-28 text-left">Skill</span>
-										<span class="w-10 text-center">Attr</span>
-										<span class="w-8 text-center">Prof</span>
-										<span class="w-8 text-center">Exp</span>
-										<span class="w-16 text-center">Adjust</span>
-										<span class="w-12 text-center">Total</span>
-									</div>
-									<!-- Skills 10-18 -->
-									<div class="skill-row flex items-center h-6" data-skill="medicine" data-attr="wisdom">
-										<label for="skill-medicine-prof" class="w-28 text-sm">Medicine</label><span class="w-10 text-center text-xs text-gray-500">(WIS)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-medicine-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Medicine."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-medicine-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Medicine."></span>
-										<input type="number" id="skill-medicine-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Medicine.">
-										<span id="skill-medicine-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="nature" data-attr="intelligence">
-										<label for="skill-nature-prof" class="w-28 text-sm">Nature</label><span class="w-10 text-center text-xs text-gray-500">(INT)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-nature-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Nature."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-nature-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Nature."></span>
-										<input type="number" id="skill-nature-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Nature.">
-										<span id="skill-nature-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="perception" data-attr="wisdom">
-										<label for="skill-perception-prof" class="w-28 text-sm">Perception</label><span class="w-10 text-center text-xs text-gray-500">(WIS)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-perception-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Perception."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-perception-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Perception."></span>
-										<input type="number" id="skill-perception-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Perception.">
-										<span id="skill-perception-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="performance" data-attr="charisma">
-										<label for="skill-performance-prof" class="w-28 text-sm">Performance</label><span class="w-10 text-center text-xs text-gray-500">(CHA)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-performance-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Performance."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-performance-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Performance."></span>
-										<input type="number" id="skill-performance-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Performance.">
-										<span id="skill-performance-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="persuasion" data-attr="charisma">
-										<label for="skill-persuasion-prof" class="w-28 text-sm">Persuasion</label><span class="w-10 text-center text-xs text-gray-500">(CHA)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-persuasion-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Persuasion."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-persuasion-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Persuasion."></span>
-										<input type="number" id="skill-persuasion-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Persuasion.">
-										<span id="skill-persuasion-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="religion" data-attr="intelligence">
-										<label for="skill-religion-prof" class="w-28 text-sm">Religion</label><span class="w-10 text-center text-xs text-gray-500">(INT)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-religion-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Religion."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-religion-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Religion."></span>
-										<input type="number" id="skill-religion-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Religion.">
-										<span id="skill-religion-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="sleight_of_hand" data-attr="dexterity">
-										<label for="skill-sleight_of_hand-prof" class="w-28 text-sm">Sleight of Hand</label><span class="w-10 text-center text-xs text-gray-500">(DEX)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-sleight_of_hand-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Sleight of Hand."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-sleight_of_hand-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Sleight of Hand."></span>
-										<input type="number" id="skill-sleight_of_hand-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Sleight of Hand.">
-										<span id="skill-sleight_of_hand-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="stealth" data-attr="dexterity">
-										<label for="skill-stealth-prof" class="w-28 text-sm">Stealth</label><span class="w-10 text-center text-xs text-gray-500">(DEX)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-stealth-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Stealth."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-stealth-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Stealth."></span>
-										<input type="number" id="skill-stealth-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Stealth.">
-										<span id="skill-stealth-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-									<div class="skill-row flex items-center h-6" data-skill="survival" data-attr="wisdom">
-										<label for="skill-survival-prof" class="w-28 text-sm">Survival</label><span class="w-10 text-center text-xs text-gray-500">(WIS)</span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-survival-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Survival."></span>
-										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-survival-exp" class="skill-exp h-4 w-4" title="Check this box if the NPC has expertise in Survival."></span>
-										<input type="number" id="skill-survival-adjust" class="info-input h-5 w-16 text-center skill-adjust" min="-5" max="5" value="0" title="Any other adjustments to the bonus for Survival.">
-										<span id="skill-survival-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
-									</div>
-								</div>
-							</div>
+							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
 						</div>
 					</div>
 
@@ -1041,7 +1171,1500 @@ Double-click to open a window that will help build a correct expression.">
 
 		</div>
 
-		<script src="script.js" defer></script>
+		<script>
+			document.addEventListener("DOMContentLoaded", () => {
+				
+				// --- DATABASE SETUP ---
+				const db = new Dexie('npcEngineerDB');
+				db.version(1).stores({
+					projects: '++id, projectName' // NOTE: This is kept as 'projects' for backward compatibility.
+				});
+
+				// --- DATA & STATE ---
+				const damageTypes = [
+					'acid', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'poison',
+					'psychic', 'radiant', 'thunder', 'bludgeoning', 'piercing', 'slashing'
+				];
+				const conditions = [
+					'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened', 'grappled', 
+					'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 
+					'prone', 'restrained', 'stunned', 'unconscious'
+				];
+				
+				let activeBestiary = null;
+				let activeNPC = null;
+				let activeNPCIndex = -1;
+				let isUpdatingForm = false;
+				
+				const baseDefaultNPC = {
+					name: "", size: "", type: "", species: "", alignment: "",
+					armorClass: "", hitPoints: "", challenge: "0", experience: "10", proficiencyBonus: 2,
+					strength: 10, strengthBonus: 0, dexterity: 10, dexterityBonus: 0, constitution: 10, constitutionBonus: 0,
+					intelligence: 10, intelligenceBonus: 0, wisdom: 10, wisdomBonus: 0, charisma: 10, charismaBonus: 0,
+					strengthSavingThrowProf: false, strengthSavingThrowAdjust: 0,
+					dexteritySavingThrowProf: false, dexteritySavingThrowAdjust: 0,
+					constitutionSavingThrowProf: false, constitutionSavingThrowAdjust: 0,
+					intelligenceSavingThrowProf: false, intelligenceSavingThrowAdjust: 0,
+					wisdomSavingThrowProf: false, wisdomSavingThrowAdjust: 0,
+					charismaSavingThrowProf: false, charismaSavingThrowAdjust: 0,
+					gender: "creature", isUnique: false, isProperName: false, description: "", token: "", image: "",
+					saves: "",
+					speed: "",
+					addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
+					speedBase: 30, speedFly: 0, flyHover: false, speedClimb: 0, speedSwim: 0, speedBurrow: 0,
+					senseBlindsight: 0, blindBeyond: false, senseDarkvision: 0, senseTremorsense: 0, senseTruesight: 0,
+					passivePerception: 10, fg_group: "",
+					weaponResistance: 'none',
+					weaponImmunity: 'none'
+				};
+				
+				// Dynamically create the full defaultNPC object with resistance properties
+				const defaultNPC = { ...baseDefaultNPC };
+				damageTypes.forEach(type => {
+					defaultNPC[`vulnerability_${type}`] = false;
+					defaultNPC[`resistance_${type}`] = false;
+					defaultNPC[`immunity_${type}`] = false;
+				});
+				conditions.forEach(condition => {
+					defaultNPC[`ci_${condition}`] = false;
+				});
+
+
+				const crToXpMap = {
+					'0': '10', '1/8': '25', '1/4': '50', '1/2': '100', '1': '200', '2': '450', '3': '700',
+					'4': '1,100', '5': '1,800', '6': '2,300', '7': '2,900', '8': '3,900', '9': '5,000', '10': '5,900',
+					'11': '7,200', '12': '8,400', '13': '10,000', '14': '11,500', '15': '13,000', '16': '15,000',
+					'17': '18,000', '18': '20,000', '19': '22,000', '20': '25,000', '21': '33,000', '22': '41,000',
+					'23': '50,000', '24': '62,000', '25': '75,000', '26': '90,000', '27': '105,000', '28': '120,000',
+					'29': '135,000', '30': '155,000'
+				};
+
+				const challengeOrder = ['0','1/8','1/4','1/2','1','2','3','4','5','6','7','8','9','10',
+													'11','12','13','14','15','16','17','18','19','20','21','22','23',
+													'24','25','26','27','28','29','30'];
+				
+				const pronounSets = {
+					male: ['he', 'his', 'him', 'his'],
+					female: ['she', 'her', 'her', 'hers'],
+					neutral: ['they', 'their', 'them', 'theirs'],
+					creature: ['it', 'its', 'it', 'theirs']
+				};
+
+				// --- UI ELEMENTS ---
+				const mainContentColumn = document.getElementById('main-content-column');
+				const viewport = document.getElementById("viewport");
+				const bestiaryStatusEl = document.getElementById("bestiary-status");
+				
+				// Bestiary Buttons
+				const newBestiaryBtn = document.getElementById("newBestiaryBtn");
+				const loadBestiaryBtn = document.getElementById("loadBestiaryBtn");
+				const exportBestiaryBtn = document.getElementById("exportBestiaryBtn");
+				const importBestiaryBtn = document.getElementById("importBestiaryBtn");
+
+				// NPC Buttons
+				const newNpcBtn = document.getElementById("newNpcBtn");
+				const duplicateNpcBtn = document.getElementById("duplicateNpcBtn");
+				const importNpcBtn = document.getElementById("importNpcBtn");
+				const exportNpcBtn = document.getElementById("exportNpcBtn");
+				const deleteNpcBtn = document.getElementById("deleteNpcBtn");
+				
+				// Menu Items
+				const hamburgerBtn = document.getElementById('hamburger-btn');
+				const mainMenu = document.getElementById('main-menu');
+				const menuNewBestiary = document.getElementById('menu-new-bestiary');
+				const menuLoadBestiary = document.getElementById('menu-load-bestiary');
+				const menuImportBestiary = document.getElementById('menu-import-bestiary');
+				const menuExportBestiary = document.getElementById('menu-export-bestiary');
+				const menuNewNpc = document.getElementById('menu-new-npc');
+				const menuDuplicateNpc = document.getElementById('menu-duplicate-npc');
+				const menuImportNpc = document.getElementById('menu-import-npc');
+				const menuExportNpc = document.getElementById('menu-export-npc');
+				const menuDeleteNpc = document.getElementById('menu-delete-npc');
+				const menuSettings = document.getElementById('menu-settings');
+
+
+				// NPC Selector
+				const npcSelector = document.getElementById("npc-selector");
+				const npcOptionsContainer = document.getElementById('npc-options-container');
+
+				// Modals & Overlays
+				const modalOverlay = document.getElementById("modal-overlay");
+				const newBestiaryModal = document.getElementById("new-bestiary-modal");
+				const loadBestiaryModal = document.getElementById("load-bestiary-modal");
+				const hpModal = document.getElementById("hp-modal");
+				const settingsModal = document.getElementById('settings-modal');
+				
+				// Modal-specific elements
+				const createBestiaryBtn = document.getElementById("create-bestiary-btn");
+				const newBestiaryNameInput = document.getElementById("new-bestiary-name");
+				const bestiaryListDiv = document.getElementById("bestiary-list");
+				const manageGroupsBtn = document.getElementById('manage-groups-btn');
+				const manageGroupsModal = document.getElementById('manage-groups-modal');
+				const addGroupBtn = document.getElementById('add-group-btn');
+				const newGroupNameInput = document.getElementById('new-group-name');
+				const groupListDiv = document.getElementById('group-list');
+				const settingsOkBtn = document.getElementById('settings-ok-btn');
+
+				const tokenBox = document.getElementById("npc-token");
+				const tokenUpload = document.getElementById("token-upload");
+				const imageBox = document.getElementById("npc-image");
+				const imageUpload = document.getElementById("image-upload");
+
+				const hpModalCloseBtn = document.getElementById("hp-modal-close");
+				const hpApplyBtn = document.getElementById("hp-apply-btn");
+				const numDiceInput = document.getElementById("hp-num-dice");
+				const dieTypeSelect = document.getElementById("hp-die-type");
+				const bonusInput = document.getElementById("hp-bonus");
+				const experienceDisplay = document.getElementById("npc-experience-display");
+				const proficiencyBonusDisplay = document.getElementById("npc-proficiency-bonus-display");
+
+				// Settings Checkboxes
+				const bestiarySettingsCheckboxes = {
+					addDescription: document.getElementById('bestiary-add-description'),
+					addTitle: document.getElementById('bestiary-add-title'),
+					addImageLink: document.getElementById('bestiary-add-image-link'),
+					useDropCap: document.getElementById('bestiary-use-drop-cap'),
+				};
+				const npcSettingsCheckboxes = {
+					addDescription: document.getElementById('npc-add-description'),
+					addTitle: document.getElementById('npc-add-title'),
+					addImageLink: document.getElementById('npc-add-image-link'),
+					useDropCap: document.getElementById('npc-use-drop-cap'),
+				};
+
+				// --- FORM INPUTS ---
+				const inputs = {
+					name: document.getElementById("npc-name"),
+					size: document.getElementById("npc-size"),
+					type: document.getElementById("npc-type"),
+					species: document.getElementById("npc-species"),
+					alignment: document.getElementById("npc-alignment"),
+					armorClass: document.getElementById("npc-ac"),
+					hitPoints: document.getElementById("npc-hp"),
+					challenge: document.getElementById("npc-challenge"),
+					strength: document.getElementById("npc-strength"),
+					dexterity: document.getElementById("npc-dexterity"),
+					constitution: document.getElementById("npc-constitution"),
+					intelligence: document.getElementById("npc-intelligence"),
+					wisdom: document.getElementById("npc-wisdom"),
+					charisma: document.getElementById("npc-charisma"),
+					gender: document.getElementById("npc-gender"),
+					isUnique: document.getElementById("npc-unique"),
+					isProperName: document.getElementById("npc-proper"),
+					description: document.getElementById("npc-description"), // hidden input for Trix
+					speedBase: document.getElementById('npc-speed-base'),
+					speedFly: document.getElementById('npc-speed-fly'),
+					flyHover: document.getElementById('npc-fly-hover'),
+					speedClimb: document.getElementById('npc-speed-climb'),
+					speedSwim: document.getElementById('npc-speed-swim'),
+					speedBurrow: document.getElementById('npc-speed-burrow'),
+					senseBlindsight: document.getElementById('npc-sense-blindsight'),
+					blindBeyond: document.getElementById('npc-blind-beyond'),
+					senseDarkvision: document.getElementById('npc-sense-darkvision'),
+					senseTremorsense: document.getElementById('npc-sense-tremorsense'),
+					senseTruesight: document.getElementById('npc-sense-truesight'),
+					fg_group: document.getElementById('fantasy-grounds-group')
+				};
+
+				// --- FUNCTIONS ---
+				
+				function findUniqueNpcName(baseName) {
+					if (!activeBestiary) return baseName;
+					let newName = baseName;
+					let counter = 1;
+					while (activeBestiary.npcs.some(npc => npc.name.toLowerCase() === newName.toLowerCase())) {
+						counter++;
+						newName = `${baseName} ${counter}`;
+					}
+					return newName;
+				}
+
+				// --- Bestiary Management ---
+				function showNewBestiaryModal() {
+					modalOverlay.classList.remove('hidden');
+					newBestiaryModal.classList.remove('hidden');
+					newBestiaryNameInput.focus();
+				}
+
+				async function createNewBestiary() {
+					const bestiaryName = newBestiaryNameInput.value.trim();
+					if (!bestiaryName) {
+						alert("Bestiary name cannot be empty.");
+						return;
+					}
+					const existingBestiary = await db.projects.where('projectName').equalsIgnoreCase(bestiaryName).first();
+					if (existingBestiary) {
+						alert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`);
+						return;
+					}
+					
+					const newBestiary = {
+						projectName: bestiaryName, // This remains projectName for DB compatibility
+						metadata: { 
+							createdAt: new Date(),
+							addDescription: true,
+							addTitle: true,
+							addImageLink: true,
+							useDropCap: true,
+							fg_groups: []
+						},
+						npcs: [{ ...defaultNPC, name: "New NPC", fg_group: bestiaryName }]
+					};
+
+					try {
+						const newId = await db.projects.add(newBestiary);
+						newBestiary.id = newId;
+						loadBestiary(newBestiary);
+						hideAllModals();
+						newBestiaryNameInput.value = "";
+					} catch (error) {
+						console.error("Failed to create bestiary:", error);
+						alert("Error: Could not create bestiary. Check console for details.");
+					}
+				}
+
+				function loadBestiary(bestiary) {
+					// Backward compatibility for booleans
+					const propsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
+					
+					propsToConvert.forEach(prop => {
+						if (typeof bestiary.metadata[prop] === 'number') {
+							bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
+						} else if (bestiary.metadata[prop] === undefined) {
+							bestiary.metadata[prop] = true;
+						}
+					});
+
+					// Data Healing: Assign names to any unnamed NPCs from older versions
+					let unnamedCounter = 1;
+					bestiary.npcs.forEach(npc => {
+						propsToConvert.forEach(prop => {
+							if (typeof npc[prop] === 'number') {
+								npc[prop] = npc[prop] === 1;
+							} else if (npc[prop] === undefined) {
+								npc[prop] = bestiary.metadata[prop];
+							}
+						});
+						
+						if (!npc.name || npc.name.trim() === "") {
+							let uniqueName = `Unnamed NPC`;
+							if (unnamedCounter > 1) uniqueName += ` ${unnamedCounter}`;
+							while (bestiary.npcs.some(n => n.name === uniqueName)) {
+								unnamedCounter++;
+								uniqueName = `Unnamed NPC ${unnamedCounter}`;
+							}
+							npc.name = uniqueName;
+						}
+					});
+
+					activeBestiary = bestiary;
+					sortAndSwitchToNpc(null);
+					updateUIForActiveBestiary();
+				}
+				
+				function switchActiveNPC(index) {
+					if (activeBestiary && index >= 0 && index < activeBestiary.npcs.length) {
+						activeNPCIndex = index;
+						activeNPC = activeBestiary.npcs[index];
+						updateFormFromActiveNPC();
+					} else if (activeBestiary && activeBestiary.npcs.length > 0) {
+						// Fallback to the first NPC if index is out of bounds
+						activeNPCIndex = 0;
+						activeNPC = activeBestiary.npcs[0];
+						updateFormFromActiveNPC();
+					}
+				}
+
+				async function saveActiveBestiaryToDB() {
+					if (activeBestiary && activeBestiary.id) {
+						try {
+							await db.projects.put(activeBestiary);
+						} catch (error) {
+							console.error("Failed to save bestiary to DB:", error);
+						}
+					}
+				}
+				
+				function sortAndSwitchToNpc(targetNpc) {
+					if (!activeBestiary) return;
+
+					// Sort the array alphabetically by name, case-insensitive.
+					activeBestiary.npcs.sort((a, b) => {
+						return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: 'base' });
+					});
+
+					// Find the index of the target NPC in the newly sorted array.
+					const newIndex = targetNpc ? activeBestiary.npcs.findIndex(npc => npc === targetNpc) : 0;
+					
+					// Switch to that index (or the first one if no target).
+					switchActiveNPC(newIndex >= 0 ? newIndex : 0);
+				}
+
+
+				async function exportBestiary() {
+					if (!activeBestiary) return;
+					
+					const bestiaryJson = JSON.stringify(activeBestiary, null, 2);
+					try {
+						const handle = await window.showSaveFilePicker({
+							suggestedName: `Bestiary-${activeBestiary.projectName}.json`,
+							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
+						});
+						const writable = await handle.createWritable();
+						await writable.write(bestiaryJson);
+						await writable.close();
+					} catch (err) {
+						if (err.name !== "AbortError") console.error("Error exporting bestiary:", err);
+					}
+				}
+
+				async function importBestiary() {
+					try {
+						const [handle] = await window.showOpenFilePicker({
+							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
+						});
+						const file = await handle.getFile();
+						const content = await file.text();
+						const importedBestiary = JSON.parse(content);
+						
+						// Remove existing ID to ensure a new one is created on import
+						delete importedBestiary.id; 
+
+						// Check for existing bestiary with the same name
+						const existing = await db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
+						if (existing) {
+							alert(`A bestiary named "${importedBestiary.projectName}" already exists.`);
+							return;
+						}
+
+						const newId = await db.projects.add(importedBestiary);
+						importedBestiary.id = newId;
+						loadBestiary(importedBestiary);
+						alert(`Bestiary "${importedBestiary.projectName}" imported successfully!`);
+					} catch (err) {
+						if (err.name !== "AbortError") {
+							console.error("Error importing bestiary:", err);
+							alert("Failed to import bestiary.");
+						}
+					}
+				}
+				
+				// --- NPC Management ---
+				function createNewNpc() {
+					if (!activeBestiary) return;
+					const newNpc = { 
+						...defaultNPC,
+						name: findUniqueNpcName("New NPC"),
+						useDropCap: activeBestiary.metadata.useDropCap,
+						addDescription: activeBestiary.metadata.addDescription,
+						addTitle: activeBestiary.metadata.addTitle,
+						addImageLink: activeBestiary.metadata.addImageLink,
+						fg_group: activeBestiary.projectName // Set default group
+					};
+					activeBestiary.npcs.push(newNpc);
+					sortAndSwitchToNpc(newNpc);
+					saveActiveBestiaryToDB();
+					inputs.name.focus();
+				}
+
+				function duplicateCurrentNpc() {
+					if (!activeBestiary || !activeNPC) return;
+
+					// Create a deep copy
+					const newNpc = JSON.parse(JSON.stringify(activeNPC));
+					newNpc.name = findUniqueNpcName(`${activeNPC.name} (Copy)`);
+
+					// Add to bestiary and switch
+					activeBestiary.npcs.push(newNpc);
+					sortAndSwitchToNpc(newNpc);
+					saveActiveBestiaryToDB();
+					inputs.name.focus();
+				}
+				
+				function deleteCurrentNpc() {
+					if (!activeBestiary || activeBestiary.npcs.length <= 1) return;
+
+					// Find the NPC to be deleted and remove it
+					const npcToDelete = activeNPC;
+					activeBestiary.npcs = activeBestiary.npcs.filter(npc => npc !== npcToDelete);
+					
+					sortAndSwitchToNpc(null); // Sort and switch to the first NPC
+					saveActiveBestiaryToDB();
+				}
+
+				async function importNpc() {
+					if (!activeBestiary) return;
+					
+					try {
+						const [handle] = await window.showOpenFilePicker({
+							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
+						});
+						const file = await handle.getFile();
+						const content = await file.text();
+						const loadedNPC = JSON.parse(content);
+						
+						const newNpc = { ...defaultNPC, ...loadedNPC };
+						
+						activeBestiary.npcs.push(newNpc);
+						sortAndSwitchToNpc(newNpc);
+						saveActiveBestiaryToDB();
+						
+					} catch (err) {
+						if (err.name !== "AbortError") console.error("Error importing NPC:", err);
+					}
+				}
+
+				async function exportNpc() {
+					if (!activeNPC) return;
+
+					const npcJson = JSON.stringify(activeNPC, null, 2);
+					try {
+						const handle = await window.showSaveFilePicker({
+							suggestedName: `${activeNPC.name || "unnamed-npc"}.json`,
+							types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
+						});
+						const writable = await handle.createWritable();
+						await writable.write(npcJson);
+						await writable.close();
+					} catch (err) {
+						if (err.name !== "AbortError") console.error("Error exporting NPC:", err);
+					}
+				}
+				
+				// --- UI & State Update Functions ---
+				function updateMenuState() {
+					const hasActiveBestiary = !!activeBestiary;
+					const menuItemsToToggle = [
+						menuExportBestiary, menuNewNpc, menuDuplicateNpc, menuImportNpc,
+						menuExportNpc, menuDeleteNpc, menuSettings
+					];
+
+					menuItemsToToggle.forEach(item => {
+						if (hasActiveBestiary) {
+							item.classList.remove('disabled');
+						} else {
+							item.classList.add('disabled');
+						}
+					});
+					
+					if (hasActiveBestiary && activeBestiary.npcs.length <= 1) {
+						menuDeleteNpc.classList.add('disabled');
+					}
+				}
+
+				function updateUIForActiveBestiary() {
+					if (activeBestiary) {
+						bestiaryStatusEl.innerHTML = `Bestiary: <span class="font-bold text-red-700">${activeBestiary.projectName} (${activeBestiary.npcs.length} NPCs)</span>`;
+						mainContentColumn.style.opacity = '1';
+						mainContentColumn.style.pointerEvents = 'auto';
+						npcSelector.classList.remove('hidden');
+						deleteNpcBtn.classList.remove('hidden');
+						npcOptionsContainer.classList.remove('hidden');
+						[newNpcBtn, duplicateNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = false);
+					} else {
+						bestiaryStatusEl.textContent = "No Bestiary Loaded";
+						mainContentColumn.style.opacity = '0.3';
+						mainContentColumn.style.pointerEvents = 'none';
+						npcSelector.classList.add('hidden');
+						deleteNpcBtn.classList.add('hidden');
+						npcOptionsContainer.classList.add('hidden');
+						[newNpcBtn, duplicateNpcBtn, importNpcBtn, exportNpcBtn, deleteNpcBtn].forEach(btn => btn.disabled = true);
+					}
+					updateMenuState();
+					updateFormFromActiveNPC();
+				}
+				
+				function updateNpcSelector() {
+					if (!activeBestiary) return;
+					
+					npcSelector.innerHTML = '';
+					
+					activeBestiary.npcs.forEach((npc, index) => {
+						const option = document.createElement('option');
+						option.value = index;
+						option.textContent = npc.name;
+						if (index === activeNPCIndex) {
+							option.selected = true;
+						}
+						npcSelector.appendChild(option);
+					});
+
+					deleteNpcBtn.disabled = activeBestiary.npcs.length <= 1;
+				}
+
+				
+				function updateFormFromActiveNPC() {
+					isUpdatingForm = true;
+					try {
+						if (!activeNPC) {
+							Object.values(inputs).forEach(input => {
+								if (input.type === 'checkbox') input.checked = false;
+								else input.value = '';
+							});
+							document.querySelector("trix-editor").editor.loadHTML("");
+							viewport.innerHTML = '';
+							updateNpcSelector();
+							return;
+						}
+
+						for (const key in inputs) {
+							if (key === 'description') {
+								const trixEditorElement = document.querySelector("trix-editor");
+								inputs.description.value = activeNPC[key] || '';
+								if (trixEditorElement && trixEditorElement.editor) {
+									trixEditorElement.editor.loadHTML(activeNPC[key] || "");
+								}
+								continue;
+							}
+							const element = inputs[key];
+							const customToggle = document.getElementById(`toggle-custom-${key}`);
+							if (customToggle) {
+								const select = element;
+								const customInput = document.getElementById(`npc-${key}-custom`);
+								const npcValue = activeNPC[key] || "";
+								const isStandardOption = [...select.options].some(opt => opt.value === npcValue && !opt.disabled);
+								if (isStandardOption || npcValue === "") {
+									select.value = npcValue;
+									customToggle.checked = false;
+									select.classList.remove('hidden');
+									customInput.classList.add('hidden');
+								} else {
+									customInput.value = npcValue;
+									customToggle.checked = true;
+									select.classList.add('hidden');
+									customInput.classList.remove('hidden');
+									select.value = "";
+								}
+							} else if (element.type === "checkbox") {
+								element.checked = activeNPC[key] || false;
+							} else {
+								element.value = activeNPC[key] || "";
+							}
+						}
+
+						for (const key in npcSettingsCheckboxes) {
+							npcSettingsCheckboxes[key].checked = activeNPC[key];
+						}
+
+						const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+						abilities.forEach(ability => {
+							document.getElementById(`npc-${ability}-saving-throw-prof`).checked = activeNPC[`${ability}SavingThrowProf`] || false;
+							document.getElementById(`npc-${ability}-saving-throw-adjust`).value = activeNPC[`${ability}SavingThrowAdjust`] || 0;
+						});
+						
+						damageTypes.forEach(type => {
+							document.getElementById(`vuln-${type}`).checked = activeNPC[`vulnerability_${type}`] || false;
+							document.getElementById(`res-${type}`).checked = activeNPC[`resistance_${type}`] || false;
+							document.getElementById(`imm-${type}`).checked = activeNPC[`immunity_${type}`] || false;
+						});
+						
+						conditions.forEach(condition => {
+							document.getElementById(`ci-${condition}`).checked = activeNPC[`ci_${condition}`] || false;
+						});
+
+						const weaponResValue = activeNPC.weaponResistance || 'none';
+						const weaponResRadio = document.querySelector(`input[name="weapon-resistance"][value="${weaponResValue}"]`);
+						if (weaponResRadio) {
+							weaponResRadio.checked = true;
+						} else { 
+							document.getElementById('wr-none').checked = true;
+						}
+						
+						const weaponImmValue = activeNPC.weaponImmunity || 'none';
+						const weaponImmRadio = document.querySelector(`input[name="weapon-immunity"][value="${weaponImmValue}"]`);
+						if (weaponImmRadio) {
+							weaponImmRadio.checked = true;
+						} else {
+							document.getElementById('wi-none').checked = true;
+						}
+
+
+						// Populate FG groups dropdown
+						const fgGroupDropdown = document.getElementById('fantasy-grounds-group');
+						fgGroupDropdown.innerHTML = '';
+						const bestiaryOption = document.createElement('option');
+						bestiaryOption.value = activeBestiary.projectName;
+						bestiaryOption.textContent = activeBestiary.projectName;
+						fgGroupDropdown.appendChild(bestiaryOption);
+						(activeBestiary.metadata.fg_groups || []).forEach(group => {
+							const groupOption = document.createElement('option');
+							groupOption.value = group;
+							groupOption.textContent = group;
+							fgGroupDropdown.appendChild(groupOption);
+						});
+						fgGroupDropdown.value = activeNPC.fg_group || activeBestiary.projectName;
+
+						experienceDisplay.textContent = activeNPC.experience || '';
+						proficiencyBonusDisplay.textContent = `+${activeNPC.proficiencyBonus}` || '+2';
+						updateTokenDisplay();
+						updateImageDisplay();
+						calculateAllStats();
+						updateStatDisplays();
+						updateViewport();
+						updateNpcSelector();
+					} finally {
+						isUpdatingForm = false;
+					}
+				}
+
+				function updateActiveNPCFromForm() {
+					if (isUpdatingForm || !activeNPC) return;
+
+					const newName = inputs.name.value.trim();
+					if (newName && newName.toLowerCase() !== (activeNPC.name || "").toLowerCase()) {
+						const isDuplicate = activeBestiary.npcs.some((npc, index) => 
+							index !== activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
+						);
+
+						if (isDuplicate) {
+							alert(`An NPC named "${newName}" already exists in this bestiary.`);
+							inputs.name.value = activeNPC.name; // Revert to the old name
+							return; // Stop the update
+						}
+					}
+
+					for (const key in inputs) {
+						if (key === 'description') {
+							activeNPC[key] = inputs.description.value;
+							continue;
+						}
+						const element = inputs[key];
+						const customToggle = document.getElementById(`toggle-custom-${key}`);
+						if (customToggle) {
+							if (customToggle.checked) {
+								const customInput = document.getElementById(`npc-${key}-custom`);
+								activeNPC[key] = customInput.value;
+							} else {
+								activeNPC[key] = element.value;
+							}
+						} else if (element.type === "checkbox") {
+							activeNPC[key] = element.checked;
+						} else {
+							activeNPC[key] = element.value;
+						}
+					}
+
+					for (const key in npcSettingsCheckboxes) {
+						activeNPC[key] = npcSettingsCheckboxes[key].checked;
+					}
+					
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					abilities.forEach(ability => {
+						activeNPC[`${ability}SavingThrowProf`] = document.getElementById(`npc-${ability}-saving-throw-prof`).checked;
+						activeNPC[`${ability}SavingThrowAdjust`] = parseInt(document.getElementById(`npc-${ability}-saving-throw-adjust`).value, 10) || 0;
+					});
+					
+					damageTypes.forEach(type => {
+						activeNPC[`vulnerability_${type}`] = document.getElementById(`vuln-${type}`).checked;
+						activeNPC[`resistance_${type}`] = document.getElementById(`res-${type}`).checked;
+						activeNPC[`immunity_${type}`] = document.getElementById(`imm-${type}`).checked;
+					});
+
+					conditions.forEach(condition => {
+						activeNPC[`ci_${condition}`] = document.getElementById(`ci-${condition}`).checked;
+					});
+
+					const selectedWeaponRes = document.querySelector('input[name="weapon-resistance"]:checked');
+					if (selectedWeaponRes) {
+						activeNPC.weaponResistance = selectedWeaponRes.value;
+					}
+
+					const selectedWeaponImm = document.querySelector('input[name="weapon-immunity"]:checked');
+					if (selectedWeaponImm) {
+						activeNPC.weaponImmunity = selectedWeaponImm.value;
+					}
+
+					activeNPC.experience = experienceDisplay.textContent;
+					activeNPC.proficiencyBonus = parseInt(proficiencyBonusDisplay.textContent.replace('+', ''), 10);
+					
+					calculateAllStats();
+					updateStatDisplays();
+					updateViewport();
+					
+					// Just update the name in the dropdown, don't re-sort on every keystroke
+					const currentOption = npcSelector.options[npcSelector.selectedIndex];
+					if(currentOption) {
+						currentOption.textContent = activeNPC.name;
+					}
+
+					saveActiveBestiaryToDB(); // Auto-save on any change
+				}
+
+				function calculateAbilityBonus(score) {
+					return Math.floor((parseInt(score, 10) - 10) / 2);
+				}
+
+				function calculateProficiencyBonus(cr) {
+					const crValue = Number(String(cr).replace(/[^0-9.]/g, ''));
+					if (crValue <= 4) return 2;
+					if (crValue <= 8) return 3;
+					if (crValue <= 12) return 4;
+					if (crValue <= 16) return 5;
+					if (crValue <= 20) return 6;
+					if (crValue <= 24) return 7;
+					if (crValue <= 28) return 8;
+					return 9; // for CR 29-30
+				}
+				
+				function calculateSpeedString(npc) {
+					if (!npc) return "";
+
+					let speedParts = [];
+					let baseSpeedString = `${npc.speedBase || 0} ft.`;
+					
+					if (parseInt(npc.speedBase, 10) > 0 || (parseInt(npc.speedBase, 10) === 0 && !npc.speedBurrow && !npc.speedClimb && !npc.speedFly && !npc.speedSwim)) {
+						speedParts.push(baseSpeedString);
+					}
+
+					if (npc.speedBurrow > 0) {
+						speedParts.push(`burrow ${npc.speedBurrow} ft.`);
+					}
+					if (npc.speedClimb > 0) {
+						speedParts.push(`climb ${npc.speedClimb} ft.`);
+					}
+					if (npc.speedFly > 0) {
+						let flyString = `fly ${npc.speedFly} ft.`;
+						if (npc.flyHover) {
+							flyString += " (hover)";
+						}
+						speedParts.push(flyString);
+					}
+					if (npc.speedSwim > 0) {
+						speedParts.push(`swim ${npc.speedSwim} ft.`);
+					}
+					
+					if (speedParts.length > 1 && speedParts[0] === '0 ft.') {
+						speedParts.shift();
+					}
+
+					return speedParts.join(', ');
+				}
+
+				function calculateDamageModifiersString(npc) {
+					if (!npc) return { vulnerabilities: "", resistances: "", immunities: "" };
+
+					const vulnerabilities = [];
+					const resistances = [];
+					const immunities = [];
+
+					damageTypes.forEach(type => {
+						if (npc[`vulnerability_${type}`]) {
+							vulnerabilities.push(type);
+						}
+						if (npc[`resistance_${type}`]) {
+							resistances.push(type);
+						}
+						if (npc[`immunity_${type}`]) {
+							immunities.push(type);
+						}
+					});
+					
+					let resistanceString = resistances.join(', ');
+					let immunityString = immunities.join(', ');
+					
+					const weaponResTextMap = {
+						'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
+						'silvered': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
+						'adamantine': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
+						'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron",
+						'magical': "bludgeoning, piercing, and slashing from magical attacks",
+					};
+					const weaponResText = weaponResTextMap[npc.weaponResistance];
+					if (weaponResText) {
+						if (resistanceString) {
+							resistanceString += '; ' + weaponResText;
+						} else {
+							resistanceString = weaponResText;
+						}
+					}
+					
+					const weaponImmTextMap = {
+						'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
+						'silvered': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
+						'adamantine': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
+						'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron",
+					};
+					const weaponImmText = weaponImmTextMap[npc.weaponImmunity];
+					if (weaponImmText) {
+						if (immunityString) {
+							immunityString += '; ' + weaponImmText;
+						} else {
+							immunityString = weaponImmText;
+						}
+					}
+
+
+					return {
+						vulnerabilities: vulnerabilities.join(', '),
+						resistances: resistanceString,
+						immunities: immunityString
+					};
+				}
+				
+				function calculateConditionImmunitiesString(npc) {
+					if (!npc) return "";
+					const immuneConditions = [];
+					conditions.forEach(condition => {
+						if (npc[`ci_${condition}`]) {
+							immuneConditions.push(condition);
+						}
+					});
+					return immuneConditions.join(', ');
+				}
+
+				function calculateAllStats() {
+					if (!activeNPC) return;
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					const abilityAbbr = { strength: 'Str', dexterity: 'Dex', constitution: 'Con', intelligence: 'Int', wisdom: 'Wis', charisma: 'Cha' };
+					
+					// 1. Calculate ability bonuses
+					abilities.forEach(ability => {
+						const score = activeNPC[ability] || 10;
+						activeNPC[`${ability}Bonus`] = calculateAbilityBonus(score);
+					});
+
+					// 2. Calculate saving throws
+					const profBonus = activeNPC.proficiencyBonus || 2;
+					const savesArray = [];
+					abilities.forEach(ability => {
+						const base = activeNPC[`${ability}Bonus`] || 0;
+						const isProficient = activeNPC[`${ability}SavingThrowProf`] || false;
+						const adjust = activeNPC[`${ability}SavingThrowAdjust`] || 0;
+						const total = base + (isProficient ? profBonus : 0) + adjust;
+						
+						if (isProficient || adjust !== 0) {
+							savesArray.push(`${abilityAbbr[ability]} ${total >= 0 ? '+' : ''}${total}`);
+						}
+					});
+					activeNPC.saves = savesArray.join(', ');
+
+					// 3. Calculate Passive Perception
+					activeNPC.passivePerception = 10 + (activeNPC.wisdomBonus || 0);
+					
+					// 4. Calculate Speed String
+					activeNPC.speed = calculateSpeedString(activeNPC);
+				}
+
+				function updateStatDisplays() {
+					if (!activeNPC) return;
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					const profBonus = activeNPC.proficiencyBonus || 2;
+
+					abilities.forEach(ability => {
+						// Update bonus display
+						const bonus = activeNPC[`${ability}Bonus`] || 0;
+						const bonusEl = document.getElementById(`npc-${ability}-bonus`);
+						if (bonusEl) {
+							bonusEl.textContent = bonus >= 0 ? `+${bonus}` : bonus;
+						}
+
+						// Update saving throw total display
+						const base = bonus;
+						const isProficient = activeNPC[`${ability}SavingThrowProf`] || false;
+						const adjust = activeNPC[`${ability}SavingThrowAdjust`] || 0;
+						const total = base + (isProficient ? profBonus : 0) + adjust;
+						const totalEl = document.getElementById(`npc-${ability}-saving-throw-total`);
+						totalEl.textContent = total >= 0 ? `+${total}` : total;
+					});
+					
+					document.getElementById('npc-passive-perception').textContent = activeNPC.passivePerception || 10;
+				}
+
+				function updateViewport() {
+					if (!activeNPC) {
+						viewport.innerHTML = '';
+						return;
+					}
+					const {
+						name, size, type, species, alignment, armorClass, hitPoints, description, saves,
+						strength, dexterity, constitution, intelligence, wisdom, charisma,
+						strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
+						useDropCap, addDescription, speed
+					} = activeNPC;
+					
+					const { vulnerabilities, resistances, immunities } = calculateDamageModifiersString(activeNPC);
+					const conditionImmunities = calculateConditionImmunitiesString(activeNPC);
+
+					const NPCName = name || "";
+					const NPCac = armorClass || "";
+					const NPChp = hitPoints || "";
+					const NPCDescriptionHTML = description || "";
+
+					let NPCTypeString = `${size || ""} ${type || ""}`.trim();
+					if (species) { NPCTypeString += ` (${species})`; }
+					if (alignment) { NPCTypeString += `, ${alignment}`; }
+
+					const NPCspeed = speed || "";
+					const NPCstr = strength || "10";
+					const NPCstrbo = strengthBonus !== undefined ? (strengthBonus >= 0 ? `+${strengthBonus}` : strengthBonus) : "+0";
+					const NPCdex = dexterity || "10";
+					const NPCdexbo = dexterityBonus !== undefined ? (dexterityBonus >= 0 ? `+${dexterityBonus}` : dexterityBonus) : "+0";
+					const NPCcon = constitution || "10";
+					const NPCconbo = constitutionBonus !== undefined ? (constitutionBonus >= 0 ? `+${constitutionBonus}` : constitutionBonus) : "+0";
+					const NPCint = intelligence || "10";
+					const NPCintbo = intelligenceBonus !== undefined ? (intelligenceBonus >= 0 ? `+${intelligenceBonus}` : intelligenceBonus) : "+0";
+					const NPCwis = wisdom || "10";
+					const NPCwisbo = wisdomBonus !== undefined ? (wisdomBonus >= 0 ? `+${wisdomBonus}` : wisdomBonus) : "+0";
+					const NPCcha = charisma || "10";
+					const NPCchabo = charismaBonus !== undefined ? (charismaBonus >= 0 ? `+${charismaBonus}` : charismaBonus) : "+0";
+
+					const dropCapClass = useDropCap ? 'drop-cap' : '';
+					const descriptionHtml = addDescription ? `<div class="npcdescrip ${dropCapClass}"> ${NPCDescriptionHTML} </div>` : '';
+
+					const generatedHtml = `
+						<div class="container">
+							<div class="cap"></div>
+							<div class="npcname"><b>${NPCName}</b></div>
+							<div class="npctype"><i>${NPCTypeString}</i></div>
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+							<div class="npctop"><b>Armor Class</b> ${NPCac}</div>
+							<div class="npctop"><b>Hit Points</b> ${NPChp}</div>
+							<div class="npctop"><b>Speed</b> ${NPCspeed}</div>
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+							<div class="npctop">
+								<table class="attr" width="100%">
+									<tbody>
+										<tr valign="middle">
+											<td><b>STR</b></td> <td><b>DEX</b></td> <td><b>CON</b></td>
+											<td><b>INT</b></td> <td><b>WIS</b></td> <td><b>CHA</b></td>
+										</tr>
+										<tr valign="middle">
+											<td>${NPCstr} (${NPCstrbo})</td> <td>${NPCdex} (${NPCdexbo})</td> <td>${NPCcon} (${NPCconbo})</td>
+											<td>${NPCint} (${NPCintbo})</td> <td>${NPCwis} (${NPCwisbo})</td> <td>${NPCcha} (${NPCchabo})</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+							${saves ? `<div class="npctop"><b>Saving Throws</b> ${saves}</div>` : ''}
+							${vulnerabilities ? `<div class="npctop"><b>Damage Vulnerabilities</b> ${vulnerabilities}</div>` : ''}
+							${resistances ? `<div class="npctop"><b>Damage Resistances</b> ${resistances}</div>` : ''}
+							${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
+							${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
+							<div class="npcdiv">
+								<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
+									<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
+								</svg>
+							</div>
+							<div class="npcbottom">&nbsp;</div>
+							<div class="cap"></div>
+						</div>
+						${descriptionHtml}
+					`;
+					viewport.innerHTML = generatedHtml;
+				}
+
+				function updateTokenDisplay() {
+					tokenBox.innerHTML = '';
+					if (activeNPC && activeNPC.token) {
+						const img = document.createElement('img');
+						img.src = activeNPC.token;
+						img.className = 'w-full h-full object-contain';
+						tokenBox.appendChild(img);
+					} else {
+						const placeholder = document.createElement('span');
+						placeholder.textContent = 'Click or Drag a Token Image Here';
+						tokenBox.appendChild(placeholder);
+					}
+				}
+
+				function updateImageDisplay() {
+					imageBox.innerHTML = '';
+					if (activeNPC && activeNPC.image) {
+						const img = document.createElement('img');
+						img.src = activeNPC.image;
+						img.className = 'w-full h-full object-contain';
+						imageBox.appendChild(img);
+					} else {
+						const placeholder = document.createElement('span');
+						placeholder.textContent = 'Click or Drag an NPC Image Here';
+						imageBox.appendChild(placeholder);
+					}
+				}
+				
+				function populateChallengeDropdown() {
+					const challengeSelect = inputs.challenge;
+					challengeOrder.forEach(cr => {
+						const option = document.createElement('option');
+						option.value = cr;
+						option.textContent = cr;
+						challengeSelect.appendChild(option);
+					});
+				}
+
+				function setupCustomToggles() {
+					const fields = ['size','type','species','alignment'];
+					fields.forEach(field => {
+						const toggle = document.getElementById(`toggle-custom-${field}`);
+						const select = document.getElementById(`npc-${field}`);
+						const customInput = document.getElementById(`npc-${field}-custom`);
+						if (toggle && select && customInput) {
+							toggle.addEventListener('change', () => {
+								if (toggle.checked) {
+									select.classList.add('hidden');
+									customInput.classList.remove('hidden');
+									customInput.value = select.value;
+									customInput.focus();
+								} else {
+									select.classList.remove('hidden');
+									customInput.classList.add('hidden');
+								}
+								updateActiveNPCFromForm();
+							});
+							customInput.addEventListener('input', updateActiveNPCFromForm);
+						}
+					});
+				}
+				
+				function setupSavingThrowListeners() {
+					const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+					abilities.forEach(ability => {
+						document.getElementById(`npc-${ability}-saving-throw-prof`).addEventListener('input', updateActiveNPCFromForm);
+						document.getElementById(`npc-${ability}-saving-throw-adjust`).addEventListener('input', updateActiveNPCFromForm);
+					});
+				}
+				
+				function setupResistanceListeners() {
+					damageTypes.forEach(type => {
+						const vulnCheckbox = document.getElementById(`vuln-${type}`);
+						const resCheckbox = document.getElementById(`res-${type}`);
+						const immCheckbox = document.getElementById(`imm-${type}`);
+
+						vulnCheckbox.addEventListener('input', updateActiveNPCFromForm);
+
+						resCheckbox.addEventListener('input', () => {
+							if (resCheckbox.checked) {
+								immCheckbox.checked = false;
+							}
+							updateActiveNPCFromForm(); // Update data model after any change
+						});
+
+						immCheckbox.addEventListener('input', () => {
+							if (immCheckbox.checked) {
+								resCheckbox.checked = false;
+							}
+							updateActiveNPCFromForm(); // Update data model after any change
+						});
+					});
+				}
+
+				function setupWeaponModifierListeners() {
+					document.querySelectorAll('input[name="weapon-resistance"]').forEach(radio => {
+						radio.addEventListener('input', updateActiveNPCFromForm);
+					});
+					document.querySelectorAll('input[name="weapon-immunity"]').forEach(radio => {
+						radio.addEventListener('input', updateActiveNPCFromForm);
+					});
+				}
+
+				function setupConditionImmunityListeners() {
+					conditions.forEach(condition => {
+						document.getElementById(`ci-${condition}`).addEventListener('input', updateActiveNPCFromForm);
+					});
+				}
+
+
+				function setupDragAndDrop(box, validTypes, npcKey, updateFn) {
+					["dragenter","dragover","dragleave","drop"].forEach(eventName => {
+						box.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); });
+					});
+					["dragenter","dragover"].forEach(eventName => {
+						box.addEventListener(eventName, () => box.classList.add("drag-over"));
+					});
+					["dragleave","drop"].forEach(eventName => {
+						box.addEventListener(eventName, () => box.classList.remove("drag-over"));
+					});
+					box.addEventListener("drop", e => {
+						if (!activeNPC) return;
+						const file = e.dataTransfer.files && e.dataTransfer.files[0];
+						if (file && validTypes.includes(file.type)) {
+							const reader = new FileReader();
+							reader.onload = ev => {
+								activeNPC[npcKey] = ev.target.result;
+								updateFn();
+								saveActiveBestiaryToDB();
+							};
+							reader.readAsDataURL(file);
+						} else {
+							console.warn("Invalid file type dropped.");
+						}
+					});
+				}
+				
+				// --- Modal Handling ---
+				function hideAllModals() {
+					modalOverlay.classList.add('hidden');
+					newBestiaryModal.classList.add('hidden');
+					loadBestiaryModal.classList.add('hidden');
+					hpModal.classList.add('hidden');
+					manageGroupsModal.classList.add('hidden');
+					settingsModal.classList.add('hidden');
+				}
+
+				async function showLoadBestiaryModal() {
+					const bestiaries = await db.projects.toArray();
+					bestiaryListDiv.innerHTML = ''; // Clear previous list
+					if (bestiaries.length === 0) {
+						bestiaryListDiv.innerHTML = '<p class="text-gray-500">No bestiaries found.</p>';
+					} else {
+						bestiaries.forEach(proj => {
+							const projEl = document.createElement('div');
+							projEl.className = 'flex justify-between items-center py-1 px-2 border rounded-md hover:bg-gray-100';
+
+							const nameSpan = document.createElement('span');
+							nameSpan.textContent = proj.projectName;
+							nameSpan.className = 'cursor-pointer flex-grow';
+							nameSpan.onclick = () => {
+								loadBestiary(proj);
+								hideAllModals();
+							};
+
+							const deleteBtn = document.createElement('button');
+							deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+							deleteBtn.className = 'p-1';
+							deleteBtn.title = `Delete ${proj.projectName}`;
+							deleteBtn.onclick = async (e) => {
+								e.stopPropagation();
+								await db.projects.delete(proj.id);
+								if(activeBestiary && activeBestiary.id === proj.id) {
+									activeBestiary = null;
+									activeNPC = null;
+									activeNPCIndex = -1;
+									updateUIForActiveBestiary();
+								}
+								showLoadBestiaryModal(); // Refresh list
+							};
+							
+							projEl.appendChild(nameSpan);
+							projEl.appendChild(deleteBtn);
+							bestiaryListDiv.appendChild(projEl);
+						});
+					}
+					modalOverlay.classList.remove('hidden');
+					loadBestiaryModal.classList.remove('hidden');
+				}
+				
+				async function showManageGroupsModal() {
+					if (!activeBestiary) return;
+					groupListDiv.innerHTML = '';
+
+					const groups = activeBestiary.metadata.fg_groups || [];
+					if (groups.length === 0) {
+						groupListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom groups created.</p>';
+					} else {
+						groups.forEach(groupName => {
+							const groupEl = document.createElement('div');
+							groupEl.className = 'flex justify-between items-center py-0.5 px-2 border rounded-md hover:bg-gray-100';
+							
+							const nameSpan = document.createElement('span');
+							nameSpan.textContent = groupName;
+							
+							const deleteBtn = document.createElement('button');
+							deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+							deleteBtn.className = 'p-1';
+							deleteBtn.title = `Delete group: ${groupName}`;
+							deleteBtn.onclick = (e) => {
+								e.stopPropagation();
+								deleteGroup(groupName);
+							};
+
+							groupEl.appendChild(nameSpan);
+							groupEl.appendChild(deleteBtn);
+							groupListDiv.appendChild(groupEl);
+						});
+					}
+					modalOverlay.classList.remove('hidden');
+					manageGroupsModal.classList.remove('hidden');
+				}
+
+				function showSettingsModal() {
+					if (!activeBestiary) return;
+
+					for (const key in bestiarySettingsCheckboxes) {
+						bestiarySettingsCheckboxes[key].checked = activeBestiary.metadata[key];
+					}
+
+					modalOverlay.classList.remove('hidden');
+					settingsModal.classList.remove('hidden');
+				}
+
+				function deleteGroup(groupName) {
+					if (!activeBestiary || !activeBestiary.metadata.fg_groups) return;
+					
+					activeBestiary.metadata.fg_groups = activeBestiary.metadata.fg_groups.filter(g => g !== groupName);
+					
+					// Check if any NPC was using this group and reset it
+					activeBestiary.npcs.forEach(npc => {
+						if (npc.fg_group === groupName) {
+							npc.fg_group = activeBestiary.projectName;
+						}
+					});
+
+					saveActiveBestiaryToDB();
+					showManageGroupsModal(); // Refresh modal list
+					updateFormFromActiveNPC(); // Refresh main dropdown
+				}
+
+				function addNewGroup() {
+					const newName = newGroupNameInput.value.trim();
+					if (!newName) return;
+
+					if (!activeBestiary.metadata.fg_groups) {
+						activeBestiary.metadata.fg_groups = [];
+					}
+					
+					const isDuplicate = newName.toLowerCase() === activeBestiary.projectName.toLowerCase() || activeBestiary.metadata.fg_groups.some(g => g.toLowerCase() === newName.toLowerCase());
+
+					if (isDuplicate) {
+						alert(`A group named "${newName}" already exists.`);
+						return;
+					}
+
+					activeBestiary.metadata.fg_groups.push(newName);
+					saveActiveBestiaryToDB();
+					newGroupNameInput.value = '';
+					showManageGroupsModal(); // Refresh list
+					updateFormFromActiveNPC(); // Refresh main dropdown
+				}
+
+				function parseHpStringToModal() {
+					const hpString = inputs.hitPoints.value || "";
+					const match = hpString.match(/\((\d+)d(\d+)\s*([+-])?\s*(\d+)?\)/);
+
+					if (match) {
+						// Example match for "16 (3d6 + 6)": ["(3d6 + 6)", "3", "6", "+", "6"]
+						const numDice = parseInt(match[1], 10);
+						const dieType = parseInt(match[2], 10);
+						const sign = match[3];
+						const bonus = parseInt(match[4], 10) || 0;
+
+						numDiceInput.value = numDice;
+						dieTypeSelect.value = dieType;
+						bonusInput.value = (sign === '-') ? -bonus : bonus;
+					} else {
+						// Reset to defaults if no match
+						numDiceInput.value = 1;
+						dieTypeSelect.value = 8; // d8 default
+						bonusInput.value = 0;
+					}
+				}
+
+
+				// --- EVENT LISTENERS ---
+				
+				// Icon Buttons
+				newBestiaryBtn.addEventListener('click', showNewBestiaryModal);
+				loadBestiaryBtn.addEventListener('click', showLoadBestiaryModal);
+				importBestiaryBtn.addEventListener('click', importBestiary);
+				exportBestiaryBtn.addEventListener('click', exportBestiary);
+				newNpcBtn.addEventListener("click", createNewNpc);
+				duplicateNpcBtn.addEventListener("click", duplicateCurrentNpc);
+				importNpcBtn.addEventListener("click", importNpc);
+				exportNpcBtn.addEventListener("click", exportNpc);
+				deleteNpcBtn.addEventListener('click', deleteCurrentNpc);
+				
+				// Menu Items
+				menuNewBestiary.addEventListener('click', (e) => { e.preventDefault(); showNewBestiaryModal(); mainMenu.classList.add('hidden'); });
+				menuLoadBestiary.addEventListener('click', (e) => { e.preventDefault(); showLoadBestiaryModal(); mainMenu.classList.add('hidden'); });
+				menuImportBestiary.addEventListener('click', (e) => { e.preventDefault(); importBestiary(); mainMenu.classList.add('hidden'); });
+				menuExportBestiary.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportBestiary.classList.contains('disabled')) exportBestiary(); mainMenu.classList.add('hidden'); });
+				menuNewNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuNewNpc.classList.contains('disabled')) createNewNpc(); mainMenu.classList.add('hidden'); });
+				menuDuplicateNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuDuplicateNpc.classList.contains('disabled')) duplicateCurrentNpc(); mainMenu.classList.add('hidden'); });
+				menuImportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuImportNpc.classList.contains('disabled')) importNpc(); mainMenu.classList.add('hidden'); });
+				menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuExportNpc.classList.contains('disabled')) exportNpc(); mainMenu.classList.add('hidden'); });
+				menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!menuDeleteNpc.classList.contains('disabled')) deleteCurrentNpc(); mainMenu.classList.add('hidden'); });
+				menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!menuSettings.classList.contains('disabled')) showSettingsModal(); mainMenu.classList.add('hidden'); });
+				
+				// Hamburger Menu Logic
+				hamburgerBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					mainMenu.classList.toggle('hidden');
+				});
+
+				window.addEventListener('click', (e) => {
+					if (!mainMenu.classList.contains('hidden') && !hamburgerBtn.contains(e.target)) {
+						mainMenu.classList.add('hidden');
+					}
+				});
+				
+				// Modal Buttons
+				createBestiaryBtn.addEventListener('click', createNewBestiary);
+				newBestiaryNameInput.addEventListener('keyup', (e) => {
+					if (e.key === 'Enter') createBestiaryBtn.click();
+				});
+				manageGroupsBtn.addEventListener('click', showManageGroupsModal);
+				addGroupBtn.addEventListener('click', addNewGroup);
+				newGroupNameInput.addEventListener('keyup', (e) => {
+					if (e.key === 'Enter') {
+						addNewGroup();
+					}
+				});
+				settingsOkBtn.addEventListener('click', hideAllModals);
+
+				
+				// NPC Selector
+				npcSelector.addEventListener('change', (e) => {
+					const newIndex = parseInt(e.target.value, 10);
+					if (newIndex !== activeNPCIndex) {
+						switchActiveNPC(newIndex);
+					}
+				});
+				
+				document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', hideAllModals));
+				modalOverlay.addEventListener('click', (e) => {
+					if (e.target === modalOverlay) hideAllModals();
+				});
+
+				document.querySelectorAll('.card-header').forEach((header) => {
+					header.addEventListener("click", (e) => {
+						if (e.target.closest('#fantasy-grounds-group') || e.target.closest('#manage-groups-btn')) {
+							return;
+						}
+						const cardBody = header.nextElementSibling;
+						if (cardBody) {
+							if (cardBody.classList.contains('open')) {
+								cardBody.classList.remove('open');
+								cardBody.style.paddingTop = '0';
+								cardBody.style.paddingBottom = '0';
+							} else {
+								cardBody.classList.add('open');
+								cardBody.style.paddingTop = '0.5rem';
+								cardBody.style.paddingBottom = '0.5rem';
+							}
+						}
+					});
+				});
+
+				Object.values(inputs).forEach((input) => {
+					if(input.id !== 'npc-description') {
+						input.addEventListener("input", updateActiveNPCFromForm);
+					}
+				});
+				
+				// Re-sort the list when the name input loses focus
+				inputs.name.addEventListener('blur', () => {
+					if (activeBestiary) {
+						sortAndSwitchToNpc(activeNPC);
+					}
+				});
+
+
+				// Settings Checkbox Listeners
+				for (const key in bestiarySettingsCheckboxes) {
+					bestiarySettingsCheckboxes[key].addEventListener('input', () => {
+						if (activeBestiary) {
+							activeBestiary.metadata[key] = bestiarySettingsCheckboxes[key].checked;
+							saveActiveBestiaryToDB();
+						}
+					});
+				}
+				for (const key in npcSettingsCheckboxes) {
+					npcSettingsCheckboxes[key].addEventListener('input', () => {
+						if (activeNPC) {
+							activeNPC[key] = npcSettingsCheckboxes[key].checked;
+							updateViewport();
+							saveActiveBestiaryToDB();
+						}
+					});
+				}
+
+
+				inputs.challenge.addEventListener('change', () => {
+					const selectedCr = inputs.challenge.value;
+					experienceDisplay.textContent = crToXpMap[selectedCr] || '';
+					const profBonus = calculateProficiencyBonus(selectedCr);
+					proficiencyBonusDisplay.textContent = `+${profBonus}`;
+					updateActiveNPCFromForm();
+				});
+
+				document.querySelector("trix-editor").addEventListener("trix-change", updateActiveNPCFromForm);
+
+				tokenBox.addEventListener('click', () => activeNPC && tokenUpload.click());
+				tokenUpload.addEventListener('change', (event) => {
+					const file = event.target.files[0];
+					if (activeNPC && file && (file.type === "image/png" || file.type === "image/webp")) {
+						const reader = new FileReader();
+						reader.onload = function(e) {
+							activeNPC.token = e.target.result;
+							updateTokenDisplay();
+							saveActiveBestiaryToDB();
+						};
+						reader.readAsDataURL(file);
+					}
+				});
+
+				imageBox.addEventListener('click', () => activeNPC && imageUpload.click());
+				imageUpload.addEventListener('change', (event) => {
+					const file = event.target.files[0];
+					if (activeNPC && file && (file.type === "image/png" || file.type === "image/webp" || file.type === "image/jpeg")) {
+						const reader = new FileReader();
+						reader.onload = function(e) {
+							activeNPC.image = e.target.result;
+							updateImageDisplay();
+							saveActiveBestiaryToDB();
+						};
+						reader.readAsDataURL(file);
+					}
+				});
+
+				setupDragAndDrop(tokenBox, ["image/png","image/webp"], "token", updateTokenDisplay);
+				setupDragAndDrop(imageBox, ["image/png","image/webp","image/jpeg"], "image", updateImageDisplay);
+
+				inputs.hitPoints.addEventListener('dblclick', () => {
+					if (activeNPC) {
+						parseHpStringToModal();
+						modalOverlay.classList.remove('hidden');
+						hpModal.classList.remove('hidden');
+					}
+				});
+				hpModalCloseBtn.addEventListener('click', () => {
+					hideAllModals();
+				});
+				hpApplyBtn.addEventListener('click', () => {
+					const numDice = parseInt(numDiceInput.value, 10) || 0;
+					const dieType = parseInt(dieTypeSelect.value, 10) || 0;
+					const bonus = parseInt(bonusInput.value, 10) || 0;
+					if (numDice > 0 && dieType > 0) {
+						const avgRoll = (dieType / 2) + 0.5;
+						const totalHp = Math.floor(numDice * avgRoll) + bonus;
+						let bonusString = "";
+						if (bonus > 0) { bonusString = ` + ${bonus}`; }
+						else if (bonus < 0) { bonusString = ` - ${Math.abs(bonus)}`; }
+						const hpString = `${totalHp} (${numDice}d${dieType}${bonusString})`;
+						inputs.hitPoints.value = hpString;
+						updateActiveNPCFromForm();
+						hideAllModals();
+					}
+				});
+				
+				// --- INITIALIZATION ---
+				populateChallengeDropdown();
+				setupCustomToggles();
+				setupSavingThrowListeners();
+				setupResistanceListeners();
+				setupWeaponModifierListeners();
+				setupConditionImmunityListeners();
+				updateUIForActiveBestiary(); // Initial setup for no bestiary loaded
+
+				document.querySelectorAll('.card-body').forEach(cardBody => {
+					cardBody.classList.add('open');
+					cardBody.style.paddingTop = '0.5rem';
+					cardBody.style.paddingBottom = '0.5rem';
+				});
+			});
+		</script>
 	</body>
 </html>
 
