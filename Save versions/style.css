@@ -26,7 +26,7 @@ body { /* A simple style for our application font */
 .bordered-container { /* A reusable class for black borders */
 	border: 1px solid black;
 }
-.info-input, .info-select, .language-listbox { /* Custom style for specific input boxes and dropdowns */
+.info-input, .info-select { /* Custom style for specific input boxes and dropdowns */
 	background-color: #F8FAFC; /* Lighter input background */
 	border: 1px solid #CBD5E1; /* Adjusted darker shade for the border */
 	border-radius: 2px;
@@ -272,8 +272,4 @@ table.spell td {
 	padding-top: 4px; /* Adjust vertical alignment */
 	padding-right: 4px;
 	color: #7A200D;
-}
-.language-listbox option:checked {
-    background-color: #8A8AA3;
-    color: #FFFFFF;
 }

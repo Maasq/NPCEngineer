@@ -11,16 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		'acid', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'poison',
 		'psychic', 'radiant', 'thunder', 'bludgeoning', 'piercing', 'slashing'
 	];
-	const standardLanguages = [ "Common", "Dwarvish", "Elvish", "Giant", "Gnomish", "Goblin", "Halfling", "Orc", "Thieves' cant" ];
-	const exoticLanguages = [ "Abyssal", "Celestial", "Draconic", "Deep speech", "Infernal", "Primordial", "Sylvan", "Druidic", "Undercommon" ];
-	const monstrousLanguages1 = [ "Aarakocra", "Aquan", "Auran", "Bullywug", "Gith", "Gnoll", "Grell", "Grung", "Hook horror", "Ice toad", "Ignan", "Ixitxachitl" ];
-	const monstrousLanguages2 = [ "Modron", "Otyugh", "Sahuagin", "Slaad", "Sphinx", "Terran", "Thri-kreen", "Tlincalli", "Troglodyte", "Umber hulk", "Vegepygmy", "Yeti" ];
-	// Combine all predefined languages for validation checks
-	const allPredefinedLanguages = [
-		...standardLanguages, ...exoticLanguages, 
-		...monstrousLanguages1, ...monstrousLanguages2
-	].map(lang => lang.toLowerCase());
-
 	const conditions = [
 		'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened', 'grappled', 
 		'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 
@@ -72,13 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		passivePerception: 10, fg_group: "",
 		weaponResistance: 'none',
 		weaponImmunity: 'none',
-		npcSkills: "",
-		// --- New Language Properties ---
-		selectedLanguages: [],
-		specialLanguageOption: 0,
-		hasTelepathy: false,
-		telepathyRange: 0,
-		// --- End New Language Properties ---
+		npcSkills: ""
 	};
 	
 	// Dynamically create the full defaultNPC object with resistance and skill properties
@@ -161,8 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const loadBestiaryModal = document.getElementById("load-bestiary-modal");
 	const hpModal = document.getElementById("hp-modal");
 	const settingsModal = document.getElementById('settings-modal');
-	const manageLanguagesModal = document.getElementById('manage-languages-modal'); // New modal reference
-
+	
 	// Modal-specific elements
 	const createBestiaryBtn = document.getElementById("create-bestiary-btn");
 	const newBestiaryNameInput = document.getElementById("new-bestiary-name");
@@ -173,12 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	const newGroupNameInput = document.getElementById('new-group-name');
 	const groupListDiv = document.getElementById('group-list');
 	const settingsOkBtn = document.getElementById('settings-ok-btn');
-	
-	// New Language Modal Elements
-	const manageLanguagesBtn = document.getElementById('manage-languages-btn');
-	const newLanguageNameInput = document.getElementById('new-language-name');
-	const addLanguageBtn = document.getElementById('add-language-btn');
-	const languageListDiv = document.getElementById('language-list-div');
 
 	const tokenBox = document.getElementById("npc-token");
 	const tokenUpload = document.getElementById("token-upload");
@@ -240,16 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		senseTruesight: document.getElementById('npc-sense-truesight'),
 		fg_group: document.getElementById('fantasy-grounds-group')
 	};
-	
-	// --- Language Listbox references ---
-	const languageListboxes = [
-		document.getElementById('language-list-standard'),
-		document.getElementById('language-list-exotic'),
-		document.getElementById('language-list-monstrous1'),
-		document.getElementById('language-list-monstrous2'),
-		document.getElementById('language-list-user'),
-	];
-	// --- End Language Listbox references ---
 
 	// --- FUNCTIONS ---
 	
@@ -291,8 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				addTitle: true,
 				addImageLink: true,
 				useDropCap: true,
-				fg_groups: [],
-				userDefinedLanguages: [] // New property initialized
+				fg_groups: []
 			},
 			npcs: [{ ...defaultNPC, name: "New NPC", fg_group: bestiaryName }]
 		};
@@ -313,9 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Ensure metadata object and its properties exist
 		if (typeof bestiary.metadata !== 'object' || bestiary.metadata === null) {
 			bestiary.metadata = {};
-		}
-		if (!Array.isArray(bestiary.metadata.userDefinedLanguages)) {
-			bestiary.metadata.userDefinedLanguages = []; // Initialize new property
 		}
 		
 		const propsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
@@ -349,13 +312,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			});
 			
-			// --- Language property healing (Phase 1) ---
-			if (!Array.isArray(healedNpc.selectedLanguages)) healedNpc.selectedLanguages = [];
-			if (healedNpc.specialLanguageOption === undefined) healedNpc.specialLanguageOption = 0;
-			if (healedNpc.hasTelepathy === undefined) healedNpc.hasTelepathy = false;
-			if (healedNpc.telepathyRange === undefined) healedNpc.telepathyRange = 0;
-			// --- End language healing ---
-
 			if (!healedNpc.name || healedNpc.name.trim() === "") {
 				let uniqueName = `Unnamed NPC`;
 				if (unnamedCounter > 1) uniqueName += ` ${unnamedCounter}`;
@@ -407,9 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	async function saveActiveBestiaryToDB() {
 		if (activeBestiary && activeBestiary.id) {
 			try {
-				// Create a stripped down copy before saving (remove circular references, large data if needed)
-				const bestiaryToSave = JSON.parse(JSON.stringify(activeBestiary));
-				await db.projects.put(bestiaryToSave);
+				await db.projects.put(activeBestiary);
 			} catch (error) {
 				console.error("Failed to save bestiary to DB:", error);
 			}
@@ -618,21 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	
-	function populateLanguageListbox(listboxId, languageArray, selectedLanguages) {
-		const listbox = document.getElementById(listboxId);
-		if (!listbox) return;
-		listbox.innerHTML = '';
-		languageArray.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-
-		languageArray.forEach(lang => {
-			const option = document.createElement('option');
-			option.value = lang;
-			option.textContent = lang;
-			option.selected = (selectedLanguages || []).includes(lang);
-			listbox.appendChild(option);
-		});
-	}
-
 	function updateFormFromActiveNPC() {
 		isUpdatingForm = true;
 		try {
@@ -681,21 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
 					element.value = activeNPC[key] || "";
 				}
 			}
-			// --- Language section update (Phase 1) ---
-			const selectedLangs = activeNPC.selectedLanguages || [];
-			populateLanguageListbox('language-list-standard', standardLanguages, selectedLangs);
-			populateLanguageListbox('language-list-exotic', exoticLanguages, selectedLangs);
-			populateLanguageListbox('language-list-monstrous1', monstrousLanguages1, selectedLangs);
-			populateLanguageListbox('language-list-monstrous2', monstrousLanguages2, selectedLangs);
-			populateLanguageListbox('language-list-user', activeBestiary.metadata.userDefinedLanguages || [], selectedLangs);
-			
-			const telepathyCheckbox = document.getElementById('npc-has-telepathy');
-			if (telepathyCheckbox) telepathyCheckbox.checked = activeNPC.hasTelepathy || false;
-			const telepathyRangeInput = document.getElementById('npc-telepathy-range');
-			if (telepathyRangeInput) telepathyRangeInput.value = activeNPC.telepathyRange || 0;
-			const specialOptionSelect = document.getElementById('npc-special-language-option');
-			if (specialOptionSelect) specialOptionSelect.value = activeNPC.specialLanguageOption || 0;
-			// --- End language section ---
 
 			for (const key in npcSettingsCheckboxes) {
 				npcSettingsCheckboxes[key].checked = activeNPC[key];
@@ -804,25 +728,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				activeNPC[key] = element.value;
 			}
 		}
-
-		// --- Language section read (Phase 1) ---
-		const selectedLanguages = new Set();
-		languageListboxes.forEach(listbox => {
-			if (listbox) {
-				Array.from(listbox.selectedOptions).forEach(option => {
-					selectedLanguages.add(option.value);
-				});
-			}
-		});
-		activeNPC.selectedLanguages = Array.from(selectedLanguages);
-
-		const telepathyCheckbox = document.getElementById('npc-has-telepathy');
-		if (telepathyCheckbox) activeNPC.hasTelepathy = telepathyCheckbox.checked;
-		const telepathyRangeInput = document.getElementById('npc-telepathy-range');
-		if (telepathyRangeInput) activeNPC.telepathyRange = parseInt(telepathyRangeInput.value, 10) || 0;
-		const specialOptionSelect = document.getElementById('npc-special-language-option');
-		if (specialOptionSelect) activeNPC.specialLanguageOption = parseInt(specialOptionSelect.value, 10) || 0;
-		// --- End language section ---
 
 		for (const key in npcSettingsCheckboxes) {
 			activeNPC[key] = npcSettingsCheckboxes[key].checked;
@@ -1024,53 +929,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		return immuneConditions.join(', ');
 	}
 
-	// Helper function for Phase 1
-	function calculateLanguagesString(npc) {
-		if (!npc) return "";
-	
-		let languages = [...(npc.selectedLanguages || [])];
-		if (languages.length === 0 && !npc.hasTelepathy) {
-			return "";
-		}
-	
-		languages.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-		let languageString = languages.join(', ');
-	
-		// Telepathy is handled only if specialLanguageOption is 0 (Standard)
-		if (npc.hasTelepathy) {
-			switch (npc.specialLanguageOption) {
-				case 0: 
-					const telepathyText = `telepathy ${npc.telepathyRange || 0} ft.`;
-					if (languageString.length > 0) {
-						languageString += `, ${telepathyText}`;
-					} else {
-						languageString = telepathyText;
-					}
-					break;
-				case 1:
-					// Placeholder 1: do nothing
-					break;
-				case 2:
-					// Placeholder 2: do nothing
-					break;
-				case 3:
-					// Placeholder 3: do nothing
-					break;
-				case 4:
-					// Placeholder 4: do nothing
-					break;
-				case 5:
-					// Placeholder 5: do nothing
-					break;
-				case 6:
-					// Placeholder 6: do nothing
-					break;
-			}
-		}
-	
-		return languageString;
-	}
-
 	function calculateAllStats() {
 		if (!activeNPC) return;
 		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
@@ -1194,7 +1052,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		const { vulnerabilities, resistances, immunities } = calculateDamageModifiersString(activeNPC);
 		const conditionImmunities = calculateConditionImmunitiesString(activeNPC);
 		const senses = calculateSensesString(activeNPC);
-		const languages = calculateLanguagesString(activeNPC);
 
 		const NPCName = name || "";
 		const NPCac = armorClass || "";
@@ -1266,7 +1123,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
 				${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
 				${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
-				${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
+				<!-- Languages will be inserted here -->
 				${challenge ? `<div class="npctop"><b>Challenge</b> ${challenge} (${experience} XP)</div>` : ''}
 				<div class="npcdiv">
 					<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
@@ -1408,29 +1265,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// --- Phase 3: Language Event Setup ---
-	function setupLanguageListeners() {
-		// 1. Add listeners to all five listboxes
-		languageListboxes.forEach(listbox => {
-			// Using 'change' is appropriate for <select multiple>
-			listbox.addEventListener('change', updateActiveNPCFromForm); 
-		});
-		// 2. Add listeners to telepathy inputs
-		document.getElementById('npc-has-telepathy').addEventListener('input', updateActiveNPCFromForm);
-		document.getElementById('npc-telepathy-range').addEventListener('input', updateActiveNPCFromForm);
-		document.getElementById('npc-special-language-option').addEventListener('input', updateActiveNPCFromForm);
-		
-		// 3. Setup modal button listener
-		manageLanguagesBtn.addEventListener('click', showManageLanguagesModal);
-		addLanguageBtn.addEventListener('click', addNewLanguage);
-		newLanguageNameInput.addEventListener('keyup', (e) => {
-			if (e.key === 'Enter') {
-				addNewLanguage();
-			}
-		});
-	}
-	// --- End Phase 3: Language Event Setup ---
-
 
 	function setupDragAndDrop(box, validTypes, npcKey, updateFn) {
 		["dragenter","dragover","dragleave","drop"].forEach(eventName => {
@@ -1467,7 +1301,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		hpModal.classList.add('hidden');
 		manageGroupsModal.classList.add('hidden');
 		settingsModal.classList.add('hidden');
-		manageLanguagesModal.classList.add('hidden'); // Hide new modal
 	}
 
 	async function showLoadBestiaryModal() {
@@ -1530,7 +1363,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				
 				const deleteBtn = document.createElement('button');
 				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-				deleteBtn.className = 'p-1 delete-group-btn'; // Using a class for event delegation might be better for performance, but this is simple for now.
+				deleteBtn.className = 'p-1';
 				deleteBtn.title = `Delete group: ${groupName}`;
 				deleteBtn.onclick = (e) => {
 					e.stopPropagation();
@@ -1595,90 +1428,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		showManageGroupsModal(); // Refresh list
 		updateFormFromActiveNPC(); // Refresh main dropdown
 	}
-	
-	// --- Phase 3: Language Modal Logic ---
-	function showManageLanguagesModal() {
-		if (!activeBestiary) return;
-		
-		languageListDiv.innerHTML = '';
-		const userLangs = activeBestiary.metadata.userDefinedLanguages || [];
-
-		if (userLangs.length === 0) {
-			languageListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom languages created.</p>';
-		} else {
-			// Sort the list alphabetically for user convenience
-			userLangs.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-
-			userLangs.forEach(langName => {
-				const langEl = document.createElement('div');
-				langEl.className = 'flex justify-between items-center py-0.5 px-2 border rounded-md hover:bg-gray-100';
-				
-				const nameSpan = document.createElement('span');
-				nameSpan.textContent = langName;
-				
-				const deleteBtn = document.createElement('button');
-				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-				deleteBtn.className = 'p-1 delete-language-btn';
-				deleteBtn.title = `Delete language: ${langName}`;
-				deleteBtn.onclick = (e) => {
-					e.stopPropagation();
-					deleteLanguage(langName);
-				};
-
-				langEl.appendChild(nameSpan);
-				langEl.appendChild(deleteBtn);
-				languageListDiv.appendChild(langEl);
-			});
-		}
-		modalOverlay.classList.remove('hidden');
-		manageLanguagesModal.classList.remove('hidden');
-		newLanguageNameInput.focus();
-	}
-	
-	function addNewLanguage() {
-		if (!activeBestiary) return;
-		const newName = newLanguageNameInput.value.trim();
-		if (!newName) return;
-		
-		const lowerNewName = newName.toLowerCase();
-
-		const isPredefined = allPredefinedLanguages.includes(lowerNewName);
-		
-		const userLangs = activeBestiary.metadata.userDefinedLanguages || [];
-		const isUserDefined = userLangs.map(l => l.toLowerCase()).includes(lowerNewName);
-
-		if (isPredefined || isUserDefined) {
-			alert(`A language named "${newName}" already exists (either predefined or user-defined).`);
-			return;
-		}
-
-		activeBestiary.metadata.userDefinedLanguages.push(newName);
-		saveActiveBestiaryToDB();
-		newLanguageNameInput.value = '';
-		showManageLanguagesModal(); // Refresh modal list
-		updateFormFromActiveNPC(); // Refresh the main language listboxes
-	}
-	
-	function deleteLanguage(langName) {
-		if (!activeBestiary) return;
-		
-		// 1. Remove from bestiary metadata
-		activeBestiary.metadata.userDefinedLanguages = (activeBestiary.metadata.userDefinedLanguages || []).filter(l => l !== langName);
-		
-		// 2. Remove from any NPC that was using it
-		activeBestiary.npcs.forEach(npc => {
-			if (npc.selectedLanguages) {
-				npc.selectedLanguages = npc.selectedLanguages.filter(l => l !== langName);
-			}
-		});
-
-		// 3. Save, refresh modal, and refresh form
-		saveActiveBestiaryToDB();
-		showManageLanguagesModal(); 
-		updateFormFromActiveNPC(); 
-	}
-	// --- End Phase 3: Language Modal Logic ---
-
 
 	function parseHpStringToModal() {
 		const hpString = inputs.hitPoints.value || "";
@@ -1770,7 +1519,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	document.querySelectorAll('.card-header').forEach((header) => {
 		header.addEventListener("click", (e) => {
-			if (e.target.closest('#fantasy-grounds-group') || e.target.closest('#manage-groups-btn') || e.target.closest('#manage-languages-btn')) {
+			if (e.target.closest('#fantasy-grounds-group') || e.target.closest('#manage-groups-btn')) {
 				return;
 			}
 			const cardBody = header.nextElementSibling;
@@ -1898,7 +1647,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	setupResistanceListeners();
 	setupWeaponModifierListeners();
 	setupConditionImmunityListeners();
-	setupLanguageListeners(); // New listener setup
 	updateUIForActiveBestiary(); // Initial setup for no bestiary loaded
 
 	document.querySelectorAll('.card-body').forEach(cardBody => {
@@ -1907,3 +1655,4 @@ document.addEventListener("DOMContentLoaded", () => {
 		cardBody.style.paddingBottom = '0.5rem';
 	});
 });
+
