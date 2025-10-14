@@ -831,6 +831,32 @@ document.addEventListener("DOMContentLoaded", () => {
 		return speedParts.join(', ');
 	}
 
+	function calculateSensesString(npc) {
+		if (!npc) return "";
+		const sensesParts = [];
+
+		if (npc.senseBlindsight > 0) {
+			let blindString = `blindsight ${npc.senseBlindsight} ft.`;
+			if (npc.blindBeyond) {
+				blindString += " (blind beyond this radius)";
+			}
+			sensesParts.push(blindString);
+		}
+		if (npc.senseDarkvision > 0) {
+			sensesParts.push(`darkvision ${npc.senseDarkvision} ft.`);
+		}
+		if (npc.senseTremorsense > 0) {
+			sensesParts.push(`tremorsense ${npc.senseTremorsense} ft.`);
+		}
+		if (npc.senseTruesight > 0) {
+			sensesParts.push(`truesight ${npc.senseTruesight} ft.`);
+		}
+		
+		sensesParts.push(`passive Perception ${npc.passivePerception || 10}`);
+
+		return sensesParts.join(', ');
+	}
+
 	function calculateDamageModifiersString(npc) {
 		if (!npc) return { vulnerabilities: "", resistances: "", immunities: "" };
 
@@ -933,7 +959,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		calculateAllSkills();
 
 		// 4. Calculate Passive Perception
-		activeNPC.passivePerception = 10 + (activeNPC.wisdomBonus || 0);
+		const perceptionProf = activeNPC.skill_perception_prof || false;
+		const perceptionExp = activeNPC.skill_perception_exp || false;
+		const perceptionAdjust = activeNPC.skill_perception_adjust || 0;
+		const perceptionBonus = (activeNPC.wisdomBonus || 0) +
+								(perceptionProf ? profBonus : 0) +
+								(perceptionExp ? profBonus : 0) +
+								perceptionAdjust;
+		activeNPC.passivePerception = 10 + perceptionBonus;
 		
 		// 5. Calculate Speed String
 		activeNPC.speed = calculateSpeedString(activeNPC);
@@ -1013,11 +1046,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
 			strength, dexterity, constitution, intelligence, wisdom, charisma,
 			strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-			useDropCap, addDescription, speed
+			useDropCap, addDescription, speed, challenge, experience
 		} = activeNPC;
 		
 		const { vulnerabilities, resistances, immunities } = calculateDamageModifiersString(activeNPC);
 		const conditionImmunities = calculateConditionImmunitiesString(activeNPC);
+		const senses = calculateSensesString(activeNPC);
 
 		const NPCName = name || "";
 		const NPCac = armorClass || "";
@@ -1088,6 +1122,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				${resistances ? `<div class="npctop"><b>Damage Resistances</b> ${resistances}</div>` : ''}
 				${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
 				${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
+				${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
+				<!-- Languages will be inserted here -->
+				${challenge ? `<div class="npctop"><b>Challenge</b> ${challenge} (${experience} XP)</div>` : ''}
 				<div class="npcdiv">
 					<svg viewBox="0 0 200 5" preserveAspectRatio="none" width="100%" height="5">
 						<polyline points="0,0 200,2.5 0,5" fill="#922610" class="whoosh"></polyline>
