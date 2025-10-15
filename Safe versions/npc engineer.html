@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.04.04" />
+		<meta name="version" content="0.05.01" />
 		<meta name="date" content="2025-10-14" />
 		
 		<title>NPC Engineer</title>
@@ -859,11 +859,67 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Languages -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Languages</h2>
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
+							<h2 class="font-bold text-slate-700 cursor-pointer select-none">Languages</h2>
+							<button id="manage-languages-btn" title="Manage Languages">
+								<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor" version="1.1" xmlns="http://www.w.org/2000/svg" viewBox="0 0 447.479 447.479" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 447.479 447.479">
+									<g>
+										<path d="M411.426,75.746H36.053C16.173,75.746,0,91.92,0,111.799V335.68c0,19.879,16.173,36.052,36.053,36.052h375.374   c19.879,0,36.053-16.173,36.053-36.052V111.799C447.479,91.92,431.306,75.746,411.426,75.746z M427.479,335.68   c0,8.851-7.201,16.052-16.053,16.052H36.053c-8.852,0-16.053-7.201-16.053-16.052V111.799c0-8.852,7.201-16.053,16.053-16.053   h375.374c8.852,0,16.053,7.201,16.053,16.053V335.68z"/>
+										<path d="m82.747,127.494c-17.506,0-31.749,14.243-31.749,31.749 0,14.011 9.127,25.923 21.745,30.125v120.615c0,5.523 4.477,10 10,10s10-4.477 10-10v-120.613c12.622-4.199 21.753-16.113 21.753-30.127-1.42109e-14-17.506-14.243-31.749-31.749-31.749zm0,43.498c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749 11.749,5.271 11.749,11.749-5.271,11.749-11.749,11.749z"/>
+										<path d="m186.743,172.115v-34.623c0-5.523-4.477-10-10-10s-10,4.477-10,10v34.622c-12.62,4.2-21.75,16.113-21.75,30.126s9.129,25.927 21.75,30.126v77.616c0,5.523 4.477,10 10,10s10-4.477 10-10v-77.616c12.62-4.201 21.748-16.114 21.748-30.126s-9.129-25.925-21.748-30.125zm-10.001,41.875c-6.478,0-11.749-5.271-11.749-11.749 0-6.478 5.271-11.749 11.749-11.749 6.479,0 11.749,5.271 11.749,11.749 2.84217e-14,6.478-5.271,11.749-11.749,11.749z"/>
+										<path d="m280.733,215.111v-77.618c0-5.523-4.477-10-10-10s-10,4.477-10,10v77.621c-12.618,4.202-21.745,16.114-21.745,30.125s9.127,25.923 21.745,30.125v34.619c0,5.523 4.477,10 10,10s10-4.477 10-10v-34.616c12.622-4.199 21.753-16.114 21.753-30.128s-9.131-25.929-21.753-30.128zm-9.996,41.877c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749c6.478,0 11.749,5.271 11.749,11.749s-5.271,11.749-11.749,11.749z"/>
+										<path d="m374.733,258.111v-120.619c0-5.523-4.477-10-10-10s-10,4.477-10,10v120.618c-12.62,4.2-21.75,16.114-21.75,30.126 0,17.506 14.243,31.749 31.749,31.749s31.749-14.242 31.749-31.749c-5.68434e-14-14.012-9.128-25.925-21.748-30.125zm-10.001,41.874c-6.479,0-11.749-5.271-11.749-11.749 0-6.479 5.271-11.749 11.749-11.749s11.749,5.271 11.749,11.749c-5.68434e-14,6.479-5.27,11.749-11.749,11.749z"/>
+									</g>
+								</svg>
+							</button>
 						</div>
 						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
+							<div class="p-4 space-y-4">
+								<div class="flex justify-around space-x-2">
+									<div>
+										<label class="label-text mb-1 text-center">Standard</label>
+										<select multiple id="language-list-standard" class="language-listbox" size="12" style="width: 150px;"></select>
+									</div>
+									<div>
+										<label class="label-text mb-1 text-center">Exotic</label>
+										<select multiple id="language-list-exotic" class="language-listbox" size="12" style="width: 150px;"></select>
+									</div>
+									<div>
+										<label class="label-text mb-1 text-center">Monstrous I</label>
+										<select multiple id="language-list-monstrous1" class="language-listbox" size="12" style="width: 150px;"></select>
+									</div>
+									<div>
+										<label class="label-text mb-1 text-center">Monstrous II</label>
+										<select multiple id="language-list-monstrous2" class="language-listbox" size="12" style="width: 150px;"></select>
+									</div>
+									<div>
+										<label class="label-text mb-1 text-center">User</label>
+										<select multiple id="language-list-user" class="language-listbox" size="12" style="width: 150px;"></select>
+									</div>
+								</div>
+								<div class="border-t pt-3 flex items-center space-x-4">
+									<div class="flex items-center">
+										<input type="checkbox" id="npc-has-telepathy" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+										<label for="npc-has-telepathy" class="ml-2 label-text">Has Telepathy</label>
+									</div>
+									<div class="flex items-center">
+										<label for="npc-telepathy-range" class="label-text mr-2">Range (ft.)</label>
+										<input type="number" id="npc-telepathy-range" class="info-input h-6 w-20 text-center" min="0" step="10">
+									</div>
+									<div class="flex items-center">
+										<label for="npc-special-language-option" class="label-text mr-2">Special</label>
+										<select id="npc-special-language-option" class="info-select h-6">
+											<option value="0">Standard</option>
+											<option value="1">Placeholder 1</option>
+											<option value="2">Placeholder 2</option>
+											<option value="3">Placeholder 3</option>
+											<option value="4">Placeholder 4</option>
+											<option value="5">Placeholder 5</option>
+											<option value="6">Placeholder 6</option>
+										</select>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -976,6 +1032,21 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 			</div>
 
+			<!-- Manage Languages Modal -->
+			<div id="manage-languages-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+				<div class="flex justify-between items-center mb-2">
+					<h3 class="font-bold text-slate-700">Manage Languages</h3>
+					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+				</div>
+				<div class="flex space-x-2">
+					<input type="text" id="new-language-name" class="info-input w-full" placeholder="New language name...">
+					<button id="add-language-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add</button>
+				</div>
+				<div id="language-list-div" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
+					<!-- Language items will be injected here -->
+				</div>
+			</div>
+
 			<!-- Settings Modal -->
 			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
@@ -1044,4 +1115,3 @@ Double-click to open a window that will help build a correct expression.">
 		<script src="script.js" defer></script>
 	</body>
 </html>
-
