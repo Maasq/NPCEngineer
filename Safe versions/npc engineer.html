@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.05.01" />
-		<meta name="date" content="2025-10-14" />
+		<meta name="version" content="0.07.00" />
+		<meta name="date" content="2025-10-16" />
 		
 		<title>NPC Engineer</title>
 		
@@ -39,16 +39,14 @@
 					<!-- Hamburger Menu -->
 					<div class="absolute top-2 left-2 z-40">
 						<button id="hamburger-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-violet-200 transition-colors">
-							<svg class="h-6 w-6 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
-							</svg>
+							<svg class="h-6 w-6 text-black"><use href="#icon-hamburger"></use></svg>
 						</button>
 						<div id="main-menu" class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden">
 							<!-- Bestiaries Sub-Menu -->
 							<div class="relative group/bestiaries">
 								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
 									<span>Bestiaries</span>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+									<svg class="w-4 h-4"><use href="#icon-chevron"></use></svg>
 								</div>
 								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/bestiaries:block">
 									<a href="#" id="menu-new-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New Bestiary</a>
@@ -62,7 +60,7 @@
 							<div class="relative group/npcs">
 								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
 									<span>NPCs</span>
-									<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+									<svg class="w-4 h-4"><use href="#icon-chevron"></use></svg>
 								</div>
 								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/npcs:block">
 									<a href="#" id="menu-new-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New NPC</a>
@@ -88,31 +86,19 @@
 						<span id="bestiary-status" class="text-sm font-medium text-gray-600 mr-2">No Bestiary Loaded</span>
 						<!-- New Bestiary Button -->
 						<button id="newBestiaryBtn" title="Create a new Bestiary" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-								<path d="M11 19.913c-4.966-.084-8-1.388-8-2.334v-6.248C4.643 12.429 8.082 13 11.5 13s6.857-.57 8.5-1.67V14h1V5c0-1.97-4.78-3-9.5-3S2 3.03 2 5v12.58c0 2.116 4.448 3.255 9 3.333zM11.5 3C17 3 20 4.321 20 5s-3 2-8.5 2S3 5.679 3 5s3-2 8.5-2zM3 6.411C4.643 7.457 8.082 8 11.5 8s6.857-.543 8.5-1.589v3.437C20 10.726 16.689 12 11.5 12S3 10.726 3 9.848zM18 15l-1-1h-3l-1 1h-1v8h11v-8zm4 7h-9v-4h9zm-9-5v-1h.414l1-1h2.172l1 1H22v1z"/>
-								<path fill="none" d="M0 0h24v24H0z"/>
-							</svg>
+							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-new-bestiary"></use></svg>
 						</button>
 						<!-- Load Bestiary Button -->
 						<button id="loadBestiaryBtn" title="Select one of your Bestiaries to edit" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-								<path d="M4 4H3v1h2V2h1v20H5v-1H4v2h18V1H4zm3-2h14v20H7zM5 20H3v-1h1v-1h1zm0-6H3v-1h1v-1h1zm0-6H3V7h1V6h1zm0 3H3v-1h1V9h1zm0 6H3v-1h1v-1h1zm10.5-5h-3A3.504 3.504 0 0 0 9 15.5V18h10v-2.5a3.504 3.504 0 0 0-3.5-3.5zm2.5 5h-8v-1.5a2.503 2.503 0 0 1 2.5-2.5h3a2.503 2.503 0 0 1 2.5 2.5zm-4-6a3 3 0 1 0-3-3 3.003 3.003 0 0 0 3 3zm0-5a2 2 0 1 1-2 2 2.002 2.002 0 0 1 2-2z"/>
-								<path fill="none" d="M0 0h24v24H0z"/>
-							</svg>
+							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-load-bestiary"></use></svg>
 						</button>
 						<!-- Import Bestiary Button -->
 						<button id="importBestiaryBtn" title="Import Bestiary (JSON) from Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-								<path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.205 2.205 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-.293l2.646 2.646.707-.707L12.5 9.793l-3.854 3.853.707.707L12 11.707V22h1z"/>
-								<path fill="none" d="M0 0h24v24H0z"/>
-							</svg>
+							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-import-bestiary"></use></svg>
 						</button>
 						<!-- Export Bestiary Button -->
 						<button id="exportBestiaryBtn" title="Export Bestiary (JSON) to Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-								<path d="M24 12a5 5 0 0 1-5 5h-2v-1h2a3.99 3.99 0 0 0 .623-7.934l-.79-.124-.052-.798a5.293 5.293 0 0 0-10.214-1.57L8.17 6.59l-.977-.483A2.277 2.277 0 0 0 6.19 5.87a2.18 2.18 0 0 0-1.167.339 2.206 2.206 0 0 0-.98 1.395l-.113.505-.476.2A4 4 0 0 0 5 16h3v1H5a5 5 0 0 1-1.934-9.611 3.21 3.21 0 0 1 1.422-2.025 3.17 3.17 0 0 1 1.702-.493 3.268 3.268 0 0 1 1.446.34 6.293 6.293 0 0 1 12.143 1.867A4.988 4.988 0 0 1 24 12zm-11-1h-1v10.292l-2.646-2.646-.707.707 3.854 3.854 3.853-3.852-.707-.707L13 21.294z"/>
-								<path fill="none" d="M0 0h24v24H0z"/>
-							</svg>
+							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-export-bestiary"></use></svg>
 						</button>
 					</div>
 					
@@ -121,16 +107,16 @@
 						<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
 						<div id="npc-buttons" class="flex items-center space-x-4">
 							<button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-								<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-5 w-5" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 502 502" xml:space="preserve"><g><g><path d="M405.889,348.576V105.273c0-2.652-1.054-5.196-2.929-7.071L307.688,2.929C305.812,1.054,303.269,0,300.617,0H70.783 c-5.523,0-10,4.477-10,10v445.916c0,5.523,4.477,10,10,10h216.442C303.083,488.611,328.615,502,356.57,502 c46.674,0,84.646-37.972,84.646-84.646C441.217,389.827,428.102,364.485,405.889,348.576z M80.783,20h215.691l76.158,76.158 h-51.151c-5.522,0-10,4.477-10,10s4.478,10,10,10h64.408v221.789c-9.334-3.451-19.247-5.241-29.319-5.241 c-46.675,0-84.647,37.973-84.647,84.647c0,9.793,1.692,19.45,4.955,28.562H80.783V20z M356.57,482 c-22.766,0-43.43-11.629-55.277-31.107c-6.13-10.077-9.37-21.675-9.37-33.539c0-35.646,29.001-64.647,64.647-64.647 c11.785,0,23.28,3.21,33.334,9.278c0.474,0.355,0.979,0.67,1.513,0.938c18.668,11.975,29.799,32.278,29.799,54.431 C421.217,453,392.217,482,356.57,482z"/><path d="M394.345,407.354h-27.776v-27.776c0-5.523-4.478-10-10-10s-10,4.477-10,10v27.776h-27.776c-5.522,0-10,4.477-10,10 s4.478,10,10,10h27.776v27.776c0,5.523,4.478,10,10,10s10-4.477,10-10v-27.776h27.776c5.522,0,10-4.477,10-10 S399.868,407.354,394.345,407.354z"/><path d="M292.56,106.158c0-5.523-4.478-10-10-10h-11.447c-5.522,0-10,4.477-10,10s4.478,10,10,10h11.447 C288.083,116.158,292.56,111.681,292.56,106.158z"/></g></g></svg>
+								<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-5 w-5"><use href="#icon-new-npc"></use></svg>
 							</button>
 							<button id="duplicateNpcBtn" title="Duplicate this NPC." class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
-								<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 64 64" data-name="Material Expand" id="Material_Expand" xmlns="http://www.w3.org/2000/svg"><path d="M60,18H44V4a2,2,0,0,0-2-2H8A2,2,0,0,0,6,4V34H4a2,2,0,0,0-2,2v4a6.006,6.006,0,0,0,6,6H24v4H22a2,2,0,0,0-2,2v4a6.006,6.006,0,0,0,6,6H56a6.006,6.006,0,0,0,6-6V20A2,2,0,0,0,60,18ZM10,6H40V40a2,2,0,0,1-4,0V36a2,2,0,0,0-2-2H10ZM6,40V38H32v2a5.972,5.972,0,0,0,.343,2H8A2,2,0,0,1,6,40ZM26,58a2,2,0,0,1-2-2V54H50v2a5.972,5.972,0,0,0,.343,2Zm32-2a2,2,0,0,1-4,0V52a2,2,0,0,0-2-2H28V46H38a6.006,6.006,0,0,0,6-6V22H58Z"/><rect height="4" width="4" x="14" y="10"/><rect height="4" width="14" x="22" y="10"/><rect height="4" width="22" x="14" y="18"/><rect height="4" width="22" x="14" y="26"/><rect height="4" width="6" x="48" y="26"/><rect height="4" width="6" x="48" y="34"/><rect height="4" width="6" x="48" y="42"/></svg>
+								<svg class="h-5 w-5" fill="currentColor"><use href="#icon-duplicate-npc"></use></svg>
 							</button>
 							<button id="importNpcBtn" title="Import NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
-								<svg class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M21 5h-8.8L11 3H4L2.8 5H1v16h20l2.902-12H21zM2 6h1.366l1.2-2h5.868l1.2 2H20v3h-5.6l-2 2H4.35L2 18.015zm20.632 4l-2.42 10H2.39l2.68-8h7.744l2-2z"/></svg>
+								<svg class="h-5 w-5" fill="currentColor" stroke="currentColor" stroke-width="1"><use href="#icon-import-npc"></use></svg>
 							</button>
 							<button id="exportNpcBtn" title="Export NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
-								<svg class="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M16.765 2c1.187 0 1.363.06 1.51.168L21.662 4.7a.845.845 0 0 1 .339.677v15.78a.844.844 0 0 1-.844.844H2.844A.844.844 0 0 1 2 21.156V2.844A.844.844 0 0 1 2.844 2zM17 21v-7H7v7zM14 3v3h1V3zM7 3v6h10V3h-1v4h-3V3zM3 21h3v-8h12v8h3V5.452l-3-2.278v6.17a.769.769 0 0 1-.844.656H6.844A.769.769 0 0 1 6 9.344V3H3z"/></svg>
+								<svg class="h-5 w-5" fill="currentColor" stroke="currentColor" stroke-width="1"><use href="#icon-export-npc"></use></svg>
 							</button>
 						</div>
 					</div>
@@ -138,9 +124,7 @@
 					<div id="npc-selector-container" class="absolute left-0 right-0 pr-6" style="top: 100px; display: flex; justify-content: flex-end; align-items: center;">
 						<select id="npc-selector" class="info-select hidden" style="width: 450px; font-size: 11pt;" title="Select an NPC to edit"></select>
 						<button id="deleteNpcBtn" title="Delete Current NPC" class="ml-2 p-1.5 text-red-600 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 hidden">
-							<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line>
-							</svg>
+							<svg class="h-5 w-5"><use href="#icon-trash"></use></svg>
 						</button>
 					</div>
 				</div>
@@ -160,15 +144,7 @@
 								<label for="fantasy-grounds-group" class="label-text text-xs">FG Group:</label>
 								<select id="fantasy-grounds-group" class="info-select h-6 text-xs" style="width: 150px;"></select>
 								<button id="manage-groups-btn" title="Manage Groups">
-									<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 447.479 447.479" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 447.479 447.479">
-										<g>
-											<path d="M411.426,75.746H36.053C16.173,75.746,0,91.92,0,111.799V335.68c0,19.879,16.173,36.052,36.053,36.052h375.374   c19.879,0,36.053-16.173,36.053-36.052V111.799C447.479,91.92,431.306,75.746,411.426,75.746z M427.479,335.68   c0,8.851-7.201,16.052-16.053,16.052H36.053c-8.852,0-16.053-7.201-16.053-16.052V111.799c0-8.852,7.201-16.053,16.053-16.053   h375.374c8.852,0,16.053,7.201,16.053,16.053V335.68z"/>
-											<path d="m82.747,127.494c-17.506,0-31.749,14.243-31.749,31.749 0,14.011 9.127,25.923 21.745,30.125v120.615c0,5.523 4.477,10 10,10s10-4.477 10-10v-120.613c12.622-4.199 21.753-16.113 21.753-30.127-1.42109e-14-17.506-14.243-31.749-31.749-31.749zm0,43.498c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749 11.749,5.271 11.749,11.749-5.271,11.749-11.749,11.749z"/>
-											<path d="m186.743,172.115v-34.623c0-5.523-4.477-10-10-10s-10,4.477-10,10v34.622c-12.62,4.2-21.75,16.113-21.75,30.126s9.129,25.927 21.75,30.126v77.616c0,5.523 4.477,10 10,10s10-4.477 10-10v-77.616c12.62-4.201 21.748-16.114 21.748-30.126s-9.129-25.925-21.748-30.125zm-10.001,41.875c-6.478,0-11.749-5.271-11.749-11.749 0-6.478 5.271-11.749 11.749-11.749 6.479,0 11.749,5.271 11.749,11.749 2.84217e-14,6.478-5.271,11.749-11.749,11.749z"/>
-											<path d="m280.733,215.111v-77.618c0-5.523-4.477-10-10-10s-10,4.477-10,10v77.621c-12.618,4.202-21.745,16.114-21.745,30.125s9.127,25.923 21.745,30.125v34.619c0,5.523 4.477,10 10,10s10-4.477 10-10v-34.616c12.622-4.199 21.753-16.114 21.753-30.128s-9.131-25.929-21.753-30.128zm-9.996,41.877c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749c6.478,0 11.749,5.271 11.749,11.749s-5.271,11.749-11.749,11.749z"/>
-											<path d="m374.733,258.111v-120.619c0-5.523-4.477-10-10-10s-10,4.477-10,10v120.618c-12.62,4.2-21.75,16.114-21.75,30.126 0,17.506 14.243,31.749 31.749,31.749s31.749-14.242 31.749-31.749c-5.68434e-14-14.012-9.128-25.925-21.748-30.125zm-10.001,41.874c-6.479,0-11.749-5.271-11.749-11.749 0-6.479 5.271-11.749 11.749-11.749s11.749,5.271 11.749,11.749c-5.68434e-14,6.479-5.27,11.749-11.749,11.749z"/>
-										</g>
-									</svg>
+									<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor"><use href="#icon-manage"></use></svg>
 								</button>
 							</div>
 						</div>
@@ -862,15 +838,7 @@ Double-click to open a window that will help build a correct expression.">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
 							<h2 class="font-bold text-slate-700 cursor-pointer select-none">Languages</h2>
 							<button id="manage-languages-btn" title="Manage Languages">
-								<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor" version="1.1" xmlns="http://www.w.org/2000/svg" viewBox="0 0 447.479 447.479" xmlns:xlink="http://www.w3.org/1999/xlink" enable-background="new 0 0 447.479 447.479">
-									<g>
-										<path d="M411.426,75.746H36.053C16.173,75.746,0,91.92,0,111.799V335.68c0,19.879,16.173,36.052,36.053,36.052h375.374   c19.879,0,36.053-16.173,36.053-36.052V111.799C447.479,91.92,431.306,75.746,411.426,75.746z M427.479,335.68   c0,8.851-7.201,16.052-16.053,16.052H36.053c-8.852,0-16.053-7.201-16.053-16.052V111.799c0-8.852,7.201-16.053,16.053-16.053   h375.374c8.852,0,16.053,7.201,16.053,16.053V335.68z"/>
-										<path d="m82.747,127.494c-17.506,0-31.749,14.243-31.749,31.749 0,14.011 9.127,25.923 21.745,30.125v120.615c0,5.523 4.477,10 10,10s10-4.477 10-10v-120.613c12.622-4.199 21.753-16.113 21.753-30.127-1.42109e-14-17.506-14.243-31.749-31.749-31.749zm0,43.498c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749 11.749,5.271 11.749,11.749-5.271,11.749-11.749,11.749z"/>
-										<path d="m186.743,172.115v-34.623c0-5.523-4.477-10-10-10s-10,4.477-10,10v34.622c-12.62,4.2-21.75,16.113-21.75,30.126s9.129,25.927 21.75,30.126v77.616c0,5.523 4.477,10 10,10s10-4.477 10-10v-77.616c12.62-4.201 21.748-16.114 21.748-30.126s-9.129-25.925-21.748-30.125zm-10.001,41.875c-6.478,0-11.749-5.271-11.749-11.749 0-6.478 5.271-11.749 11.749-11.749 6.479,0 11.749,5.271 11.749,11.749 2.84217e-14,6.478-5.271,11.749-11.749,11.749z"/>
-										<path d="m280.733,215.111v-77.618c0-5.523-4.477-10-10-10s-10,4.477-10,10v77.621c-12.618,4.202-21.745,16.114-21.745,30.125s9.127,25.923 21.745,30.125v34.619c0,5.523 4.477,10 10,10s10-4.477 10-10v-34.616c12.622-4.199 21.753-16.114 21.753-30.128s-9.131-25.929-21.753-30.128zm-9.996,41.877c-6.479,0-11.749-5.271-11.749-11.749s5.271-11.749 11.749-11.749c6.478,0 11.749,5.271 11.749,11.749s-5.271,11.749-11.749,11.749z"/>
-										<path d="m374.733,258.111v-120.619c0-5.523-4.477-10-10-10s-10,4.477-10,10v120.618c-12.62,4.2-21.75,16.114-21.75,30.126 0,17.506 14.243,31.749 31.749,31.749s31.749-14.242 31.749-31.749c-5.68434e-14-14.012-9.128-25.925-21.748-30.125zm-10.001,41.874c-6.479,0-11.749-5.271-11.749-11.749 0-6.479 5.271-11.749 11.749-11.749s11.749,5.271 11.749,11.749c-5.68434e-14,6.479-5.27,11.749-11.749,11.749z"/>
-									</g>
-								</svg>
+								<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor"><use href="#icon-manage"></use></svg>
 							</button>
 						</div>
 						<div class="card-body">
@@ -897,25 +865,27 @@ Double-click to open a window that will help build a correct expression.">
 										<select multiple id="language-list-user" class="language-listbox" size="12" style="width: 150px;"></select>
 									</div>
 								</div>
-								<div class="border-t pt-3 flex items-center space-x-4">
-									<div class="flex items-center">
-										<input type="checkbox" id="npc-has-telepathy" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-										<label for="npc-has-telepathy" class="ml-2 label-text">Has Telepathy</label>
+								<div class="border-t pt-3 flex justify-between items-center">
+									<div class="flex items-center space-x-4">
+										<div class="flex items-center">
+											<input type="checkbox" id="npc-has-telepathy" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+											<label for="npc-has-telepathy" class="ml-2 label-text">Has Telepathy</label>
+										</div>
+										<div class="flex items-center">
+											<label for="npc-telepathy-range" class="label-text mr-2">Range (ft.)</label>
+											<input type="number" id="npc-telepathy-range" class="info-input h-6 w-16 text-center" min="0" step="10">
+										</div>
 									</div>
 									<div class="flex items-center">
-										<label for="npc-telepathy-range" class="label-text mr-2">Range (ft.)</label>
-										<input type="number" id="npc-telepathy-range" class="info-input h-6 w-20 text-center" min="0" step="10">
-									</div>
-									<div class="flex items-center">
-										<label for="npc-special-language-option" class="label-text mr-2">Special</label>
+										<label for="npc-special-language-option" class="label-text mr-2">Special Language Options</label>
 										<select id="npc-special-language-option" class="info-select h-6">
-											<option value="0">Standard</option>
-											<option value="1">Placeholder 1</option>
-											<option value="2">Placeholder 2</option>
-											<option value="3">Placeholder 3</option>
-											<option value="4">Placeholder 4</option>
-											<option value="5">Placeholder 5</option>
-											<option value="6">Placeholder 6</option>
+											<option value="0">No special conditions</option>
+											<option value="1">Speaks no languages</option>
+											<option value="2">Speaks all languages</option>
+											<option value="3">Speaks languages it knew in life</option>
+											<option value="4">Can't speak; knows selected languages</option>
+											<option value="5">Can't speak; knows creator's languages</option>
+											<option value="6">Can't speak; knows languages known in life</option>
 										</select>
 									</div>
 								</div>
@@ -925,11 +895,32 @@ Double-click to open a window that will help build a correct expression.">
 
 					<!-- Card: Traits -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
-						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
-							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Traits</h2>
+						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
+							<h2 class="font-bold text-slate-700 cursor-pointer select-none">Traits</h2>
+							<button id="manage-traits-btn" title="Manage Traits">
+								<svg class="h-5 w-5 text-gray-600 hover:text-black" fill="currentColor"><use href="#icon-manage"></use></svg>
+							</button>
 						</div>
 						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
+							<div class="p-4">
+								<div id="npc-trait-list" class="space-y-2 mb-4">
+									<!-- NPC's traits will be dynamically added here -->
+								</div>
+								<hr class="my-4 border-gray-300">
+								<div class="space-y-2">
+<div>
+										<label for="new-trait-name" class="label-text">Trait Name</label>
+										<input id="new-trait-name" list="saved-trait-list" class="info-input w-full" autocomplete="off">
+										<datalist id="saved-trait-list"></datalist>
+									</div>									<div>
+										<label for="new-trait-description" class="label-text">Description</label>
+										<textarea id="new-trait-description" class="info-input w-full h-24" rows="3"></textarea>
+									</div>
+									<div class="text-right">
+										<button id="add-trait-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add Trait</button>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -1046,6 +1037,22 @@ Double-click to open a window that will help build a correct expression.">
 					<!-- Language items will be injected here -->
 				</div>
 			</div>
+			
+			<!-- Manage Traits Modal -->
+			<div id="manage-traits-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+				<div class="flex justify-between items-center mb-2">
+					<h3 class="font-bold text-slate-700">Manage Traits</h3>
+					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+				</div>
+				<div class="space-y-2">
+					<input type="text" id="modal-trait-name" class="info-input w-full" placeholder="New trait name...">
+					<textarea id="modal-trait-description" class="info-input w-full h-24" placeholder="Trait description..."></textarea>
+					<button id="add-managed-trait-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold float-right">Add</button>
+				</div>
+				<div id="managed-trait-list-div" class="space-y-1 max-h-60 overflow-y-auto border-t pt-10 mt-2">
+					<!-- Saved trait items will be injected here -->
+				</div>
+			</div>
 
 			<!-- Settings Modal -->
 			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
@@ -1111,7 +1118,11 @@ Double-click to open a window that will help build a correct expression.">
 			</div>
 
 		</div>
-
-		<script src="script.js" defer></script>
+		
+		<script src="icons.js" defer></script>
+		<script src="ui.js" defer></script>
+		<script src="viewport.js" defer></script>
+		<script src="main.js" defer></script>
 	</body>
 </html>
+

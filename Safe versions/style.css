@@ -277,3 +277,12 @@ table.spell td {
     background-color: #8A8AA3;
     color: #FFFFFF;
 }
+/* --- Drag & Drop Trait Indicator --- */
+.drop-indicator-top {
+    border-top: 2px solid #87CC24; /* A bright blue */
+    margin-top: -2px; /* Prevent layout shift */
+}
+.drop-indicator-bottom {
+    border-bottom: 2px solid #87CC24;
+    margin-bottom: 2px; /* Prevent layout shift */
+}
