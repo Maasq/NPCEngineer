@@ -71,9 +71,11 @@ window.ui = {
 	addTraitBtn: document.getElementById('add-trait-btn'),
 	modalTraitName: document.getElementById('modal-trait-name'),
 	modalTraitDescription: document.getElementById('modal-trait-description'),
+	modalTokenButtons: document.getElementById('modal-token-buttons'),
 	addManagedTraitBtn: document.getElementById('add-managed-trait-btn'),
 	managedTraitListDiv: document.getElementById('managed-trait-list-div'),
-
+	sortTraitsAlphaCheckbox: document.getElementById('sort-traits-alpha'),
+	
 	tokenBox: document.getElementById("npc-token"),
 	tokenUpload: document.getElementById("token-upload"),
 	imageBox: document.getElementById("npc-image"),
@@ -494,7 +496,10 @@ window.ui = {
 			// --- End language section ---
 
 			this.populateSavedTraitsDatalist();
+			this.sortTraitsAlphaCheckbox.checked = window.app.activeNPC.sortTraitsAlpha ?? true;
 			this.renderNpcTraits();
+			this.newTraitName.value = '';
+			this.newTraitDescription.value = '';
 
 			for (const key in this.npcSettingsCheckboxes) {
 				this.npcSettingsCheckboxes[key].checked = window.app.activeNPC[key];
@@ -761,7 +766,15 @@ window.ui = {
         this.manageTraitsBtn.addEventListener('click', this.showManageTraitsModal.bind(this));
         this.addManagedTraitBtn.addEventListener('click', this.addNewSavedTrait.bind(this));
 
-        // Listener to auto-fill description when a saved trait is selected from the datalist
+		this.sortTraitsAlphaCheckbox.addEventListener('input', () => {
+			if (window.app.activeNPC) {
+				window.app.activeNPC.sortTraitsAlpha = this.sortTraitsAlphaCheckbox.checked;
+				this.renderNpcTraits(); // Re-render the UI list
+				window.viewport.updateViewport(); // Re-render the viewport
+				window.app.saveActiveBestiaryToDB(); // Save the new state
+			}
+		});
+		// Listener to auto-fill description when a saved trait is selected from the datalist
         this.newTraitName.addEventListener('input', (e) => {
             const traitName = e.target.value;
             const savedTraits = window.app.activeBestiary?.metadata?.savedTraits || [];
@@ -769,6 +782,31 @@ window.ui = {
             if (matchedTrait) {
                 this.newTraitDescription.value = matchedTrait.description;
             }
+        });
+
+        this.modalTokenButtons.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-token]');
+            if (!button) return;
+			e.preventDefault();
+
+            const baseToken = button.dataset.token;
+            let finalToken;
+
+            if (e.shiftKey) {
+                // Capitalize the token: {he} -> {He}
+                finalToken = `{${baseToken.charAt(1).toUpperCase()}${baseToken.slice(2)}`;
+            } else {
+                finalToken = baseToken;
+            }
+
+            const textarea = this.modalTraitDescription;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+
+            textarea.value = text.substring(0, start) + finalToken + text.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + finalToken.length;
+            textarea.focus();
         });
     },
     setupDragAndDrop: function(box, validTypes, npcKey, updateFn) {
@@ -1030,20 +1068,28 @@ window.ui = {
 		window.app.saveActiveBestiaryToDB();
 	},
 
-	renderNpcTraits: function() {
+renderNpcTraits: function() {
 		this.npcTraitList.innerHTML = '';
 		if (!window.app.activeNPC || !window.app.activeNPC.traits) return;
 
 		let draggedIndex = -1;
+		const shouldSort = window.app.activeNPC.sortTraitsAlpha ?? true;
+		let traitsToRender = [...window.app.activeNPC.traits];
 
-		window.app.activeNPC.traits.forEach((trait, index) => {
+		if (shouldSort) {
+			traitsToRender.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+		}
+
+		traitsToRender.forEach((trait) => {
+			const originalIndex = window.app.activeNPC.traits.indexOf(trait);
+
 			const traitEl = document.createElement('div');
-			traitEl.className = 'p-2 border rounded-md bg-gray-50 hover:bg-gray-100 cursor-pointer flex justify-between items-start';
-			traitEl.draggable = true;
-			traitEl.dataset.index = index;
+			traitEl.className = 'p-2 border rounded-md bg-gray-50 hover:bg-gray-100 flex justify-between items-start';
+			traitEl.dataset.index = originalIndex;
 
 			const contentEl = document.createElement('div');
-			contentEl.innerHTML = `<strong class="text-sm">${trait.name}</strong><p class="text-xs text-gray-600">${trait.description}</p>`;
+			const processedDescription = window.app.processTraitString(trait.description, window.app.activeNPC);
+			contentEl.innerHTML = `<strong class="text-sm">${trait.name}</strong><p class="text-xs text-gray-600">${processedDescription}</p>`;
 			
 			const deleteBtn = document.createElement('button');
 			deleteBtn.innerHTML = `&times;`;
@@ -1052,7 +1098,7 @@ window.ui = {
 			
 			deleteBtn.onclick = (e) => {
 				e.stopPropagation();
-				window.app.activeNPC.traits.splice(index, 1);
+				window.app.activeNPC.traits.splice(originalIndex, 1);
 				this.renderNpcTraits();
 				window.viewport.updateViewport();
 				window.app.saveActiveBestiaryToDB();
@@ -1063,75 +1109,68 @@ window.ui = {
 				this.newTraitDescription.value = trait.description;
 			};
 			
-			traitEl.addEventListener('dragstart', (e) => {
-				draggedIndex = index;
-				e.dataTransfer.effectAllowed = 'move';
-				setTimeout(() => traitEl.classList.add('opacity-50'), 0);
-			});
+			if (shouldSort) {
+				traitEl.draggable = false;
+			} else {
+				traitEl.draggable = true;
+				traitEl.classList.add('cursor-pointer');
 
-			traitEl.addEventListener('dragend', () => {
-				traitEl.classList.remove('opacity-50');
-				// Cleanup any lingering indicators just in case
-				document.querySelectorAll('#npc-trait-list .drop-indicator-top, #npc-trait-list .drop-indicator-bottom').forEach(el => {
-					el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+				traitEl.addEventListener('dragstart', (e) => {
+					draggedIndex = originalIndex;
+					e.dataTransfer.effectAllowed = 'move';
+					setTimeout(() => traitEl.classList.add('opacity-50'), 0);
 				});
-			});
 
-			traitEl.addEventListener('dragover', (e) => {
-				e.preventDefault();
-				// Clear indicators from other elements
-				document.querySelectorAll('#npc-trait-list > div').forEach(el => {
-					if (el !== traitEl) {
+				traitEl.addEventListener('dragend', () => {
+					traitEl.classList.remove('opacity-50');
+					document.querySelectorAll('#npc-trait-list .drop-indicator-top, #npc-trait-list .drop-indicator-bottom').forEach(el => {
 						el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+					});
+				});
+
+				traitEl.addEventListener('dragover', (e) => {
+					e.preventDefault();
+					document.querySelectorAll('#npc-trait-list > div').forEach(el => {
+						if (el !== traitEl) el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+					});
+					const rect = traitEl.getBoundingClientRect();
+					if (e.clientY < rect.top + rect.height / 2) {
+						traitEl.classList.add('drop-indicator-top');
+						traitEl.classList.remove('drop-indicator-bottom');
+					} else {
+						traitEl.classList.add('drop-indicator-bottom');
+						traitEl.classList.remove('drop-indicator-top');
 					}
 				});
 
-				const rect = traitEl.getBoundingClientRect();
-				const midY = rect.top + rect.height / 2;
-				if (e.clientY < midY) {
-					traitEl.classList.add('drop-indicator-top');
-					traitEl.classList.remove('drop-indicator-bottom');
-				} else {
-					traitEl.classList.add('drop-indicator-bottom');
-					traitEl.classList.remove('drop-indicator-top');
-				}
-			});
+				traitEl.addEventListener('drop', (e) => {
+					e.preventDefault();
+					const droppedOnOriginalIndex = parseInt(e.currentTarget.dataset.index, 10);
+					if (draggedIndex === droppedOnOriginalIndex) return;
 
-			traitEl.addEventListener('drop', (e) => {
-				e.preventDefault();
-				const droppedOnIndex = index;
-				const dropTarget = e.currentTarget;
-				const dropAbove = dropTarget.classList.contains('drop-indicator-top');
-				
-				// Cleanup all indicators
-				document.querySelectorAll('#npc-trait-list > div').forEach(el => {
-					el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+					const dropAbove = e.currentTarget.classList.contains('drop-indicator-top');
+					document.querySelectorAll('#npc-trait-list > div').forEach(el => {
+						el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+					});
+					
+					const [draggedItem] = window.app.activeNPC.traits.splice(draggedIndex, 1);
+					let newTargetIndex = droppedOnOriginalIndex;
+					if (draggedIndex < droppedOnOriginalIndex) newTargetIndex--;
+					
+					const insertionPoint = dropAbove ? newTargetIndex : newTargetIndex + 1;
+					window.app.activeNPC.traits.splice(insertionPoint, 0, draggedItem);
+					
+					this.renderNpcTraits();
+					window.viewport.updateViewport();
+					window.app.saveActiveBestiaryToDB();
 				});
-
-				// Reorder array
-				const [draggedItem] = window.app.activeNPC.traits.splice(draggedIndex, 1);
-				
-				let targetIndex = droppedOnIndex;
-				if (draggedIndex < droppedOnIndex) {
-					targetIndex--;
-				}
-				
-				const insertionPoint = dropAbove ? targetIndex : targetIndex + 1;
-				
-				window.app.activeNPC.traits.splice(insertionPoint, 0, draggedItem);
-				
-				// Re-render, update viewport, and save
-				this.renderNpcTraits();
-				window.viewport.updateViewport();
-				window.app.saveActiveBestiaryToDB();
-			});
+			}
 
 			traitEl.appendChild(contentEl);
 			traitEl.appendChild(deleteBtn);
 			this.npcTraitList.appendChild(traitEl);
 		});
 
-		// Add a dragleave event to the container to clear indicators if the user drags out of the area
         this.npcTraitList.addEventListener('dragleave', (e) => {
             if (!this.npcTraitList.contains(e.relatedTarget)) {
                 document.querySelectorAll('#npc-trait-list > div').forEach(el => {
@@ -1140,7 +1179,7 @@ window.ui = {
             }
         });
 	},
-
+	
 	populateSavedTraitsDatalist: function() {
 		this.savedTraitList.innerHTML = '';
 		if (!window.app.activeBestiary || !window.app.activeBestiary.metadata.savedTraits) return;
@@ -1239,4 +1278,3 @@ window.ui = {
 		}
 	},
 };
-

@@ -14,7 +14,7 @@ function updateViewport() {
         name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
         strength, dexterity, constitution, intelligence, wisdom, charisma,
         strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-        useDropCap, addDescription, speed, challenge, experience, traits
+        useDropCap, addDescription, speed, challenge, experience, traits, sortTraitsAlpha
     } = activeNPC;
     
     const { vulnerabilities, resistances, immunities } = window.app.calculateDamageModifiersString(activeNPC);
@@ -25,7 +25,7 @@ function updateViewport() {
     const NPCName = name || "";
     const NPCac = armorClass || "";
     const NPChp = hitPoints || "";
-    const NPCDescriptionHTML = description || "";
+    const NPCDescriptionHTML = window.app.processTraitString(description, activeNPC) || "";
 
     let NPCTypeString = `${size || ""} ${type || ""}`.trim();
     if (species) { NPCTypeString += ` (${species})`; }
@@ -48,14 +48,22 @@ function updateViewport() {
     const dropCapClass = useDropCap ? 'drop-cap' : '';
     const descriptionHtml = addDescription ? `<div class="npcdescrip ${dropCapClass}"> ${NPCDescriptionHTML} </div>` : '';
 
-    const traitsHtml = (traits && traits.length > 0)
-        ? `
+    let traitsHtml = '';
+	if (traits && traits.length > 0) {
+		let traitsToRender = [...traits]; // Create a copy to avoid modifying the original
+		if (sortTraitsAlpha ?? true) {
+			traitsToRender.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+		}
+		traitsHtml = `
             <div class="npcdiv">
                 <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
             </div>
-            ${traits.map(trait => `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${trait.name}.</b></i> ${trait.description}</div>`).join('')}
-        `
-        : '';
+            ${traitsToRender.map(trait => {
+                const processedDescription = window.app.processTraitString(trait.description, activeNPC);
+                return `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${trait.name}.</b></i> ${processedDescription}</div>`
+            }).join('')}
+        `;
+	}
 
     const generatedHtml = `
         <div class="container">

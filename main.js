@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		weaponImmunity: 'none',
 		npcSkills: "",
 		traits: [], // New property for traits
+		sortTraitsAlpha: true,
 		// --- New Language Properties ---
 		selectedLanguages: [],
 		specialLanguageOption: 0,
@@ -113,10 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
 												'24','25','26','27','28','29','30'];
 	
 	const pronounSets = {
-		male: ['he', 'his', 'him', 'his'],
-		female: ['she', 'her', 'her', 'hers'],
-		neutral: ['they', 'their', 'them', 'theirs'],
-		creature: ['it', 'its', 'it', 'theirs']
+		male: ['he', 'him', 'his', 'himself'],
+		female: ['she', 'her', 'her', 'herself'],
+		neutral: ['they', 'them', 'their', 'themselves'],
+		creature: ['it', 'it', 'its', 'itself']
 	};
 
     // Make variables and functions available to other scripts
@@ -138,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         crToXpMap,
         challengeOrder,
         pronounSets,
+		processTraitString,
         findUniqueNpcName,
         createNewBestiary,
         loadBestiary,
@@ -166,6 +168,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 	// --- FUNCTIONS ---
+	
+	function processTraitString(text, npc) {
+		if (!text || !npc) return text;
+
+		const name = npc.name || "creature";
+		const gender = npc.gender || "creature";
+		const isUnique = npc.isUnique || false;
+		const isProperName = npc.isProperName || false;
+		const pronouns = pronounSets[gender] || pronounSets.creature;
+
+		const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+		return text.replace(/{([a-zA-Z_]+)}/g, (match, token) => {
+			const lowerToken = token.toLowerCase();
+			const isCapitalizedToken = token.charAt(0) === token.charAt(0).toUpperCase();
+
+			switch (lowerToken) {
+				case 'name':
+					let outputName;
+					if (isProperName) {
+						// Use first word of the name, always capitalized
+						outputName = capitalize(name.split(' ')[0] || name);
+					} else if (isUnique) {
+						// Use full name, always capitalized
+						outputName = capitalize(name);
+					} else {
+						// Use "the {name}"
+						outputName = `the ${name.toLowerCase()}`;
+					}
+
+					// Handle token capitalization like {Name}
+					if (isCapitalizedToken) {
+						return capitalize(outputName);
+					}
+					return outputName;
+
+				case 'he':
+					return isCapitalizedToken ? capitalize(pronouns[0]) : pronouns[0];
+				case 'him':
+					return isCapitalizedToken ? capitalize(pronouns[1]) : pronouns[1];
+				case 'his':
+					return isCapitalizedToken ? capitalize(pronouns[2]) : pronouns[2];
+				case 'himself':
+					return isCapitalizedToken ? capitalize(pronouns[3]) : pronouns[3];
+
+				default:
+					return match; // Return the original token if not found
+			}
+		});
+	}
 	
 	function findUniqueNpcName(baseName) {
 		if (!app.activeBestiary) return baseName;
@@ -271,6 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			
 			// --- Trait property healing ---
 			if (!Array.isArray(healedNpc.traits)) healedNpc.traits = [];
+			if (healedNpc.sortTraitsAlpha === undefined) healedNpc.sortTraitsAlpha = true;
 
 			if (!healedNpc.name || healedNpc.name.trim() === "") {
 				let uniqueName = `Unnamed NPC`;

@@ -5,18 +5,16 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.07.00" />
-		<meta name="date" content="2025-10-16" />
+		<meta name="version" content="0.07.16" />
+		<meta name="date" content="2025-10-17" />
 		
 		<title>NPC Engineer</title>
 		
-		<!-- External Libraries -->
 		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
 		<link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
 		<script type="text/javascript" src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
 		
-		<!-- Google Fonts -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -25,24 +23,19 @@
 		<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet" />
 		<link href="https://fonts.googleapis.com/css2?family=Macondo+Swash+Caps&display=swap" rel="stylesheet" />
 		
-		<!-- Local Stylesheet -->
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body class="bg-[#E2E8F0]">
-		<!-- Centering Container with a max-width. -->
 		<div class="max-w-screen-2xl mx-auto px-6 pb-6">
 
-			<!-- Sticky Header Area -->
 			<header class="sticky top-0 z-50 bg-[#E2E8F0] pt-1 pb-12">
 				<div class="relative h-24">
 					
-					<!-- Hamburger Menu -->
 					<div class="absolute top-2 left-2 z-40">
 						<button id="hamburger-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-violet-200 transition-colors">
 							<svg class="h-6 w-6 text-black"><use href="#icon-hamburger"></use></svg>
 						</button>
 						<div id="main-menu" class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden">
-							<!-- Bestiaries Sub-Menu -->
 							<div class="relative group/bestiaries">
 								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
 									<span>Bestiaries</span>
@@ -56,7 +49,6 @@
 								</div>
 							</div>
 							<hr class="my-1"/>
-							<!-- NPCs Sub-Menu -->
 							<div class="relative group/npcs">
 								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
 									<span>NPCs</span>
@@ -75,34 +67,26 @@
 						</div>
 					</div>
 
-					<!-- Background circle for the graphic -->
 					<div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
-					<!-- Graphic Image -->
 					<img src="graphics/npc engineer.webp" alt="NPC Engineer Logo" class="absolute w-32 h-32 rounded-full z-30" style="top: 16px; left: 28px" />
 					
 					
-					<!-- Bestiary Management Buttons -->
 					<div id="bestiary-buttons" class="absolute right-3 top-[15px] z-30 flex items-center space-x-4">
 						<span id="bestiary-status" class="text-sm font-medium text-gray-600 mr-2">No Bestiary Loaded</span>
-						<!-- New Bestiary Button -->
 						<button id="newBestiaryBtn" title="Create a new Bestiary" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-new-bestiary"></use></svg>
 						</button>
-						<!-- Load Bestiary Button -->
 						<button id="loadBestiaryBtn" title="Select one of your Bestiaries to edit" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-load-bestiary"></use></svg>
 						</button>
-						<!-- Import Bestiary Button -->
 						<button id="importBestiaryBtn" title="Import Bestiary (JSON) from Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-import-bestiary"></use></svg>
 						</button>
-						<!-- Export Bestiary Button -->
 						<button id="exportBestiaryBtn" title="Export Bestiary (JSON) to Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
 							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-export-bestiary"></use></svg>
 						</button>
 					</div>
 					
-					<!-- Persistent Header Bar -->
 					<div class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center justify-between px-4">
 						<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
 						<div id="npc-buttons" class="flex items-center space-x-4">
@@ -120,7 +104,6 @@
 							</button>
 						</div>
 					</div>
-					<!-- NPC Selector -->
 					<div id="npc-selector-container" class="absolute left-0 right-0 pr-6" style="top: 100px; display: flex; justify-content: flex-end; align-items: center;">
 						<select id="npc-selector" class="info-select hidden" style="width: 450px; font-size: 11pt;" title="Select an NPC to edit"></select>
 						<button id="deleteNpcBtn" title="Delete Current NPC" class="ml-2 p-1.5 text-red-600 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 hidden">
@@ -130,13 +113,10 @@
 				</div>
 			</header>
 
-			<!-- Main Content Area: flex-wrap will stack columns on smaller screens -->
 			<main class="flex flex-wrap justify-center gap-6 pt-6">
 
-				<!-- Left Column -->
 				<div id="main-content-column" class="w-[900px] flex-shrink-0 space-y-6">
 
-					<!-- Card: NPC Information -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
 							<h2 class="font-bold text-slate-700 cursor-pointer select-none" id="npc-info-header-title">NPC Information</h2>
@@ -151,15 +131,12 @@
 						<div class="card-body">
 							<div class="px-4 pt-2 pb-2">
 								<div class="flex space-x-4">
-									<!-- Main Info Column -->
 									<div class="flex-shrink-0">
 										<div class="space-y-1">
-											<!-- Name -->
 											<div class="flex items-center mb-2">
 												<label for="npc-name" class="label-text w-28 text-right pr-2">Name</label>
 												<input type="text" id="npc-name" class="info-input" style="width: 250px; height: 23px; background-color: #fef2f2; border-color: #b91c1c;" tabindex="1" title="Enter the NPC's name." />
 											</div>
-											<!-- Size and Gender -->
 											<div class="flex items-center">
 												<label for="npc-size" class="label-text w-28 text-right pr-2">Size</label>
 												<div class="relative" style="width: 200px; height: 23px;">
@@ -184,7 +161,6 @@ This will insert gender-specific pronouns in the descriptive text.">
 													<option value="female">female</option>
 												</select>
 											</div>
-											<!-- Type and Unique -->
 											<div class="flex items-center">
 												<label for="npc-type" class="label-text w-28 text-right pr-2">Type</label>
 												<div class="relative" style="width: 200px; height: 23px;">
@@ -224,7 +200,6 @@ This will insert gender-specific pronouns in the descriptive text.">
 This will capitalise its name in the descriptive text.">
 												</div>
 											</div>
-											<!-- Species and Proper Name -->
 											<div class="flex items-center">
 												<label for="npc-species" class="label-text w-28 text-right pr-2">Species</label>
 												<div class="relative" style="width: 200px; height: 23px;">
@@ -283,11 +258,8 @@ This will use just the first word of the name in the descriptive text.
 ('Maasq Hammerheart' will be referred to as 'Maasq' throughout; 'Ironbane, Destroyer of Worlds' as 'Ironbane') ">
 												</div>
 											</div>
-											<!-- Flex container for the Alignment/AC/HP column and Token column -->
 											<div class="flex items-start">
-												<!-- Left Column: Alignment, AC, HP -->
 												<div class="space-y-1">
-													<!-- Alignment -->
 													<div class="flex items-center">
 														<label for="npc-alignment" class="label-text w-28 text-right pr-2">Alignment</label>
 														<div class="relative" style="width: 200px; height: 23px;">
@@ -311,25 +283,21 @@ This will use just the first word of the name in the descriptive text.
 														</div>
 														<input type="checkbox" id="toggle-custom-alignment" title="enter a custom alignment" class="ml-2 mr-4 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" tabindex="-1">
 													</div>
-													<!-- Armor Class -->
 													<div class="flex items-center">
 														<label for="npc-ac" class="label-text w-28 text-right pr-2">Armor Class</label>
 														<input type="text" id="npc-ac" class="info-input" style="width: 200px; height: 23px;" tabindex="6" title="Enter the NPC's armor class. You can also enter the type of armor in brackets.
 Example: 12 (leather armor)">
 													</div>
-													<!-- Hit Points -->
 													<div class="flex items-center">
 														<label for="npc-hp" class="label-text w-28 text-right pr-2">Hit Points</label>
 														<input type="text" id="npc-hp" class="info-input" style="width: 200px; height: 23px;" tabindex="7" title="Enter the NPC's hit points, followed by its hit dice in brackets.
 Example: 16 (3d6 + 6)
 Double-click to open a window that will help build a correct expression.">
 													</div>
-													<!-- Challenge -->
 													<div class="flex items-center" style="padding-top: 3px;">
 														<label for="npc-challenge" class="label-text w-28 text-right pr-2">Challenge</label>
 														<select id="npc-challenge" class="info-select" style="width: 70px; height: 23px;" tabindex="8"></select>
 													</div>
-													<!-- XP and Proficiency Bonus -->
 													<div class="flex items-center" style="margin-top: -1px;">
 														<label class="label-text w-28 text-right pr-2">XP</label>
 														<span id="npc-experience-display" class="font-medium text-gray-800" style="width: 80px;"></span>
@@ -338,7 +306,6 @@ Double-click to open a window that will help build a correct expression.">
 													</div>
 												</div>
 
-												<!-- Right Column: Token -->
 												<div class="flex">
 													<label class="label-text w-28 text-right pr-2">Token</label>
 													<div class="w-[130px]">
@@ -352,7 +319,6 @@ Double-click to open a window that will help build a correct expression.">
 										</div>
 									</div>
 
-									<!-- Image Column -->
 									<div class="flex-grow">
 										<div id="npc-image" class="w-[256px] h-[242px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
 											<span>Click or Drag an NPC Image Here</span>
@@ -364,7 +330,6 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 
-					<!-- Card: Statistics -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Statistics</h2>
@@ -372,11 +337,9 @@ Double-click to open a window that will help build a correct expression.">
 						<div class="card-body">
 							<div class="p-4">
 								<div class="flex justify-around">
-									<!-- Ability Scores Section -->
 									<div class="ml-12">
 										<h3 class="font-bold text-center ml-9 mb-1 text-gray-800">Ability Scores</h3>
 										<div class="flex space-x-2">
-											<!-- Ability Column -->
 											<div class="flex flex-col items-end space-y-1">
 												<label class="label-text font-semibold h-6 mb-1 stat-header">Ability</label>
 												<label for="npc-strength" class="label-text h-6 flex items-center">Strength</label>
@@ -386,7 +349,6 @@ Double-click to open a window that will help build a correct expression.">
 												<label for="npc-wisdom" class="label-text h-6 flex items-center">Wisdom</label>
 												<label for="npc-charisma" class="label-text h-6 flex items-center">Charisma</label>
 											</div>
-											<!-- Score Column -->
 											<div class="flex flex-col items-center space-y-1">
 												<label class="label-text font-semibold h-6 mb-1 stat-header">Score</label>
 												<input type="number" id="npc-strength" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
@@ -396,7 +358,6 @@ Double-click to open a window that will help build a correct expression.">
 												<input type="number" id="npc-wisdom" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
 												<input type="number" id="npc-charisma" class="info-input h-6" style="width: 41px; padding-right: 2px;" min="1" max="30">
 											</div>
-											<!-- Bonus Column -->
 											<div class="flex flex-col items-center space-y-1">
 												<label class="label-text font-semibold h-6 mb-1 stat-header">Bonus</label>
 												<span id="npc-strength-bonus" class="font-medium text-gray-800 h-6 flex items-center"></span>
@@ -409,7 +370,6 @@ Double-click to open a window that will help build a correct expression.">
 										</div>
 									</div>
 									
-									<!-- Saving Throws Section -->
 									<div class="mr-12">
 										<h3 class="font-bold text-center mb-1 text-gray-800">Saving Throws</h3>
 										<div class="flex space-x-2">
@@ -448,7 +408,6 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 					
-					<!-- Card: Movement Speed and Sense Ranges -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Movement Speed and Sense Ranges</h2>
@@ -456,7 +415,6 @@ Double-click to open a window that will help build a correct expression.">
 						<div class="card-body">
 							<div class="p-4">
 								<div class="flex justify-around">
-									<!-- Speeds Section -->
 									<div>
 										<h3 class="font-bold text-center mb-1 text-gray-800">Speeds (ft.)</h3>
 										<div class="flex items-center space-x-2 mb-1">
@@ -484,7 +442,6 @@ Double-click to open a window that will help build a correct expression.">
 											<input type="number" id="npc-speed-swim" class="info-input h-6 w-20 text-center" min="0" max="200" step="5">
 										</div>
 									</div>
-									<!-- Senses Section -->
 									<div>
 										<h3 class="font-bold text-center mb-1 text-gray-800">Senses (ft.)</h3>
 										<div class="flex items-center space-x-2 mb-1">
@@ -517,14 +474,12 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 
-					<!-- Card: Resistances -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Resistances</h2>
 						</div>
 						<div class="card-body">
 							<div class="p-4">
-								<!-- Vulnerabilities Section -->
 								<div class="relative mt-2">
 									<h3 class="font-bold text-gray-800 absolute -top-2.5 left-4 bg-white px-1">Vulnerability</h3>
 									<div class="border border-gray-400 rounded-lg p-3 pt-4">
@@ -546,7 +501,6 @@ Double-click to open a window that will help build a correct expression.">
 									</div>
 								</div>
 
-								<!-- Resistance Section -->
 								<div class="relative mt-6">
 									<h3 class="font-bold text-gray-800 absolute -top-2.5 left-4 bg-white px-1">Resistance</h3>
 									<div class="border border-gray-400 rounded-lg p-3 pt-4">
@@ -596,7 +550,6 @@ Double-click to open a window that will help build a correct expression.">
 									</div>
 								</div>
 
-								<!-- Immunity Section -->
 								<div class="relative mt-6">
 									<h3 class="font-bold text-gray-800 absolute -top-2.5 left-4 bg-white px-1">Immunity</h3>
 									<div class="border border-gray-400 rounded-lg p-3 pt-4">
@@ -642,7 +595,6 @@ Double-click to open a window that will help build a correct expression.">
 									</div>
 								</div>
 								
-								<!-- Condition Immunity Section -->
 								<div class="relative mt-6">
 									<h3 class="font-bold text-gray-800 absolute -top-2.5 left-4 bg-white px-1">Condition Immunity</h3>
 									<div class="border border-gray-400 rounded-lg p-4 pt-5">
@@ -670,16 +622,13 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 
-					<!-- Card: Skills -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Skills</h2>
 						</div>
 						<div class="card-body">
 							<div class="p-4 grid grid-cols-2 gap-x-8">
-								<!-- Column 1 -->
 								<div class="space-y-1">
-									<!-- Headers -->
 									<div class="flex items-center font-semibold text-xs text-gray-500 mb-1">
 										<span class="w-28 text-left">Skill</span>
 										<span class="w-10 text-center">Attr</span>
@@ -688,7 +637,6 @@ Double-click to open a window that will help build a correct expression.">
 										<span class="w-16 text-center">Adjust</span>
 										<span class="w-12 text-center">Total</span>
 									</div>
-									<!-- Skills 1-9 -->
 									<div class="skill-row flex items-center h-6" data-skill="acrobatics" data-attr="dexterity">
 										<label for="skill-acrobatics-prof" class="w-28 text-sm">Acrobatics</label><span class="w-10 text-center text-xs text-gray-500">(DEX)</span>
 										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-acrobatics-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Acrobatics."></span>
@@ -753,9 +701,7 @@ Double-click to open a window that will help build a correct expression.">
 										<span id="skill-investigation-total" class="w-12 text-center font-bold text-gray-800 skill-total"></span>
 									</div>
 								</div>
-								<!-- Column 2 -->
 								<div class="space-y-1">
-									<!-- Headers -->
 									<div class="flex items-center font-semibold text-xs text-gray-500 mb-1">
 										<span class="w-28 text-left">Skill</span>
 										<span class="w-10 text-center">Attr</span>
@@ -764,7 +710,6 @@ Double-click to open a window that will help build a correct expression.">
 										<span class="w-16 text-center">Adjust</span>
 										<span class="w-12 text-center">Total</span>
 									</div>
-									<!-- Skills 10-18 -->
 									<div class="skill-row flex items-center h-6" data-skill="medicine" data-attr="wisdom">
 										<label for="skill-medicine-prof" class="w-28 text-sm">Medicine</label><span class="w-10 text-center text-xs text-gray-500">(WIS)</span>
 										<span class="w-8 flex justify-center"><input type="checkbox" id="skill-medicine-prof" class="skill-prof h-4 w-4" title="Check this box if the NPC has proficiency in Medicine."></span>
@@ -833,7 +778,6 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 
-					<!-- Card: Languages -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
 							<h2 class="font-bold text-slate-700 cursor-pointer select-none">Languages</h2>
@@ -893,7 +837,6 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 
-					<!-- Card: Traits -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center">
 							<h2 class="font-bold text-slate-700 cursor-pointer select-none">Traits</h2>
@@ -903,17 +846,21 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 						<div class="card-body">
 							<div class="p-4">
-								<div id="npc-trait-list" class="space-y-2 mb-4">
-									<!-- NPC's traits will be dynamically added here -->
+								<div id="npc-trait-list" class="space-y-2">
+									</div>
+								<div class="flex items-center justify-end mt-2">
+									<input type="checkbox" id="sort-traits-alpha" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+									<label for="sort-traits-alpha" class="ml-2 label-text text-xs">Sort traits alphabetically</label>
 								</div>
 								<hr class="my-4 border-gray-300">
 								<div class="space-y-2">
-<div>
+									<div>
 										<label for="new-trait-name" class="label-text">Trait Name</label>
 										<input id="new-trait-name" list="saved-trait-list" class="info-input w-full" autocomplete="off">
 										<datalist id="saved-trait-list"></datalist>
-									</div>									<div>
-										<label for="new-trait-description" class="label-text">Description</label>
+									</div>
+									<div>
+										<label for="new-trait-description" class="label-text">Trait Description</label>
 										<textarea id="new-trait-description" class="info-input w-full h-24" rows="3"></textarea>
 									</div>
 									<div class="text-right">
@@ -924,17 +871,15 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 					</div>
 
-					<!-- Card: Actions -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Actions</h2>
 						</div>
 						<div class="card-body">
-							<div class="p-4 min-h-[10rem]"><!-- Placeholder space --></div>
+							<div class="p-4 min-h-[10rem]"></div>
 						</div>
 					</div>
 
-					<!-- Card: Description -->
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Description</h2>
@@ -948,11 +893,9 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 				</div>
 
-				<!-- Right Column: Sticky on large screens -->
 				<aside class="w-[500px] flex-shrink-0 lg:sticky top-36">
 					<div id="viewport" class="w-[500px] h-[800px] bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container" style=" padding-top: 10px; background-image: url(&quot;graphics/viewport.jpg&quot;); background-repeat: repeat; background-position: top left; background-size: auto; overflow-y: scroll;">
-						<!-- The generated HTML will eventually be injected here -->
-					</div>
+						</div>
 					<div id="npc-options-container" class="hidden w-full mt-2 ml-5">
 						<div class="flex flex-col space-y-1">
 							<div class="flex items-center">
@@ -977,10 +920,8 @@ Double-click to open a window that will help build a correct expression.">
 			</main>
 		</div>
 
-		<!-- Modals -->
 		<div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
 			
-			<!-- New Bestiary Modal -->
 			<div id="new-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Create New Bestiary</h3>
@@ -997,18 +938,15 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 			</div>
 
-			<!-- Load Bestiary Modal -->
 			<div id="load-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Load Bestiary</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
 				</div>
 				<div id="bestiary-list" class="space-y-2 max-h-80 overflow-y-auto">
-					<!-- Bestiary items will be injected here -->
-				</div>
+					</div>
 			</div>
 			
-			<!-- Manage Groups Modal -->
 			<div id="manage-groups-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Manage Groups</h3>
@@ -1019,11 +957,9 @@ Double-click to open a window that will help build a correct expression.">
 					<button id="add-group-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add</button>
 				</div>
 				<div id="group-list" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
-					<!-- Group items will be injected here -->
-				</div>
+					</div>
 			</div>
 
-			<!-- Manage Languages Modal -->
 			<div id="manage-languages-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Manage Languages</h3>
@@ -1034,12 +970,10 @@ Double-click to open a window that will help build a correct expression.">
 					<button id="add-language-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add</button>
 				</div>
 				<div id="language-list-div" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
-					<!-- Language items will be injected here -->
-				</div>
+					</div>
 			</div>
 			
-			<!-- Manage Traits Modal -->
-			<div id="manage-traits-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+			<div id="manage-traits-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-[500px] hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Manage Traits</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -1047,14 +981,28 @@ Double-click to open a window that will help build a correct expression.">
 				<div class="space-y-2">
 					<input type="text" id="modal-trait-name" class="info-input w-full" placeholder="New trait name...">
 					<textarea id="modal-trait-description" class="info-input w-full h-24" placeholder="Trait description..."></textarea>
+					<div class="mt-2">
+						<div id="modal-token-buttons" class="flex items-center space-x-1">
+							<button class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded" data-token="{name}">{name}</button>
+							<button class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded" data-token="{he}">{he}</button>
+							<button class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded" data-token="{him}">{him}</button>
+							<button class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded" data-token="{his}">{his}</button>
+							<button class="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded" data-token="{himself}">{himself}</button>
+						</div>
+						<div class="mt-2 text-xs text-gray-600">
+							<div id="trait-reference-content" class="mt-1 p-2 border rounded-md bg-gray-50 text-[10px] leading-relaxed">
+								<b>Quick Reference:</b><br>
+								<b>Click</b> a button to insert its lowercase token (e.g., <code>{he}</code>).<br>
+								<b>Shift+Click</b> a button to insert its capitalized version (e.g., <code>{He}</code>).
+							</div>
+						</div>
+					</div>
 					<button id="add-managed-trait-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold float-right">Add</button>
 				</div>
 				<div id="managed-trait-list-div" class="space-y-1 max-h-60 overflow-y-auto border-t pt-10 mt-2">
-					<!-- Saved trait items will be injected here -->
-				</div>
+					</div>
 			</div>
 
-			<!-- Settings Modal -->
 			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Bestiary Default Settings</h3>
@@ -1085,7 +1033,6 @@ Double-click to open a window that will help build a correct expression.">
 			</div>
 
 
-			<!-- Hit Dice Calculator Modal -->
 			<div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-64 hidden">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Hit Dice Calculator</h3>
@@ -1125,4 +1072,3 @@ Double-click to open a window that will help build a correct expression.">
 		<script src="main.js" defer></script>
 	</body>
 </html>
-
