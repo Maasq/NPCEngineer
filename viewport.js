@@ -14,7 +14,8 @@ function updateViewport() {
         name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
         strength, dexterity, constitution, intelligence, wisdom, charisma,
         strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-        useDropCap, addDescription, speed, challenge, experience, traits, sortTraitsAlpha
+        useDropCap, addDescription, speed, challenge, experience, traits, sortTraitsAlpha,
+        actions, legendaryBoilerplate, lairBoilerplate
     } = activeNPC;
     
     const { vulnerabilities, resistances, immunities } = window.app.calculateDamageModifiersString(activeNPC);
@@ -50,20 +51,58 @@ function updateViewport() {
 
     let traitsHtml = '';
 	if (traits && traits.length > 0) {
-		let traitsToRender = [...traits]; // Create a copy to avoid modifying the original
+		let traitsToRender = [...traits];
 		if (sortTraitsAlpha ?? true) {
 			traitsToRender.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 		}
-		traitsHtml = `
+		traitsHtml = traitsToRender.map(trait => {
+            const processedDescription = window.app.processTraitString(trait.description, activeNPC);
+            return `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${trait.name}.</b></i> ${processedDescription}</div>`
+        }).join('');
+	}
+
+    const createActionSection = (actionList, title, boilerplate = '') => {
+        if (!actionList || actionList.length === 0) return '';
+        
+        let sortedList = [...actionList];
+        if(title === 'Actions') {
+            let multiattack = null;
+            const otherItems = sortedList.filter(item => {
+                if (item.name.toLowerCase() === 'multiattack') {
+                    multiattack = item;
+                    return false;
+                }
+                return true;
+            });
+            otherItems.sort((a,b) => a.name.localeCompare(b.name));
+            sortedList = multiattack ? [multiattack, ...otherItems] : otherItems;
+        } else {
+            sortedList.sort((a,b) => a.name.localeCompare(b.name));
+        }
+
+        const actionItemsHtml = sortedList.map(action => {
+            const processedDesc = window.app.processTraitString(action.desc, activeNPC);
+            return `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${action.name}.</b></i> ${processedDesc}</div>`;
+        }).join('');
+
+        const boilerplateHtml = boilerplate ? `<div class="npctop" style="margin-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
+
+        return `
             <div class="npcdiv">
                 <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
             </div>
-            ${traitsToRender.map(trait => {
-                const processedDescription = window.app.processTraitString(trait.description, activeNPC);
-                return `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${trait.name}.</b></i> ${processedDescription}</div>`
-            }).join('')}
+            <div class="heading">${title}</div>
+            ${boilerplateHtml}
+            ${actionItemsHtml}
         `;
-	}
+    };
+
+    const actionsHtml = createActionSection(actions.actions, 'Actions');
+    const bonusActionsHtml = createActionSection(actions['bonus-actions'], 'Bonus Actions');
+    const reactionsHtml = createActionSection(actions.reactions, 'Reactions');
+    const legendaryActionsHtml = createActionSection(actions['legendary-actions'], 'Legendary Actions', legendaryBoilerplate);
+    const lairActionsHtml = createActionSection(actions['lair-actions'], 'Lair Actions', lairBoilerplate);
+
 
     const generatedHtml = `
         <div class="container">
@@ -105,7 +144,13 @@ function updateViewport() {
             ${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
             ${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
             ${challenge ? `<div class="npctop"><b>Challenge</b> ${challenge} (${experience} XP)</div>` : ''}
+            ${traitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
             ${traitsHtml}
+            ${actionsHtml}
+            ${bonusActionsHtml}
+            ${reactionsHtml}
+            ${legendaryActionsHtml}
+            ${lairActionsHtml}
             <div class="npcdiv">
                 <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
             </div>

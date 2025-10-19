@@ -44,6 +44,9 @@ window.ui = {
 	settingsModal: document.getElementById('settings-modal'),
 	manageLanguagesModal: document.getElementById('manage-languages-modal'),
 	manageTraitsModal: document.getElementById('manage-traits-modal'),
+    boilerplateModal: document.getElementById('boilerplate-modal'),
+    attackHelperModal: document.getElementById('attack-helper-modal'),
+    alertModal: document.getElementById('alert-modal'),
 
 	// Modal-specific elements
 	createBestiaryBtn: document.getElementById("create-bestiary-btn"),
@@ -83,11 +86,16 @@ window.ui = {
 
 	hpModalCloseBtn: document.getElementById("hp-modal-close"),
 	hpApplyBtn: document.getElementById("hp-apply-btn"),
-	numDiceInput: document.getElementById("hp-num-dice"),
-	dieTypeSelect: document.getElementById("hp-die-type"),
-	bonusInput: document.getElementById("hp-bonus"),
+    hpDiceString: document.getElementById('hp-dice-string'),
+    hpDiceSelector: document.getElementById('hp-dice-selector'),
+
 	experienceDisplay: document.getElementById("npc-experience-display"),
 	proficiencyBonusDisplay: document.getElementById("npc-proficiency-bonus-display"),
+
+    // Action Elements
+    clearEditBtn: document.getElementById('clear-edit-btn'),
+    legendaryBoilerplate: document.getElementById('legendary-boilerplate'),
+    lairBoilerplate: document.getElementById('lair-boilerplate'),
 
 	// Settings Checkboxes
 	bestiarySettingsCheckboxes: {
@@ -134,10 +142,12 @@ window.ui = {
 		senseDarkvision: document.getElementById('npc-sense-darkvision'),
 		senseTremorsense: document.getElementById('npc-sense-tremorsense'),
 		senseTruesight: document.getElementById('npc-sense-truesight'),
-		fg_group: document.getElementById('fantasy-grounds-group')
+		fg_group: document.getElementById('fantasy-grounds-group'),
+        // Action Inputs
+        commonName: document.getElementById('common-name'),
+        commonDesc: document.getElementById('common-desc'),
 	},
 	
-	// --- Language Listbox references ---
 	languageListboxes: [
 		document.getElementById('language-list-standard'),
 		document.getElementById('language-list-exotic'),
@@ -149,6 +159,7 @@ window.ui = {
         this.populateChallengeDropdown();
         this.setupEventListeners();
         this.updateUIForActiveBestiary();
+        this.populateDamageTypes('attack-damage-type');
         document.querySelectorAll('.card-body').forEach(cardBody => {
             cardBody.classList.add('open');
             cardBody.style.paddingTop = '0.5rem';
@@ -235,7 +246,7 @@ window.ui = {
         });
 
         Object.values(this.inputs).forEach((input) => {
-            if(input.id !== 'npc-description') {
+            if(input.id !== 'npc-description' && !input.id.startsWith('common-')) {
                 input.addEventListener("input", window.app.updateActiveNPCFromForm);
             }
         });
@@ -308,27 +319,42 @@ window.ui = {
         this.inputs.hitPoints.addEventListener('dblclick', () => {
             if (window.app.activeNPC) {
                 this.parseHpStringToModal();
-                this.modalOverlay.classList.remove('hidden');
-                this.hpModal.classList.remove('hidden');
+                window.app.openModal('hp-modal');
+                window.app.createDiceSelector(this.hpDiceSelector, this.hpDiceString);
             }
         });
         this.hpModalCloseBtn.addEventListener('click', () => {
             this.hideAllModals();
         });
         this.hpApplyBtn.addEventListener('click', () => {
-            const numDice = parseInt(this.numDiceInput.value, 10) || 0;
-            const dieType = parseInt(this.dieTypeSelect.value, 10) || 0;
-            const bonus = parseInt(this.bonusInput.value, 10) || 0;
-            if (numDice > 0 && dieType > 0) {
-                const avgRoll = (dieType / 2) + 0.5;
-                const totalHp = Math.floor(numDice * avgRoll) + bonus;
-                let bonusString = "";
-                if (bonus > 0) { bonusString = ` + ${bonus}`; }
-                else if (bonus < 0) { bonusString = ` - ${Math.abs(bonus)}`; }
-                const hpString = `${totalHp} (${numDice}d${dieType}${bonusString})`;
-                this.inputs.hitPoints.value = hpString;
+            const diceString = this.hpDiceString.value.trim();
+            if (!diceString) {
+                this.inputs.hitPoints.value = "";
                 window.app.updateActiveNPCFromForm();
                 this.hideAllModals();
+                return;
+            }
+            const match = diceString.match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/);
+            if (match) {
+                const numDice = parseInt(match[1], 10);
+                const dieType = parseInt(match[2], 10);
+                const sign = match[3] || '+';
+                const bonus = parseInt(match[4], 10) || 0;
+                
+                const avgRoll = (dieType / 2) + 0.5;
+                const totalHp = Math.floor(numDice * avgRoll) + (sign === '+' ? bonus : -bonus);
+                
+                let bonusString = "";
+                if (bonus > 0) { bonusString = ` ${sign} ${bonus}`; }
+
+                const finalHpString = `${totalHp} (${numDice}d${dieType}${bonusString})`;
+                this.inputs.hitPoints.value = finalHpString;
+                window.app.updateActiveNPCFromForm();
+                this.hideAllModals();
+            } else if (!isNaN(parseInt(diceString))) {
+                 this.inputs.hitPoints.value = diceString;
+                 window.app.updateActiveNPCFromForm();
+                 this.hideAllModals();
             }
         });
 
@@ -340,21 +366,19 @@ window.ui = {
         this.setupConditionImmunityListeners();
         this.setupLanguageListeners();
         this.setupTraitListeners();
+        this.setupActionListeners();
     },
     showNewBestiaryModal: function() {
-        this.modalOverlay.classList.remove('hidden');
-        this.newBestiaryModal.classList.remove('hidden');
+        window.app.openModal('new-bestiary-modal');
         this.newBestiaryNameInput.focus();
     },
     hideAllModals: function() {
         this.modalOverlay.classList.add('hidden');
-		this.newBestiaryModal.classList.add('hidden');
-		this.loadBestiaryModal.classList.add('hidden');
-		this.hpModal.classList.add('hidden');
-		this.manageGroupsModal.classList.add('hidden');
-		this.settingsModal.classList.add('hidden');
-		this.manageLanguagesModal.classList.add('hidden');
-		this.manageTraitsModal.classList.add('hidden');
+        document.querySelectorAll('.modal-content, .bg-white.rounded-xl.custom-shadow').forEach(modal => {
+            if(modal.id && modal.id.endsWith('-modal')) {
+                 modal.classList.add('hidden');
+            }
+        });
     },
     updateMenuState: function() {
 		const hasActiveBestiary = !!window.app.activeBestiary;
@@ -440,12 +464,15 @@ window.ui = {
 				document.querySelector("trix-editor").editor.loadHTML("");
 				this.viewport.innerHTML = '';
 				this.updateNpcSelector();
-				this.npcTraitList.innerHTML = ''; // Clear traits
-				this.savedTraitList.innerHTML = ''; // Clear datalist
+				this.npcTraitList.innerHTML = '';
+				this.savedTraitList.innerHTML = '';
+                this.renderActions();
 				return;
 			}
 
 			for (const key in this.inputs) {
+                if (key.startsWith('common')) continue;
+
 				if (key === 'description') {
 					const trixEditorElement = document.querySelector("trix-editor");
 					this.inputs.description.value = window.app.activeNPC[key] || '';
@@ -479,7 +506,7 @@ window.ui = {
 					element.value = window.app.activeNPC[key] || "";
 				}
 			}
-			// --- Language section update (Phase 1) ---
+
 			const selectedLangs = window.app.activeNPC.selectedLanguages || [];
 			this.populateLanguageListbox('language-list-standard', window.app.standardLanguages, selectedLangs);
 			this.populateLanguageListbox('language-list-exotic', window.app.exoticLanguages, selectedLangs);
@@ -493,13 +520,18 @@ window.ui = {
 			if (telepathyRangeInput) telepathyRangeInput.value = window.app.activeNPC.telepathyRange || 0;
 			const specialOptionSelect = document.getElementById('npc-special-language-option');
 			if (specialOptionSelect) specialOptionSelect.value = window.app.activeNPC.specialLanguageOption || 0;
-			// --- End language section ---
 
 			this.populateSavedTraitsDatalist();
 			this.sortTraitsAlphaCheckbox.checked = window.app.activeNPC.sortTraitsAlpha ?? true;
 			this.renderNpcTraits();
 			this.newTraitName.value = '';
 			this.newTraitDescription.value = '';
+
+            this.renderActions();
+            window.app.clearInputs();
+            this.legendaryBoilerplate.textContent = window.app.activeNPC.legendaryBoilerplate || window.app.defaultNPC.legendaryBoilerplate;
+            this.lairBoilerplate.textContent = window.app.activeNPC.lairBoilerplate || window.app.defaultNPC.lairBoilerplate;
+
 
 			for (const key in this.npcSettingsCheckboxes) {
 				this.npcSettingsCheckboxes[key].checked = window.app.activeNPC[key];
@@ -543,8 +575,6 @@ window.ui = {
 				document.getElementById('wi-none').checked = true;
 			}
 
-
-			// Populate FG groups dropdown
 			const fgGroupDropdown = document.getElementById('fantasy-grounds-group');
 			fgGroupDropdown.innerHTML = '';
 			const bestiaryOption = document.createElement('option');
@@ -577,14 +607,12 @@ window.ui = {
 		const profBonus = window.app.activeNPC.proficiencyBonus || 2;
 
 		abilities.forEach(ability => {
-			// Update bonus display
 			const bonus = window.app.activeNPC[`${ability}Bonus`] || 0;
 			const bonusEl = document.getElementById(`npc-${ability}-bonus`);
 			if (bonusEl) {
 				bonusEl.textContent = bonus >= 0 ? `+${bonus}` : bonus;
 			}
 
-			// Update saving throw total display
 			const base = bonus;
 			const isProficient = window.app.activeNPC[`${ability}SavingThrowProf`] || false;
 			const adjust = window.app.activeNPC[`${ability}SavingThrowAdjust`] || 0;
@@ -715,14 +743,14 @@ window.ui = {
 				if (resCheckbox.checked) {
 					immCheckbox.checked = false;
 				}
-				window.app.updateActiveNPCFromForm(); // Update data model after any change
+				window.app.updateActiveNPCFromForm();
 			});
 
 			immCheckbox.addEventListener('input', () => {
 				if (immCheckbox.checked) {
 					resCheckbox.checked = false;
 				}
-				window.app.updateActiveNPCFromForm(); // Update data model after any change
+				window.app.updateActiveNPCFromForm();
 			});
 		});
 	},
@@ -742,17 +770,13 @@ window.ui = {
 		});
 	},
     setupLanguageListeners: function() {
-		// 1. Add listeners to all five listboxes
 		this.languageListboxes.forEach(listbox => {
-			// Using 'change' is appropriate for <select multiple>
 			listbox.addEventListener('change', window.app.updateActiveNPCFromForm); 
 		});
-		// 2. Add listeners to telepathy inputs
 		document.getElementById('npc-has-telepathy').addEventListener('input', window.app.updateActiveNPCFromForm);
 		document.getElementById('npc-telepathy-range').addEventListener('input', window.app.updateActiveNPCFromForm);
 		document.getElementById('npc-special-language-option').addEventListener('input', window.app.updateActiveNPCFromForm);
 		
-		// 3. Setup modal button listener
 		this.manageLanguagesBtn.addEventListener('click', this.showManageLanguagesModal.bind(this));
 		this.addLanguageBtn.addEventListener('click', this.addNewLanguage.bind(this));
 		this.newLanguageNameInput.addEventListener('keyup', (e) => {
@@ -769,12 +793,11 @@ window.ui = {
 		this.sortTraitsAlphaCheckbox.addEventListener('input', () => {
 			if (window.app.activeNPC) {
 				window.app.activeNPC.sortTraitsAlpha = this.sortTraitsAlphaCheckbox.checked;
-				this.renderNpcTraits(); // Re-render the UI list
-				window.viewport.updateViewport(); // Re-render the viewport
-				window.app.saveActiveBestiaryToDB(); // Save the new state
+				this.renderNpcTraits();
+				window.viewport.updateViewport();
+				window.app.saveActiveBestiaryToDB();
 			}
 		});
-		// Listener to auto-fill description when a saved trait is selected from the datalist
         this.newTraitName.addEventListener('input', (e) => {
             const traitName = e.target.value;
             const savedTraits = window.app.activeBestiary?.metadata?.savedTraits || [];
@@ -793,7 +816,6 @@ window.ui = {
             let finalToken;
 
             if (e.shiftKey) {
-                // Capitalize the token: {he} -> {He}
                 finalToken = `{${baseToken.charAt(1).toUpperCase()}${baseToken.slice(2)}`;
             } else {
                 finalToken = baseToken;
@@ -808,6 +830,12 @@ window.ui = {
             textarea.selectionStart = textarea.selectionEnd = start + finalToken.length;
             textarea.focus();
         });
+    },
+    setupActionListeners: function() {
+        this.clearEditBtn.addEventListener('click', window.app.clearInputs);
+        this.legendaryBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.legendaryBoilerplate));
+        this.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.lairBoilerplate));
+        window.app.createDiceSelector(document.getElementById('primary-dice-selector'), document.getElementById('attack-damage-dice'));
     },
     setupDragAndDrop: function(box, validTypes, npcKey, updateFn) {
 		["dragenter","dragover","dragleave","drop"].forEach(eventName => {
@@ -837,7 +865,7 @@ window.ui = {
 	},
     showLoadBestiaryModal: async function() {
 		const bestiaries = await window.app.db.projects.toArray();
-		this.bestiaryListDiv.innerHTML = ''; // Clear previous list
+		this.bestiaryListDiv.innerHTML = '';
 		if (bestiaries.length === 0) {
 			this.bestiaryListDiv.innerHTML = '<p class="text-gray-500">No bestiaries found.</p>';
 		} else {
@@ -866,7 +894,7 @@ window.ui = {
 						window.app.activeNPCIndex = -1;
 						this.updateUIForActiveBestiary();
 					}
-					this.showLoadBestiaryModal(); // Refresh list
+					this.showLoadBestiaryModal();
 				};
 				
 				projEl.appendChild(nameSpan);
@@ -874,8 +902,7 @@ window.ui = {
 				this.bestiaryListDiv.appendChild(projEl);
 			});
 		}
-		this.modalOverlay.classList.remove('hidden');
-		this.loadBestiaryModal.classList.remove('hidden');
+		window.app.openModal('load-bestiary-modal');
 	},
 	
 	showManageGroupsModal: async function() {
@@ -907,8 +934,7 @@ window.ui = {
 				this.groupListDiv.appendChild(groupEl);
 			});
 		}
-		this.modalOverlay.classList.remove('hidden');
-		this.manageGroupsModal.classList.remove('hidden');
+		window.app.openModal('manage-groups-modal');
 	},
 
 	showSettingsModal: function() {
@@ -918,8 +944,7 @@ window.ui = {
 			this.bestiarySettingsCheckboxes[key].checked = window.app.activeBestiary.metadata[key];
 		}
 
-		this.modalOverlay.classList.remove('hidden');
-		this.settingsModal.classList.remove('hidden');
+		window.app.openModal('settings-modal');
 	},
 
 	deleteGroup: function(groupName) {
@@ -927,7 +952,6 @@ window.ui = {
 		
 		window.app.activeBestiary.metadata.fg_groups = window.app.activeBestiary.metadata.fg_groups.filter(g => g !== groupName);
 		
-		// Check if any NPC was using this group and reset it
 		window.app.activeBestiary.npcs.forEach(npc => {
 			if (npc.fg_group === groupName) {
 				npc.fg_group = window.app.activeBestiary.projectName;
@@ -935,8 +959,8 @@ window.ui = {
 		});
 
 		window.app.saveActiveBestiaryToDB();
-		this.showManageGroupsModal(); // Refresh modal list
-		this.updateFormFromActiveNPC(); // Refresh main dropdown
+		this.showManageGroupsModal();
+		this.updateFormFromActiveNPC();
 	},
 
 	addNewGroup: function() {
@@ -957,11 +981,10 @@ window.ui = {
 		window.app.activeBestiary.metadata.fg_groups.push(newName);
 		window.app.saveActiveBestiaryToDB();
 		this.newGroupNameInput.value = '';
-		this.showManageGroupsModal(); // Refresh list
-		this.updateFormFromActiveNPC(); // Refresh main dropdown
+		this.showManageGroupsModal();
+		this.updateFormFromActiveNPC();
 	},
 	
-	// --- Language Modal Logic ---
 	showManageLanguagesModal: function() {
 		if (!window.app.activeBestiary) return;
 		
@@ -971,7 +994,6 @@ window.ui = {
 		if (userLangs.length === 0) {
 			this.languageListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom languages created.</p>';
 		} else {
-			// Sort the list alphabetically for user convenience
 			userLangs.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 
 			userLangs.forEach(langName => {
@@ -995,8 +1017,7 @@ window.ui = {
 				this.languageListDiv.appendChild(langEl);
 			});
 		}
-		this.modalOverlay.classList.remove('hidden');
-		this.manageLanguagesModal.classList.remove('hidden');
+		window.app.openModal('manage-languages-modal');
 		this.newLanguageNameInput.focus();
 	},
 	
@@ -1020,30 +1041,26 @@ window.ui = {
 		window.app.activeBestiary.metadata.userDefinedLanguages.push(newName);
 		window.app.saveActiveBestiaryToDB();
 		this.newLanguageNameInput.value = '';
-		this.showManageLanguagesModal(); // Refresh modal list
-		this.updateFormFromActiveNPC(); // Refresh the main language listboxes
+		this.showManageLanguagesModal();
+		this.updateFormFromActiveNPC();
 	},
 	
 	deleteLanguage: function(langName) {
 		if (!window.app.activeBestiary) return;
 		
-		// 1. Remove from bestiary metadata
 		window.app.activeBestiary.metadata.userDefinedLanguages = (window.app.activeBestiary.metadata.userDefinedLanguages || []).filter(l => l !== langName);
 		
-		// 2. Remove from any NPC that was using it
 		window.app.activeBestiary.npcs.forEach(npc => {
 			if (npc.selectedLanguages) {
 				npc.selectedLanguages = npc.selectedLanguages.filter(l => l !== langName);
 			}
 		});
 
-		// 3. Save, refresh modal, and refresh form
 		window.app.saveActiveBestiaryToDB();
 		this.showManageLanguagesModal(); 
 		this.updateFormFromActiveNPC(); 
 	},
 
-	// --- Trait Logic ---
 	addOrUpdateNpcTrait: function() {
 		if (!window.app.activeNPC) return;
 		const name = this.newTraitName.value.trim();
@@ -1053,10 +1070,8 @@ window.ui = {
 		const existingTraitIndex = window.app.activeNPC.traits.findIndex(trait => trait.name.toLowerCase() === name.toLowerCase());
 
 		if (existingTraitIndex > -1) {
-			// Update existing trait
 			window.app.activeNPC.traits[existingTraitIndex].description = description;
 		} else {
-			// Add new trait
 			window.app.activeNPC.traits.push({ name, description });
 		}
 		
@@ -1068,7 +1083,7 @@ window.ui = {
 		window.app.saveActiveBestiaryToDB();
 	},
 
-renderNpcTraits: function() {
+	renderNpcTraits: function() {
 		this.npcTraitList.innerHTML = '';
 		if (!window.app.activeNPC || !window.app.activeNPC.traits) return;
 
@@ -1179,6 +1194,52 @@ renderNpcTraits: function() {
             }
         });
 	},
+
+    renderActions: function() {
+        if (!window.app.activeNPC) {
+            // Clear all action lists if no NPC is active
+            Object.keys(window.app.defaultNPC.actions).forEach(type => {
+                const container = document.getElementById(`${type}-container`);
+                if(container) container.innerHTML = '';
+            });
+            return;
+        };
+
+        const { actions } = window.app.activeNPC;
+
+        for (const type in actions) {
+            const container = document.getElementById(`${type}-container`);
+            if (!container) continue;
+
+            container.innerHTML = '';
+            const items = [...actions[type]];
+
+            // Sort alphabetically, but keep "Multiattack" on top for the main "actions" type
+            let multiattack = null;
+            const otherItems = items.filter(item => {
+                if (type === 'actions' && item.name.toLowerCase() === 'multiattack') {
+                    multiattack = item;
+                    return false;
+                }
+                return true;
+            });
+            otherItems.sort((a, b) => a.name.localeCompare(b.name));
+            
+            const sortedItems = multiattack ? [multiattack, ...otherItems] : otherItems;
+
+            sortedItems.forEach(item => {
+                const originalIndex = actions[type].indexOf(item);
+                const listItem = document.createElement("li");
+                listItem.className = "action-list-item p-3 rounded-lg border border-gray-300";
+                listItem.dataset.actionType = type;
+                listItem.dataset.actionIndex = originalIndex;
+                listItem.setAttribute("onclick", "window.app.editAction(this)");
+                listItem.setAttribute("title", "Click to load this action back into the editor above.");
+                listItem.innerHTML = `<p class="font-bold text-sm"><em class="action-name">${item.name}</em>. <span class="font-normal text-xs action-desc">${item.desc}</span></p>`;
+                container.appendChild(listItem);
+            });
+        }
+    },
 	
 	populateSavedTraitsDatalist: function() {
 		this.savedTraitList.innerHTML = '';
@@ -1221,8 +1282,7 @@ renderNpcTraits: function() {
 				this.managedTraitListDiv.appendChild(traitEl);
 			});
 		}
-		this.modalOverlay.classList.remove('hidden');
-		this.manageTraitsModal.classList.remove('hidden');
+		window.app.openModal('manage-traits-modal');
 		this.modalTraitName.focus();
 	},
 
@@ -1241,8 +1301,8 @@ renderNpcTraits: function() {
 		this.modalTraitName.value = '';
 		this.modalTraitDescription.value = '';
 
-		this.showManageTraitsModal(); // Refresh modal
-		this.populateSavedTraitsDatalist(); // Refresh datalist on main form
+		this.showManageTraitsModal();
+		this.populateSavedTraitsDatalist();
 		window.app.saveActiveBestiaryToDB();
 	},
 
@@ -1250,31 +1310,33 @@ renderNpcTraits: function() {
 		const metadata = window.app.activeBestiary.metadata;
 		metadata.savedTraits = metadata.savedTraits.filter(t => t.name !== traitName);
 		
-		this.showManageTraitsModal(); // Refresh modal
-		this.populateSavedTraitsDatalist(); // Refresh datalist on main form
+		this.showManageTraitsModal();
+		this.populateSavedTraitsDatalist();
 		window.app.saveActiveBestiaryToDB();
 	},
 
-
 	parseHpStringToModal: function() {
 		const hpString = this.inputs.hitPoints.value || "";
-		const match = hpString.match(/\((\d+)d(\d+)\s*([+-])?\s*(\d+)?\)/);
+		const match = hpString.match(/\((.*?)\)/);
 
-		if (match) {
-			// Example match for "16 (3d6 + 6)": ["(3d6 + 6)", "3", "6", "+", "6"]
-			const numDice = parseInt(match[1], 10);
-			const dieType = parseInt(match[2], 10);
-			const sign = match[3];
-			const bonus = parseInt(match[4], 10) || 0;
-
-			this.numDiceInput.value = numDice;
-			this.dieTypeSelect.value = dieType;
-			this.bonusInput.value = (sign === '-') ? -bonus : bonus;
+		if (match && match[1]) {
+			this.hpDiceString.value = match[1].trim();
 		} else {
-			// Reset to defaults if no match
-			this.numDiceInput.value = 1;
-			this.dieTypeSelect.value = 8; // d8 default
-			this.bonusInput.value = 0;
+			this.hpDiceString.value = '';
 		}
 	},
+    populateDamageTypes: function(elementId) {
+        const select = document.getElementById(elementId);
+        if (select) {
+            window.app.damageTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type.toLowerCase();
+                option.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                select.appendChild(option);
+            });
+            if (elementId === 'attack-damage-type') {
+                select.value = 'slashing';
+            }
+        }
+    },
 };
