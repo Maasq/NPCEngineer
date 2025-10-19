@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	let isUpdatingForm = false;
 	let currentlyEditingAction = null;
     let boilerplateTarget = null;
+    let confirmCallback = null; // Store callback for confirmation dialog
 	
 	const baseDefaultNPC = {
 		name: "", size: "", type: "", species: "", alignment: "",
@@ -180,6 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
         openModal,
         closeModal,
         showAlert,
+        showConfirm, // New for confirmation
+        handleAttackHelperOpen, // New logic handler
+        parseAttackString, // New parser
+        populateAttackHelper, // New pre-filler
         editBoilerplate,
         saveBoilerplate,
         addDamageRow,
@@ -258,12 +263,12 @@ document.addEventListener("DOMContentLoaded", () => {
     async function createNewBestiary() {
     	const bestiaryName = window.ui.newBestiaryNameInput.value.trim();
     	if (!bestiaryName) {
-    		alert("Bestiary name cannot be empty.");
+    		showAlert("Bestiary name cannot be empty."); // Use showAlert
     		return;
     	}
     	const existingBestiary = await app.db.projects.where('projectName').equalsIgnoreCase(bestiaryName).first();
     	if (existingBestiary) {
-    		alert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`);
+    		showAlert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`); // Use showAlert
     		return;
     	}
     	
@@ -290,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
     		window.ui.newBestiaryNameInput.value = "";
     	} catch (error) {
     		console.error("Failed to create bestiary:", error);
-    		alert("Error: Could not create bestiary. Check console for details.");
+    		showAlert("Error: Could not create bestiary. Check console for details."); // Use showAlert
     	}
     }
 	
@@ -384,7 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			window.ui.updateUIForActiveBestiary();
 		} catch (error) {
 			console.error("Critical error loading bestiary:", error);
-			alert("There was a critical error trying to load this bestiary. It may be corrupt. Check the console for details.");
+			showAlert("There was a critical error trying to load this bestiary. It may be corrupt. Check the console for details."); // Use showAlert
 			app.activeBestiary = null;
 			app.activeNPC = null;
 			app.activeNPCIndex = -1;
@@ -457,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 			const existing = await app.db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
 			if (existing) {
-				alert(`A bestiary named "${importedBestiary.projectName}" already exists.`);
+				showAlert(`A bestiary named "${importedBestiary.projectName}" already exists.`); // Use showAlert
 				return;
 			}
 
@@ -467,11 +472,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			importedBestiary.id = newId;
 			
 			loadBestiary(importedBestiary);
-			alert(`Bestiary "${importedBestiary.projectName}" imported successfully!`);
+			showAlert(`Bestiary "${importedBestiary.projectName}" imported successfully!`); // Use showAlert
 		} catch (err) {
 			if (err.name !== "AbortError") {
 				console.error("Error importing bestiary:", err);
-				alert("Failed to import bestiary.");
+				showAlert("Failed to import bestiary."); // Use showAlert
 			}
 		}
 	}
@@ -565,13 +570,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			);
 
 			if (isDuplicate) {
-				alert(`An NPC named "${newName}" already exists in this bestiary.`);
+				showAlert(`An NPC named "${newName}" already exists in this bestiary.`); // Use showAlert
 				window.ui.inputs.name.value = app.activeNPC.name; // Revert to the old name
 				return; // Stop the update
 			}
 		}
 
 		for (const key in window.ui.inputs) {
+             // Skip action inputs and attack damage dice input
+            if (key.startsWith('common') || key === 'attackDamageDice') continue;
+            
 			if (key === 'description') {
 				app.activeNPC[key] = window.ui.inputs.description.value;
 				continue;
@@ -1007,6 +1015,141 @@ document.addEventListener("DOMContentLoaded", () => {
         closeModal('boilerplate-modal');
     }
 
+	// --- NEW ATTACK HELPER LOGIC ---
+    function handleAttackHelperOpen() {
+        const currentDesc = window.ui.inputs.commonDesc.value.trim();
+        
+        if (!currentDesc) {
+            // If empty, open blank helper
+            openBlankAttackHelper();
+            return;
+        }
+        
+        const parsedAttack = parseAttackString(currentDesc);
+
+        if (parsedAttack) {
+            // If parsing succeeds, populate and open
+            populateAttackHelper(parsedAttack);
+            openModal('attack-helper-modal');
+        } else {
+            // If parsing fails, ask user
+            showConfirm(
+                "Overwrite Description?",
+                "The current description doesn't look like a standard attack. Do you want to overwrite it using the Attack Helper?",
+                () => { // onConfirm
+                    openBlankAttackHelper();
+                }
+            );
+        }
+    }
+
+    function openBlankAttackHelper() {
+        // Reset fields before opening
+        document.getElementById('attack-type').value = 'Melee Weapon Attack';
+        document.getElementById('attack-bonus').value = '';
+        document.getElementById('attack-reach').value = '';
+        document.getElementById('attack-target').value = 'one target';
+        document.getElementById('attack-damage-dice').value = '';
+        document.getElementById('attack-damage-type').value = 'slashing';
+        // Remove additional damage rows
+        const container = document.getElementById('all-damage-rows-container');
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+        openModal('attack-helper-modal');
+    }
+
+    // --- REFINED: parseAttackString ---
+    function parseAttackString(str) {
+        // Regex: Capture type, bonus, reach/range, target, and the entire damage string
+         const attackRegex = /^(Melee|Ranged)\s+(Weapon|Spell)\s+Attack:\s*([+-]\d+)\s+to hit,\s+(?:reach\s+([\d/]+)\s*ft\.|range\s+([\d/]+)\s*ft\.),\s+([^.]+)\.\s+Hit:\s*(.*)\.$/i;
+        const match = str.match(attackRegex);
+
+        if (!match) return null; // Parsing failed at the basic structure level
+
+        const data = {
+            type: `${match[1]} ${match[2]} Attack`,
+            bonus: match[3].replace(/[+-]/, ''), // Remove sign for input
+            reach: match[4] || match[5], // Use reach or range group
+            target: match[6],
+            damageComponents: []
+        };
+
+        // Parse the entire damage string after "Hit: "
+        const damageString = match[7].trim();
+        // Split by " plus " or " + ", trying to preserve parentheses content
+        const damageParts = damageString.split(/\s+plus\s+|\s*\+\s*(?![^()]*\))/i);
+
+        damageParts.forEach((part, index) => {
+            part = part.trim();
+             // Regex to find dice expression (including simple numbers) within optional parens, and damage type
+            const damageRegex = /(?:\(?\s*([^)]+?)\s*\)?\s+)?(\b\w+\b)\s+damage/i;
+            const damageMatch = part.match(damageRegex);
+
+            if (damageMatch) {
+                let expression = damageMatch[1] ? damageMatch[1].trim() : ''; // Expression inside parens or the part before type if no parens
+                const type = damageMatch[2] ? damageMatch[2].toLowerCase() : '';
+                
+                 // If no explicit dice/bonus expression was found, check if the part itself is just a number before the type
+                 if (!expression && /^\d+$/.test(part.split(' ')[0])) {
+                    expression = part.split(' ')[0];
+                 }
+
+                if (type) { // Ensure we captured a damage type
+                     data.damageComponents.push({
+                         expression: expression,
+                         type: type
+                     });
+                 }
+            } else {
+                 // Fallback if the standard regex fails, maybe it's just "X type damage"?
+                 const simpleDamageRegex = /(\d+)\s+(\w+)\s+damage/i;
+                 const simpleMatch = part.match(simpleDamageRegex);
+                 if (simpleMatch) {
+                      data.damageComponents.push({
+                         expression: simpleMatch[1],
+                         type: simpleMatch[2].toLowerCase()
+                     });
+                 }
+            }
+        });
+        
+        // Return null if NO damage components were found, as it's not a valid attack string
+        return data.damageComponents.length > 0 ? data : null;
+    }
+
+
+	function populateAttackHelper(data) {
+        document.getElementById('attack-type').value = data.type;
+        document.getElementById('attack-bonus').value = data.bonus;
+        document.getElementById('attack-reach').value = data.reach;
+        document.getElementById('attack-target').value = data.target;
+
+        // Clear existing damage rows except the first one
+        const container = document.getElementById('all-damage-rows-container');
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+
+        // Populate damage components
+        data.damageComponents.forEach((comp, index) => {
+            if (index === 0) {
+                // Populate primary row
+                document.getElementById('attack-damage-dice').value = comp.expression;
+                document.getElementById('attack-damage-type').value = comp.type;
+            } else {
+                // Add and populate additional rows
+                addDamageRow(); // This function now creates unique IDs
+                const newRow = container.lastChild;
+                // Find the inputs within the newly added row
+                const damageInput = newRow.querySelector('.damage-expression');
+                const typeSelect = newRow.querySelector('.damage-type');
+                if(damageInput) damageInput.value = comp.expression;
+                if(typeSelect) typeSelect.value = comp.type;
+            }
+        });
+    }
+
 	// --- DICE SELECTOR LOGIC (REUSABLE) ---
 	function createDiceSelector(container, targetInput) {
 		if (!container || !targetInput) return;
@@ -1034,78 +1177,156 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function updateDiceString(targetInput, sides, change) {
-		let currentValue = targetInput.value.trim(); const dieTerm = `d${sides}`; let terms = currentValue.split('+').map(t => t.trim()).filter(t => t); let found = false;
-		terms = terms.map(term => { if (term.endsWith(dieTerm)) { found = true; const count = parseInt(term.slice(0, -dieTerm.length), 10) || 1; const newCount = count + change; return newCount > 0 ? `${newCount}${dieTerm}` : null; } return term; }).filter(t => t);
-		if (!found && change > 0) { terms.push(`1${dieTerm}`); }
-		targetInput.value = terms.join(' + ');
+		let currentValue = targetInput.value.trim(); const dieTerm = `d${sides}`; let terms = currentValue.split(/([+-])/).map(t => t.trim()).filter(t => t); // Split by + or - keeping delimiter
+		let found = false;
+        let newTerms = [];
+        let operator = '+'; // Default operator
+
+        // Combine terms with their preceding operator
+        for(let i = 0; i < terms.length; i++) {
+            if (terms[i] === '+' || terms[i] === '-') {
+                operator = terms[i];
+            } else if (terms[i].endsWith(dieTerm)) {
+                found = true;
+                const count = parseInt(terms[i].slice(0, -dieTerm.length), 10) || 1;
+                const newCount = count + change;
+                if (newCount > 0) {
+                     newTerms.push({ term: `${newCount}${dieTerm}`, operator: operator });
+                }
+                 operator = '+'; // Reset operator after use
+            } else {
+                 newTerms.push({ term: terms[i], operator: operator });
+                 operator = '+'; // Reset operator after use
+            }
+        }
+
+		if (!found && change > 0) {
+             newTerms.push({ term: `1${dieTerm}`, operator: '+' });
+		}
+
+        // Reconstruct the string
+        let result = "";
+        newTerms.forEach((item, index) => {
+            if(index === 0) {
+                // Handle potential negative bonus as first term
+                result += (item.operator === '-' ? '-' : '') + item.term;
+            } else {
+                 result += ` ${item.operator} ${item.term}`;
+            }
+        });
+
+		targetInput.value = result.trim();
 	}
 
 	function updateBonus(targetInput, change) {
 		if (!targetInput) return;
 		let expression = targetInput.value.trim();
-		
-		let dicePart = expression;
+		let terms = expression.split(/([+-])/).map(t => t.trim()).filter(t => t); // Split by + or - keeping delimiter
 		let bonus = 0;
+		let diceTerms = [];
+        let currentOperator = '+';
 
-		const bonusRegex = /([+\-]\s*\d+)$/;
-		const match = expression.match(bonusRegex);
-
-		if (match) {
-			const sign = match[1].includes('+') ? 1 : -1;
-			const value = parseInt(match[1].replace(/[+\-]/g, '').trim(), 10);
-			bonus = sign * value;
-			dicePart = expression.substring(0, match.index).trim();
-		} else if (!isNaN(parseInt(expression)) && expression.indexOf('d') === -1) {
-			bonus = parseInt(expression, 10) || 0;
-			dicePart = '';
-		}
+        // Separate dice terms and calculate existing bonus
+        for (let i = 0; i < terms.length; i++) {
+            if (terms[i] === '+' || terms[i] === '-') {
+                 currentOperator = terms[i];
+            } else if (terms[i].includes('d')) {
+                 // Push the operator and the dice term
+                 diceTerms.push(currentOperator === '-' ? ` - ${terms[i]}` : (diceTerms.length > 0 ? ` + ${terms[i]}` : terms[i]));
+                 currentOperator = '+'; // Reset for next term
+            } else if (!isNaN(parseInt(terms[i]))) {
+                bonus += (currentOperator === '-' ? -1 : 1) * parseInt(terms[i], 10);
+                currentOperator = '+'; // Reset for next term
+            } else {
+                 // If it's not a dice term or number, treat as part of dice terms (e.g., weird input)
+                 diceTerms.push(currentOperator === '-' ? ` - ${terms[i]}` : (diceTerms.length > 0 ? ` + ${terms[i]}` : terms[i]));
+                  currentOperator = '+'; // Reset for next term
+            }
+        }
 
 		const newBonus = bonus + change;
+		let newExpression = diceTerms.join('').trim();
 
-		let newExpression = dicePart;
 		if (newBonus !== 0) {
-			if (dicePart) {
-				newExpression += newBonus > 0 ? ` + ${newBonus}` : ` - ${Math.abs(newBonus)}`;
-			} else {
-				newExpression = `${newBonus}`;
-			}
-		}
+            if (newExpression) {
+                newExpression += newBonus > 0 ? ` + ${newBonus}` : ` - ${Math.abs(newBonus)}`;
+            } else {
+                newExpression = `${newBonus}`;
+            }
+		} else if (!newExpression) {
+             // If bonus is 0 and no dice terms, the expression is empty
+             newExpression = "";
+        }
 
 		targetInput.value = newExpression;
 	}
+
 
 	// --- ATTACK HELPER SPECIFIC LOGIC ---
 	function addDamageRow() {
 		const container = document.getElementById('all-damage-rows-container');
 		const newRow = document.createElement('div');
-		const newIdSuffix = container.children.length;
+        // Generate a unique ID suffix based on timestamp or random number for robustness
+        const newIdSuffix = Date.now() + Math.random().toString(36).substring(2, 7);
 		newRow.className = 'additional-damage-row p-3 border rounded-lg bg-gray-50';
 		newRow.innerHTML = `
 			<div class="flex flex-wrap items-center gap-4 text-sm">
-				<div class="flex-grow"><input id="add-damage-dice-${newIdSuffix}" type="text" placeholder="Damage" class="w-full rounded-md border-gray-300 info-input damage-expression" title="Enter the damage dice and bonus manually, or use the clickable icons."></div>
+				<div class="flex-grow">
+					<input id="add-damage-dice-${newIdSuffix}" type="text" placeholder="Additional Damage" class="w-full rounded-md border-gray-300 info-input damage-expression" title="Enter the damage dice and bonus manually, or use the clickable icons.">
+					<button id="add-damage-dice-clear-${newIdSuffix}" class="clear-btn">clear</button>
+				</div>
 				<div id="add-dice-selector-${newIdSuffix}" class="dice-selector-container flex items-center"></div>
 				<div><select id="add-damage-type-${newIdSuffix}" class="rounded-md border-gray-300 info-select damage-type" title="Select the type of damage this attack deals."></select></div>
-				<button onclick="this.parentElement.parentElement.remove()" class="px-2 py-0.5 border rounded-full text-xs font-bold self-start">X</button>
+				<button onclick="this.parentElement.parentElement.remove()" class="px-2 py-0.5 border rounded-full text-xs font-bold self-start text-red-600 hover:bg-red-100" title="Remove this damage component">X</button>
 			</div>
 		`;
 		container.appendChild(newRow);
 		window.ui.populateDamageTypes(`add-damage-type-${newIdSuffix}`);
-		createDiceSelector(document.getElementById(`add-dice-selector-${newIdSuffix}`), document.getElementById(`add-damage-dice-${newIdSuffix}`));
+        const damageInput = document.getElementById(`add-damage-dice-${newIdSuffix}`);
+        const clearButton = document.getElementById(`add-damage-dice-clear-${newIdSuffix}`);
+        clearButton.addEventListener('click', () => { damageInput.value = ''; });
+		createDiceSelector(document.getElementById(`add-dice-selector-${newIdSuffix}`), damageInput);
 	}
 
+    // --- REFINED: generateAttackString ---
 	function generateAttackString() {
 		const type = document.getElementById('attack-type').value; const bonusRaw = document.getElementById('attack-bonus').value; const reachRaw = document.getElementById('attack-reach').value; const target = document.getElementById('attack-target').value;
 		if (!bonusRaw || !reachRaw) { showAlert('Please provide at least a bonus and reach/range.'); return; }
-		const bonus = parseInt(bonusRaw) >= 0 ? `+${bonusRaw}` : bonusRaw; const reach = `${reachRaw} ft.`; let fullString = `${type}: ${bonus} to hit, reach ${reach}, ${target}. Hit: `; let damageParts = [];
+		const bonus = parseInt(bonusRaw) >= 0 ? `+${bonusRaw}` : bonusRaw;
+		// Determine reach or range label based on attack type
+		const reachLabel = type.toLowerCase().includes('melee') ? 'reach' : 'range';
+		const reach = `${reachLabel} ${reachRaw} ft.`;
+
+		let fullString = `${type}: ${bonus} to hit, ${reach}, ${target}. Hit: `; let damageParts = [];
 		
 		const pExpression = document.getElementById('attack-damage-dice').value.trim();
 		const pType = document.getElementById('attack-damage-type').value;
-		if (pExpression) { damageParts.push(`(${pExpression}) ${pType} damage`); }
+		if (pExpression) {
+             // Check if expression is just a number, if so, wrap in parens
+             if (!isNaN(pExpression) && !pExpression.includes('d')) {
+                 damageParts.push(`(${pExpression}) ${pType} damage`);
+             } else {
+                damageParts.push(`(${pExpression}) ${pType} damage`);
+             }
+		} else if (pType) {
+            // Only add if there's a type, even without expression
+            damageParts.push(`${pType} damage`);
+        }
 		
 		document.querySelectorAll('.additional-damage-row').forEach(row => {
 			const aExpression = row.querySelector('.damage-expression').value.trim();
 			const aType = row.querySelector('.damage-type').value;
-			 if (aExpression) { damageParts.push(`plus (${aExpression}) ${aType} damage`); }
+			 if (aExpression) {
+                  // Check if expression is just a number, if so, wrap in parens
+                 if (!isNaN(aExpression) && !aExpression.includes('d')) {
+                     damageParts.push(`plus (${aExpression}) ${aType} damage`);
+                 } else {
+                     damageParts.push(`plus (${aExpression}) ${aType} damage`);
+                 }
+			 } else if (aType) {
+                 // Only add if there's a type, even without expression
+                 damageParts.push(`plus ${aType} damage`);
+             }
 		});
 		
 		if(damageParts.length === 0) { showAlert('Please add at least one damage component.'); return; }
@@ -1113,6 +1334,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		window.ui.inputs.commonDesc.value = fullString;
 		closeModal('attack-helper-modal');
 	}
+
 
 	// --- MODAL & ALERT HELPERS ---
     function openModal(modalId) {
@@ -1128,17 +1350,58 @@ document.addEventListener("DOMContentLoaded", () => {
         if (modal) {
             modal.classList.add('hidden');
 			const allModals = document.querySelectorAll('.modal-content');
-			const isAnyModalOpen = Array.from(allModals).some(m => !m.classList.contains('hidden'));
+            // Check if ANY modal content is still visible
+            const isAnyModalOpen = Array.from(allModals).some(m => !m.classList.contains('hidden'));
 			if (!isAnyModalOpen) {
 				window.ui.modalOverlay.classList.add('hidden');
 			}
         }
+        // Reset confirm callback when any modal closes, just in case
+        confirmCallback = null;
     }
 
     function showAlert(message) {
-        document.getElementById("alert-message").textContent = message;
+        showDialog("Alert", message); // Use the general dialog function
+    }
+
+    function showConfirm(title, message, onConfirm) {
+        confirmCallback = onConfirm; // Store the confirmation action
+        showDialog(title, message, true); // Show with cancel button
+    }
+
+    // NEW general dialog function
+    function showDialog(title, message, showCancel = false) {
+        window.ui.alertTitle.textContent = title;
+        window.ui.alertMessageText.textContent = message;
+
+        // Reset button states and handlers
+        window.ui.alertOkBtn.onclick = null;
+        window.ui.alertCancelBtn.onclick = null;
+        window.ui.alertCancelBtn.classList.add('hidden');
+
+        if (showCancel) {
+            window.ui.alertCancelBtn.classList.remove('hidden');
+            window.ui.alertOkBtn.textContent = 'OK'; // Or 'Confirm', 'Yes' etc.
+            window.ui.alertOkBtn.onclick = () => {
+                closeModal('alert-modal');
+                if (confirmCallback) {
+                    confirmCallback(); // Execute the stored action
+                    confirmCallback = null; // Clear after execution
+                }
+            };
+            window.ui.alertCancelBtn.onclick = () => {
+                 closeModal('alert-modal');
+                 confirmCallback = null; // Clear on cancel
+            }
+        } else {
+            // Simple alert mode
+             window.ui.alertOkBtn.textContent = 'OK';
+             window.ui.alertOkBtn.onclick = () => closeModal('alert-modal');
+        }
+
         openModal('alert-modal');
     }
+
 
 	// --- INITIALIZATION ---
 	window.ui.init();

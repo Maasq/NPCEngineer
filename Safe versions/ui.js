@@ -46,7 +46,7 @@ window.ui = {
 	manageTraitsModal: document.getElementById('manage-traits-modal'),
     boilerplateModal: document.getElementById('boilerplate-modal'),
     attackHelperModal: document.getElementById('attack-helper-modal'),
-    alertModal: document.getElementById('alert-modal'),
+    alertModal: document.getElementById('alert-modal'), // Now also used for confirmations
 
 	// Modal-specific elements
 	createBestiaryBtn: document.getElementById("create-bestiary-btn"),
@@ -88,6 +88,7 @@ window.ui = {
 	hpApplyBtn: document.getElementById("hp-apply-btn"),
     hpDiceString: document.getElementById('hp-dice-string'),
     hpDiceSelector: document.getElementById('hp-dice-selector'),
+    hpClearBtn: document.getElementById('hp-clear-btn'), // New
 
 	experienceDisplay: document.getElementById("npc-experience-display"),
 	proficiencyBonusDisplay: document.getElementById("npc-proficiency-bonus-display"),
@@ -96,6 +97,13 @@ window.ui = {
     clearEditBtn: document.getElementById('clear-edit-btn'),
     legendaryBoilerplate: document.getElementById('legendary-boilerplate'),
     lairBoilerplate: document.getElementById('lair-boilerplate'),
+    attackDamageDiceClearBtn: document.getElementById('attack-damage-dice-clear-btn'), // New
+
+    // Alert/Confirm Modal Elements
+    alertTitle: document.getElementById('alert-title'),
+    alertMessageText: document.getElementById('alert-message-text'),
+    alertOkBtn: document.getElementById('alert-ok-btn'),
+    alertCancelBtn: document.getElementById('alert-cancel-btn'),
 
 	// Settings Checkboxes
 	bestiarySettingsCheckboxes: {
@@ -146,6 +154,7 @@ window.ui = {
         // Action Inputs
         commonName: document.getElementById('common-name'),
         commonDesc: document.getElementById('common-desc'),
+        attackDamageDice: document.getElementById('attack-damage-dice'), // Added for clear button
 	},
 	
 	languageListboxes: [
@@ -246,7 +255,7 @@ window.ui = {
         });
 
         Object.values(this.inputs).forEach((input) => {
-            if(input.id !== 'npc-description' && !input.id.startsWith('common-')) {
+            if(input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') { // Exclude specific inputs
                 input.addEventListener("input", window.app.updateActiveNPCFromForm);
             }
         });
@@ -375,6 +384,10 @@ window.ui = {
                 this.hideAllModals();
             }
         });
+        // NEW: Event listener for HP clear button
+        this.hpClearBtn.addEventListener('click', () => {
+            this.hpDiceString.value = '';
+        });
 
         this.setupCustomToggles();
         this.setupSavingThrowListeners();
@@ -392,11 +405,13 @@ window.ui = {
     },
     hideAllModals: function() {
         this.modalOverlay.classList.add('hidden');
-        document.querySelectorAll('.modal-content, .bg-white.rounded-xl.custom-shadow').forEach(modal => {
-            if(modal.id && modal.id.endsWith('-modal')) {
-                 modal.classList.add('hidden');
-            }
+        document.querySelectorAll('.modal-content').forEach(modal => {
+             modal.classList.add('hidden');
         });
+        // Clear any specific modal states if necessary
+        this.alertOkBtn.onclick = null;
+        this.alertCancelBtn.onclick = null;
+        this.alertCancelBtn.classList.add('hidden');
     },
     updateMenuState: function() {
 		const hasActiveBestiary = !!window.app.activeBestiary;
@@ -489,7 +504,7 @@ window.ui = {
 			}
 
 			for (const key in this.inputs) {
-                if (key.startsWith('common')) continue;
+                if (key.startsWith('common') || key === 'attackDamageDice') continue; // Skip action inputs and attack damage dice input
 
 				if (key === 'description') {
 					const trixEditorElement = document.querySelector("trix-editor");
@@ -853,7 +868,8 @@ window.ui = {
         this.clearEditBtn.addEventListener('click', window.app.clearInputs);
         this.legendaryBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.legendaryBoilerplate));
         this.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.lairBoilerplate));
-        this.inputs.commonDesc.addEventListener('dblclick', () => window.app.openModal('attack-helper-modal'));
+        // MODIFIED: Call the new handler function in main.js
+        this.inputs.commonDesc.addEventListener('dblclick', () => window.app.handleAttackHelperOpen());
         
         document.querySelectorAll('button[data-action-type]').forEach(button => {
             button.addEventListener('click', () => {
@@ -863,21 +879,22 @@ window.ui = {
 
         const attackHelperModal = document.getElementById('attack-helper-modal');
         if (attackHelperModal) {
-            attackHelperModal.querySelector('button.bg-\\[\\#87CC24\\]').addEventListener('click', window.app.generateAttackString);
+            attackHelperModal.querySelector('button.btn-primary').addEventListener('click', window.app.generateAttackString);
             attackHelperModal.querySelector('button.hover\\:bg-gray-100[title*="Close"]').addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
             attackHelperModal.querySelector('button[title*="Add another damage component"]').addEventListener('click', window.app.addDamageRow);
+             // NEW: Event listener for attack damage clear button
+            this.attackDamageDiceClearBtn.addEventListener('click', () => {
+                 this.inputs.attackDamageDice.value = '';
+            });
         }
 
         const boilerplateModal = document.getElementById('boilerplate-modal');
         if(boilerplateModal) {
-             boilerplateModal.querySelector('button.bg-\\[\\#87CC24\\]').addEventListener('click', window.app.saveBoilerplate);
+             boilerplateModal.querySelector('button.btn-primary').addEventListener('click', window.app.saveBoilerplate);
              boilerplateModal.querySelector('button.hover\\:bg-gray-100').addEventListener('click', () => window.app.closeModal('boilerplate-modal'));
         }
 
-        const alertModal = document.getElementById('alert-modal');
-        if(alertModal) {
-            alertModal.querySelector('button').addEventListener('click', () => window.app.closeModal('alert-modal'));
-        }
+        // Alert/Confirm button listeners are now set dynamically in showDialog
 
         window.app.createDiceSelector(document.getElementById('primary-dice-selector'), document.getElementById('attack-damage-dice'));
     },
@@ -1372,6 +1389,7 @@ window.ui = {
     populateDamageTypes: function(elementId) {
         const select = document.getElementById(elementId);
         if (select) {
+            select.innerHTML = ''; // Clear existing options first
             window.app.damageTypes.forEach(type => {
                 const option = document.createElement('option');
                 option.value = type.toLowerCase();
@@ -1379,9 +1397,8 @@ window.ui = {
                 select.appendChild(option);
             });
             if (elementId === 'attack-damage-type') {
-                select.value = 'slashing';
+                select.value = 'slashing'; // Default to slashing for the primary
             }
         }
     },
 };
-

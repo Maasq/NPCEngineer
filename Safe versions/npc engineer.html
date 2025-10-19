@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.09.10" />
+		<meta name="version" content="0.09.12" />
 		<meta name="date" content="2025-10-19" />
 		
 		<title>NPC Engineer</title>
@@ -865,7 +865,7 @@ Double-click to open a window that will help build a correct expression.">
 										<textarea id="new-trait-description" class="info-input w-full h-24" rows="3"></textarea>
 									</div>
 									<div class="text-right">
-										<button id="add-trait-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add Trait</button>
+										<button id="add-trait-btn" class="btn-primary">Add Trait</button>
 									</div>
 								</div>
 							</div>
@@ -878,7 +878,6 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 						<div class="card-body">
 							<div class="p-4">
-								<!-- ===== Common Input Area ===== -->
 								<div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
 									<h2 class="text-lg font-bold mb-2">Create or Edit an Action</h2>
 									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -892,16 +891,15 @@ Double-click to open a window that will help build a correct expression.">
 										</div>
 									</div>
 									<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-										<button data-action-type="actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Actions list.">Action</button>
-										<button data-action-type="bonus-actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Bonus Actions list.">Bonus Action</button>
-										<button data-action-type="reactions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Reactions list.">Reaction</button>
-										<button data-action-type="legendary-actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Legendary Actions list.">Legendary</button>
-										<button data-action-type="lair-actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Lair Actions list.">Lair</button>
+										<button data-action-type="actions" class="btn-primary" title="Add the current entry to the Actions list.">Action</button>
+										<button data-action-type="bonus-actions" class="btn-primary" title="Add the current entry to the Bonus Actions list.">Bonus Action</button>
+										<button data-action-type="reactions" class="btn-primary" title="Add the current entry to the Reactions list.">Reaction</button>
+										<button data-action-type="legendary-actions" class="btn-primary" title="Add the current entry to the Legendary Actions list.">Legendary</button>
+										<button data-action-type="lair-actions" class="btn-primary" title="Add the current entry to the Lair Actions list.">Lair</button>
 									</div>
 									<button id="clear-edit-btn" class="hidden w-full mt-2 px-3 py-1 border rounded-md text-xs bg-gray-200 hover:bg-gray-300" title="Clear the input fields and cancel the current edit.">Cancel Edit</button>
 								</div>
 
-								<!-- ===== SECTIONS (Actions, Bonus, etc.) ===== -->
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Actions</h2><ul id="actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Bonus Actions</h2><ul id="bonus-actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Reactions</h2><ul id="reactions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
@@ -965,7 +963,7 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 				</div>
 				<div class="text-right pt-2">
-					<button id="create-bestiary-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Create</button>
+					<button id="create-bestiary-btn" class="btn-primary">Create</button>
 				</div>
 			</div>
 
@@ -985,7 +983,7 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 				<div class="flex space-x-2">
 					<input type="text" id="new-group-name" class="info-input w-full" placeholder="New group name...">
-					<button id="add-group-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add</button>
+					<button id="add-group-btn" class="btn-primary">Add</button>
 				</div>
 				<div id="group-list" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
 					</div>
@@ -998,7 +996,7 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 				<div class="flex space-x-2">
 					<input type="text" id="new-language-name" class="info-input w-full" placeholder="New language name...">
-					<button id="add-language-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Add</button>
+					<button id="add-language-btn" class="btn-primary">Add</button>
 				</div>
 				<div id="language-list-div" class="space-y-1 max-h-60 overflow-y-auto border-t pt-2 mt-2">
 					</div>
@@ -1028,7 +1026,7 @@ Double-click to open a window that will help build a correct expression.">
 							</div>
 						</div>
 					</div>
-					<button id="add-managed-trait-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold float-right">Add</button>
+					<button id="add-managed-trait-btn" class="btn-primary float-right">Add</button>
 				</div>
 				<div id="managed-trait-list-div" class="space-y-1 max-h-60 overflow-y-auto border-t pt-10 mt-2">
 					</div>
@@ -1059,7 +1057,7 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 				</div>
 				<div class="text-right pt-2">
-					<button id="settings-ok-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">OK</button>
+					<button id="settings-ok-btn" class="btn-primary">OK</button>
 				</div>
 			</div>
 
@@ -1073,24 +1071,22 @@ Double-click to open a window that will help build a correct expression.">
 					<div>
 						<label for="hp-dice-string" class="label-text">Dice Expression</label>
 						<input type="text" id="hp-dice-string" class="info-input w-full" title="Click the icons below to build the dice expression.">
+						<button id="hp-clear-btn" class="clear-btn">clear</button>
 					</div>
 					<div id="hp-dice-selector" class="dice-selector-container flex items-center justify-center pt-2">
-						<!-- This will be populated by createDiceSelector -->
-					</div>
+						</div>
 				</div>
 				<div class="text-right pt-2">
-					<button id="hp-apply-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Apply</button>
+					<button id="hp-apply-btn" class="btn-primary">Apply</button>
 				</div>
 			</div>
-
-            <!-- ===== NEW MODALS FROM Actions.html ===== -->
 
             <div id="boilerplate-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-lg transform scale-95 hidden" onclick="event.stopPropagation()">
                 <h3 class="text-lg font-bold">Edit Description</h3>
                 <textarea id="boilerplate-editor" rows="6" class="mt-4 w-full rounded-md border-gray-300 info-input"></textarea>
                 <div class="mt-4 flex justify-end gap-2">
                     <button class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100">Cancel</button>
-                    <button class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80">Save</button>
+                    <button class="btn-primary">Save</button>
                 </div>
             </div>
             
@@ -1098,25 +1094,37 @@ Double-click to open a window that will help build a correct expression.">
                 <h3 class="text-lg font-bold">Attack Helper</h3>
                 
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <select id="attack-type" class="rounded-md border-gray-300 info-select" title="Choose the type of attack (e.g., Melee Weapon, Ranged Spell)."><option>Melee Weapon Attack</option><option>Ranged Weapon Attack</option><option>Melee Spell Attack</option><option>Ranged Spell Attack</option></select>
-                    <input id="attack-bonus" type="number" placeholder="To Hit (e.g., 5)" class="rounded-md border-gray-300 info-input" title="Enter the attack bonus. The '+' will be added automatically.">
-                    <input id="attack-reach" type="text" placeholder="Range (e.g., 5 or 30/120)" class="rounded-md border-gray-300 info-input" title="Enter the attack's range or reach. 'ft.' will be added automatically.">
-                    <select id="attack-target" class="rounded-md border-gray-300 info-select" title="Select the target of the attack."><option>one target</option><option>one creature</option><option>self</option><option>one willing creature</option><option>all creatures in range</option></select>
+                    <div>
+                        <label for="attack-type" class="label-text mb-1">Attack Type</label>
+                        <select id="attack-type" class="rounded-md border-gray-300 info-select w-full" title="Choose the type of attack (e.g., Melee Weapon, Ranged Spell)."><option>Melee Weapon Attack</option><option>Ranged Weapon Attack</option><option>Melee Spell Attack</option><option>Ranged Spell Attack</option></select>
+                    </div>
+                    <div>
+                        <label for="attack-bonus" class="label-text mb-1">To Hit Bonus</label>
+                        <input id="attack-bonus" type="number" placeholder="e.g., 5" class="rounded-md border-gray-300 info-input w-full" title="Enter the attack bonus. The '+' will be added automatically.">
+                    </div>
+                     <div>
+                        <label for="attack-reach" class="label-text mb-1">Reach / Range (ft.)</label>
+                        <input id="attack-reach" type="text" placeholder="e.g., 5 or 30/120" class="rounded-md border-gray-300 info-input w-full" title="Enter the attack's range or reach. 'ft.' will be added automatically.">
+                    </div>
+                    <div>
+                        <label for="attack-target" class="label-text mb-1">Target</label>
+                        <select id="attack-target" class="rounded-md border-gray-300 info-select w-full" title="Select the target of the attack."><option>one target</option><option>one creature</option><option>self</option><option>one willing creature</option><option>all creatures in range</option></select>
+                    </div>
                 </div>
 
                 <div id="all-damage-rows-container" class="mt-4 space-y-2">
-                    <!-- Primary Damage Row -->
                     <div class="p-3 border rounded-lg bg-gray-50">
                         <div class="flex flex-wrap items-center gap-4 text-sm">
                             <div class="flex-grow">
-                                <input id="attack-damage-dice" type="text" placeholder="Damage (e.g., 1d8 + 2)" class="w-full rounded-md border-gray-300 info-input" title="Enter the damage dice and bonus manually, or use the clickable icons.">
+                                <label for="attack-damage-dice" class="label-text mb-1">Primary Damage</label>
+                                <input id="attack-damage-dice" type="text" placeholder="e.g., 1d8 + 2" class="w-full rounded-md border-gray-300 info-input" title="Enter the damage dice and bonus manually, or use the clickable icons.">
+								<button id="attack-damage-dice-clear-btn" class="clear-btn">clear</button>
                             </div>
-                            <div id="primary-dice-selector" class="dice-selector-container flex items-center"></div>
-                            <div>
-                                <select id="attack-damage-type" class="rounded-md border-gray-300 info-select" title="Select the type of damage this attack deals."></select>
+                            <div id="primary-dice-selector" class="dice-selector-container flex items-center self-end"></div>
+                            <div class="self-end">
+                                <label for="attack-damage-type" class="label-text mb-1 invisible">Type</label> <select id="attack-damage-type" class="rounded-md border-gray-300 info-select" title="Select the type of damage this attack deals."></select>
                             </div>
-                            <div class="w-6 h-6"></div> <!-- Placeholder for alignment -->
-                        </div>
+                            <div class="w-6 h-6"></div> </div>
                     </div>
                 </div>
                 
@@ -1124,15 +1132,16 @@ Double-click to open a window that will help build a correct expression.">
                 
                 <div class="mt-6 flex justify-end gap-2">
                     <button class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100" title="Close the Attack Helper without making changes.">Cancel</button>
-                    <button class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Create the formatted attack description and put it in the main description box.">Generate & Insert</button>
+                    <button class="btn-primary" title="Create the formatted attack description and put it in the main description box.">Generate & Insert</button>
                 </div>
             </div>
 
             <div id="alert-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-sm transform scale-95 hidden" onclick="event.stopPropagation()">
-                <h3 class="text-lg font-bold">Alert</h3>
-                <p id="alert-message" class="mt-2"></p>
-                <div class="mt-4 flex justify-end">
-                    <button class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80">OK</button>
+                <h3 id="alert-title" class="text-lg font-bold">Alert</h3>
+                <p id="alert-message-text" class="mt-2"></p>
+                <div class="mt-4 flex justify-end space-x-2">
+					<button id="alert-cancel-btn" class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100 hidden">Cancel</button>
+                    <button id="alert-ok-btn" class="btn-primary">OK</button>
                 </div>
             </div>
 
