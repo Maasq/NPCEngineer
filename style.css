@@ -287,20 +287,17 @@ table.spell td {
     margin-bottom: 2px; /* Prevent layout shift */
 }
 
-/* --- NEW STYLES FROM ACTIONS.HTML --- */
+/* --- Action & Dice Icon Styles --- */
 .action-list-item {
     transition: background-color 0.2s ease-in-out;
     cursor: pointer;
 }
 .action-list-item:hover {
-    background-color: #f9fafb; /* A very light gray for hover */
+    background-color: #f0fdf4; /* A very light green for hover */
 }
 .editing {
     background-color: #fefce8 !important; /* A light yellow for editing */
     border-color: #facc15;
-}
-.modal-overlay .modal-content { /* Target modal content inside overlay for transitions */
-    transition: transform 0.3s ease-in-out;
 }
 .die-icon, .bonus-icon {
     cursor: pointer;
@@ -313,3 +310,10 @@ table.spell td {
 .die-icon:hover, .bonus-icon:hover {
     transform: scale(1.1);
 }
+.die-icon {
+    color: #166534; /* Dark Green */
+}
+.bonus-icon {
+    color: #581c87; /* Purple */
+}
+

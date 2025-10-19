@@ -835,6 +835,23 @@ window.ui = {
         this.clearEditBtn.addEventListener('click', window.app.clearInputs);
         this.legendaryBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.legendaryBoilerplate));
         this.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.lairBoilerplate));
+        this.inputs.commonDesc.addEventListener('dblclick', () => window.app.openModal('attack-helper-modal'));
+        
+        // Remove inline onclicks and add proper listeners
+        const attackHelperModal = document.getElementById('attack-helper-modal');
+        if (attackHelperModal) {
+            const generateBtn = Array.from(attackHelperModal.querySelectorAll('button')).find(btn => btn.textContent.includes('Generate'));
+            const cancelBtn = Array.from(attackHelperModal.querySelectorAll('button')).find(btn => btn.textContent === 'Cancel');
+
+            if (generateBtn) {
+                generateBtn.removeAttribute('onclick');
+                generateBtn.addEventListener('click', window.app.generateAttackString);
+            }
+            if (cancelBtn) {
+                cancelBtn.removeAttribute('onclick');
+                cancelBtn.addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
+            }
+        }
         window.app.createDiceSelector(document.getElementById('primary-dice-selector'), document.getElementById('attack-damage-dice'));
     },
     setupDragAndDrop: function(box, validTypes, npcKey, updateFn) {
@@ -1340,3 +1357,4 @@ window.ui = {
         }
     },
 };
+
