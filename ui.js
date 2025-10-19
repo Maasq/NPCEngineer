@@ -334,27 +334,45 @@ window.ui = {
                 this.hideAllModals();
                 return;
             }
-            const match = diceString.match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/);
+            // This regex handles dice, bonus, or both
+            const match = diceString.match(/(\d+d\d+)?\s*([+-])?\s*(\d+)?/);
             if (match) {
-                const numDice = parseInt(match[1], 10);
-                const dieType = parseInt(match[2], 10);
-                const sign = match[3] || '+';
-                const bonus = parseInt(match[4], 10) || 0;
-                
-                const avgRoll = (dieType / 2) + 0.5;
-                const totalHp = Math.floor(numDice * avgRoll) + (sign === '+' ? bonus : -bonus);
-                
-                let bonusString = "";
-                if (bonus > 0) { bonusString = ` ${sign} ${bonus}`; }
+                const dicePart = match[1];
+                const sign = match[2];
+                const bonus = parseInt(match[3] || '0', 10);
 
-                const finalHpString = `${totalHp} (${numDice}d${dieType}${bonusString})`;
-                this.inputs.hitPoints.value = finalHpString;
+                let totalHp = 0;
+                let finalDiceString = "";
+
+                if (dicePart) {
+                    const [numDice, dieType] = dicePart.split('d').map(Number);
+                    const avgRoll = (dieType / 2) + 0.5;
+                    totalHp = Math.floor(numDice * avgRoll);
+                    finalDiceString = `${numDice}d${dieType}`;
+                }
+
+                if (sign === '+') {
+                    totalHp += bonus;
+                    if(bonus !== 0) finalDiceString += ` + ${bonus}`;
+                } else if (sign === '-') {
+                    totalHp -= bonus;
+                    if(bonus !== 0) finalDiceString += ` - ${bonus}`;
+                } else if (bonus > 0 && !dicePart) { // Handles case of just a number like "6"
+                    totalHp = bonus;
+                    finalDiceString = `${bonus}`;
+                } else if (bonus > 0) { // Handles "3d8 6" without a plus, treat as plus
+                    totalHp += bonus;
+                    finalDiceString += ` + ${bonus}`;
+                }
+
+                this.inputs.hitPoints.value = `${totalHp} (${finalDiceString})`;
                 window.app.updateActiveNPCFromForm();
                 this.hideAllModals();
-            } else if (!isNaN(parseInt(diceString))) {
-                 this.inputs.hitPoints.value = diceString;
-                 window.app.updateActiveNPCFromForm();
-                 this.hideAllModals();
+            } else if (!isNaN(parseInt(diceString, 10))) {
+                // Fallback for a single number if regex fails
+                this.inputs.hitPoints.value = diceString;
+                window.app.updateActiveNPCFromForm();
+                this.hideAllModals();
             }
         });
 
@@ -837,21 +855,30 @@ window.ui = {
         this.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.lairBoilerplate));
         this.inputs.commonDesc.addEventListener('dblclick', () => window.app.openModal('attack-helper-modal'));
         
-        // Remove inline onclicks and add proper listeners
+        document.querySelectorAll('button[data-action-type]').forEach(button => {
+            button.addEventListener('click', () => {
+                window.app.addOrUpdateAction(button.dataset.actionType);
+            });
+        });
+
         const attackHelperModal = document.getElementById('attack-helper-modal');
         if (attackHelperModal) {
-            const generateBtn = Array.from(attackHelperModal.querySelectorAll('button')).find(btn => btn.textContent.includes('Generate'));
-            const cancelBtn = Array.from(attackHelperModal.querySelectorAll('button')).find(btn => btn.textContent === 'Cancel');
-
-            if (generateBtn) {
-                generateBtn.removeAttribute('onclick');
-                generateBtn.addEventListener('click', window.app.generateAttackString);
-            }
-            if (cancelBtn) {
-                cancelBtn.removeAttribute('onclick');
-                cancelBtn.addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
-            }
+            attackHelperModal.querySelector('button.bg-\\[\\#87CC24\\]').addEventListener('click', window.app.generateAttackString);
+            attackHelperModal.querySelector('button.hover\\:bg-gray-100[title*="Close"]').addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
+            attackHelperModal.querySelector('button[title*="Add another damage component"]').addEventListener('click', window.app.addDamageRow);
         }
+
+        const boilerplateModal = document.getElementById('boilerplate-modal');
+        if(boilerplateModal) {
+             boilerplateModal.querySelector('button.bg-\\[\\#87CC24\\]').addEventListener('click', window.app.saveBoilerplate);
+             boilerplateModal.querySelector('button.hover\\:bg-gray-100').addEventListener('click', () => window.app.closeModal('boilerplate-modal'));
+        }
+
+        const alertModal = document.getElementById('alert-modal');
+        if(alertModal) {
+            alertModal.querySelector('button').addEventListener('click', () => window.app.closeModal('alert-modal'));
+        }
+
         window.app.createDiceSelector(document.getElementById('primary-dice-selector'), document.getElementById('attack-damage-dice'));
     },
     setupDragAndDrop: function(box, validTypes, npcKey, updateFn) {

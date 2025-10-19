@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.8.08" />
-		<meta name="date" content="2025-10-17" />
+		<meta name="version" content="0.09.10" />
+		<meta name="date" content="2025-10-19" />
 		
 		<title>NPC Engineer</title>
 		
@@ -22,6 +22,7 @@
 		<link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet" />
 		<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet" />
 		<link href="https://fonts.googleapis.com/css2?family=Macondo+Swash+Caps&display=swap" rel="stylesheet" />
+		<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400&display=swap" rel="stylesheet">
 		
 		<link rel="stylesheet" href="style.css">
 	</head>
@@ -877,6 +878,7 @@ Double-click to open a window that will help build a correct expression.">
 						</div>
 						<div class="card-body">
 							<div class="p-4">
+								<!-- ===== Common Input Area ===== -->
 								<div class="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
 									<h2 class="text-lg font-bold mb-2">Create or Edit an Action</h2>
 									<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -886,24 +888,25 @@ Double-click to open a window that will help build a correct expression.">
 										</div>
 										<div class="md:col-span-2">
 											 <label for="common-desc" class="label-text">Description</label>
-											<textarea id="common-desc" rows="3" ondblclick="openModal('attack-helper-modal')" class="info-input mt-1 block w-full" placeholder="Describe the action..." title="Double-click for the Attack Helper."></textarea>
+											<textarea id="common-desc" rows="3" class="info-input mt-1 block w-full" placeholder="Describe the action..." title="Double-click for the Attack Helper."></textarea>
 										</div>
 									</div>
 									<div class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-										<button onclick="addOrUpdateAction('actions')" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Actions list.">Action</button>
-										<button onclick="addOrUpdateAction('bonus-actions')" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Bonus Actions list.">Bonus Action</button>
-										<button onclick="addOrUpdateAction('reactions')" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Reactions list.">Reaction</button>
-										<button onclick="addOrUpdateAction('legendary-actions')" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Legendary Actions list.">Legendary</button>
-										<button onclick="addOrUpdateAction('lair-actions')" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Lair Actions list.">Lair</button>
+										<button data-action-type="actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Actions list.">Action</button>
+										<button data-action-type="bonus-actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Bonus Actions list.">Bonus Action</button>
+										<button data-action-type="reactions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Reactions list.">Reaction</button>
+										<button data-action-type="legendary-actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Legendary Actions list.">Legendary</button>
+										<button data-action-type="lair-actions" class="px-3 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Add the current entry to the Lair Actions list.">Lair</button>
 									</div>
-									<button id="clear-edit-btn" onclick="clearInputs()" class="hidden w-full mt-2 px-3 py-1 border rounded-md text-xs bg-gray-200 hover:bg-gray-300" title="Clear the input fields and cancel the current edit.">Cancel Edit</button>
+									<button id="clear-edit-btn" class="hidden w-full mt-2 px-3 py-1 border rounded-md text-xs bg-gray-200 hover:bg-gray-300" title="Clear the input fields and cancel the current edit.">Cancel Edit</button>
 								</div>
 
+								<!-- ===== SECTIONS (Actions, Bonus, etc.) ===== -->
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Actions</h2><ul id="actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Bonus Actions</h2><ul id="bonus-actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Reactions</h2><ul id="reactions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
-								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Legendary Actions</h2><p id="legendary-boilerplate" ondblclick="editBoilerplate(this)" class="text-sm text-gray-600 p-2 rounded-md hover:bg-gray-100 cursor-pointer">The [Creature Name] can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The [Creature Name] regains spent legendary actions at the start of its turn.</p><ul id="legendary-actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
-								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Lair Actions</h2><p id="lair-boilerplate" ondblclick="editBoilerplate(this)" class="text-sm text-gray-600 p-2 rounded-md hover:bg-gray-100 cursor-pointer">On initiative count 20 (losing initiative ties), the [Creature Name] takes a lair action to cause one of the following effects; the [Creature Name] can't use the same effect two rounds in a row:</p><ul id="lair-actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
+								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Legendary Actions</h2><p id="legendary-boilerplate" class="text-sm text-gray-600 p-2 rounded-md hover:bg-gray-100 cursor-pointer"></p><ul id="legendary-actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
+								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Lair Actions</h2><p id="lair-boilerplate" class="text-sm text-gray-600 p-2 rounded-md hover:bg-gray-100 cursor-pointer"></p><ul id="lair-actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
 							</div>
 						</div>
 					</div>
@@ -948,9 +951,9 @@ Double-click to open a window that will help build a correct expression.">
 			</main>
 		</div>
 
-		<div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+		<div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
 			
-			<div id="new-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden">
+			<div id="new-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Create New Bestiary</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -966,7 +969,7 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 			</div>
 
-			<div id="load-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+			<div id="load-bestiary-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Load Bestiary</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -975,7 +978,7 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 			</div>
 			
-			<div id="manage-groups-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+			<div id="manage-groups-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Manage Groups</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -988,7 +991,7 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 			</div>
 
-			<div id="manage-languages-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+			<div id="manage-languages-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Manage Languages</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -1001,7 +1004,7 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 			</div>
 			
-			<div id="manage-traits-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-[500px] hidden">
+			<div id="manage-traits-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-[500px] hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Manage Traits</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -1031,7 +1034,7 @@ Double-click to open a window that will help build a correct expression.">
 					</div>
 			</div>
 
-			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden">
+			<div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Bestiary Default Settings</h3>
 					<button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -1061,10 +1064,10 @@ Double-click to open a window that will help build a correct expression.">
 			</div>
 
 
-			<div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden">
+			<div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Hit Dice Calculator</h3>
-					<button id="hp-modal-close" class="text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+					<button id="hp-modal-close" class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
 				</div>
 				<div class="space-y-2">
 					<div>
@@ -1072,19 +1075,22 @@ Double-click to open a window that will help build a correct expression.">
 						<input type="text" id="hp-dice-string" class="info-input w-full" title="Click the icons below to build the dice expression.">
 					</div>
 					<div id="hp-dice-selector" class="dice-selector-container flex items-center justify-center pt-2">
-						</div>
+						<!-- This will be populated by createDiceSelector -->
+					</div>
 				</div>
 				<div class="text-right pt-2">
 					<button id="hp-apply-btn" class="bg-[#87CC24] text-black px-4 py-1 rounded-md text-sm hover:opacity-80 font-semibold">Apply</button>
 				</div>
 			</div>
 
+            <!-- ===== NEW MODALS FROM Actions.html ===== -->
+
             <div id="boilerplate-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-lg transform scale-95 hidden" onclick="event.stopPropagation()">
                 <h3 class="text-lg font-bold">Edit Description</h3>
                 <textarea id="boilerplate-editor" rows="6" class="mt-4 w-full rounded-md border-gray-300 info-input"></textarea>
                 <div class="mt-4 flex justify-end gap-2">
-                    <button onclick="closeModal('boilerplate-modal')" class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100">Cancel</button>
-                    <button onclick="saveBoilerplate()" class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80">Save</button>
+                    <button class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100">Cancel</button>
+                    <button class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80">Save</button>
                 </div>
             </div>
             
@@ -1099,6 +1105,7 @@ Double-click to open a window that will help build a correct expression.">
                 </div>
 
                 <div id="all-damage-rows-container" class="mt-4 space-y-2">
+                    <!-- Primary Damage Row -->
                     <div class="p-3 border rounded-lg bg-gray-50">
                         <div class="flex flex-wrap items-center gap-4 text-sm">
                             <div class="flex-grow">
@@ -1108,15 +1115,16 @@ Double-click to open a window that will help build a correct expression.">
                             <div>
                                 <select id="attack-damage-type" class="rounded-md border-gray-300 info-select" title="Select the type of damage this attack deals."></select>
                             </div>
-                            <div class="w-6 h-6"></div> </div>
+                            <div class="w-6 h-6"></div> <!-- Placeholder for alignment -->
+                        </div>
                     </div>
                 </div>
                 
-                <button onclick="addDamageRow()" class="mt-2 px-3 py-1.5 border rounded-md text-xs font-semibold hover:bg-gray-100" title="Add another damage component to this attack, for effects like poison or secondary magic damage.">+ Add Damage Type</button>
+                <button class="mt-2 px-3 py-1.5 border rounded-md text-xs font-semibold hover:bg-gray-100" title="Add another damage component to this attack, for effects like poison or secondary magic damage.">+ Add Damage Type</button>
                 
                 <div class="mt-6 flex justify-end gap-2">
-                    <button onclick="closeModal('attack-helper-modal')" class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100" title="Close the Attack Helper without making changes.">Cancel</button>
-                    <button onclick="generateAttackString()" class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Create the formatted attack description and put it in the main description box.">Generate & Insert</button>
+                    <button class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100" title="Close the Attack Helper without making changes.">Cancel</button>
+                    <button class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80" title="Create the formatted attack description and put it in the main description box.">Generate & Insert</button>
                 </div>
             </div>
 
@@ -1124,10 +1132,11 @@ Double-click to open a window that will help build a correct expression.">
                 <h3 class="text-lg font-bold">Alert</h3>
                 <p id="alert-message" class="mt-2"></p>
                 <div class="mt-4 flex justify-end">
-                    <button onclick="closeModal('alert-modal')" class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80">OK</button>
+                    <button class="px-4 py-2 border rounded-md text-sm font-semibold bg-[#87CC24] text-black hover:opacity-80">OK</button>
                 </div>
             </div>
-            </div>
+
+		</div>
 		
 		<script src="icons.js" defer></script>
 		<script src="ui.js" defer></script>

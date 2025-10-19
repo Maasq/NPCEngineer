@@ -57,7 +57,7 @@ function updateViewport() {
 		}
 		traitsHtml = traitsToRender.map(trait => {
             const processedDescription = window.app.processTraitString(trait.description, activeNPC);
-            return `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${trait.name}.</b></i> ${processedDescription}</div>`
+            return `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${trait.name}.</b></i> ${processedDescription}</div>`
         }).join('');
 	}
 
@@ -82,16 +82,18 @@ function updateViewport() {
 
         const actionItemsHtml = sortedList.map(action => {
             const processedDesc = window.app.processTraitString(action.desc, activeNPC);
-            return `<div class="npctop" style="margin-bottom: 0.5em; color: black;"><i><b>${action.name}.</b></i> ${processedDesc}</div>`;
+            return `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${action.name}.</b></i> ${processedDesc}</div>`;
         }).join('');
 
-        const boilerplateHtml = boilerplate ? `<div class="npctop" style="margin-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
+        const boilerplateHtml = boilerplate ? `<div class="npctop" style="padding-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
 
         return `
-            <div class="npcdiv">
-                <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
+            <div class="action-header">${title}</div>
+            <div class="npcdiv2">
+                <svg viewBox="0 0 200 1" preserveAspectRatio="none" width="100%" height="1">
+                    <polyline points="0,0 200,0 200,1 0,1" fill="#7A200D" class="whoosh"></polyline>
+                </svg>
             </div>
-            <div class="heading">${title}</div>
             ${boilerplateHtml}
             ${actionItemsHtml}
         `;
@@ -151,9 +153,6 @@ function updateViewport() {
             ${reactionsHtml}
             ${legendaryActionsHtml}
             ${lairActionsHtml}
-            <div class="npcdiv">
-                <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
-            </div>
             <div class="npcbottom">&nbsp;</div>
             <div class="cap"></div>
         </div>
@@ -161,3 +160,4 @@ function updateViewport() {
     `;
     viewport.innerHTML = generatedHtml;
 }
+

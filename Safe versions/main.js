@@ -51,6 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	let activeNPC = null;
 	let activeNPCIndex = -1;
 	let isUpdatingForm = false;
+	let currentlyEditingAction = null;
+    let boilerplateTarget = null;
 	
 	const baseDefaultNPC = {
 		name: "", size: "", type: "", species: "", alignment: "",
@@ -73,14 +75,21 @@ document.addEventListener("DOMContentLoaded", () => {
 		weaponResistance: 'none',
 		weaponImmunity: 'none',
 		npcSkills: "",
-		traits: [], // New property for traits
+		traits: [],
 		sortTraitsAlpha: true,
-		// --- New Language Properties ---
+		actions: {
+            actions: [],
+            'bonus-actions': [],
+            reactions: [],
+            'legendary-actions': [],
+            'lair-actions': []
+        },
+        legendaryBoilerplate: "The [Creature Name] can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The [Creature Name] regains spent legendary actions at the start of its turn.",
+        lairBoilerplate: "On initiative count 20 (losing initiative ties), the [Creature Name] takes a lair action to cause one of the following effects; the [Creature Name] can't use the same effect two rounds in a row:",
 		selectedLanguages: [],
 		specialLanguageOption: 0,
 		hasTelepathy: false,
 		telepathyRange: 0,
-		// --- End New Language Properties ---
 	};
 	
 	// Dynamically create the full defaultNPC object with resistance and skill properties
@@ -164,6 +173,20 @@ document.addEventListener("DOMContentLoaded", () => {
         calculateLanguagesString,
         calculateAllStats,
         calculateAllSkills,
+        // Action functions
+        addOrUpdateAction,
+        editAction,
+        clearInputs,
+        openModal,
+        closeModal,
+        showAlert,
+        editBoilerplate,
+        saveBoilerplate,
+        addDamageRow,
+        generateAttackString,
+        createDiceSelector,
+		updateDiceString,
+		updateBonus
     };
 
 
@@ -253,8 +276,8 @@ document.addEventListener("DOMContentLoaded", () => {
     			addImageLink: true,
     			useDropCap: true,
     			fg_groups: [],
-    			userDefinedLanguages: [], // New property initialized
-    			savedTraits: [] // New property for saved traits
+    			userDefinedLanguages: [],
+    			savedTraits: []
     		},
     		npcs: [{ ...app.defaultNPC, name: "New NPC", fg_group: bestiaryName }]
     	};
@@ -263,8 +286,8 @@ document.addEventListener("DOMContentLoaded", () => {
     		const newId = await app.db.projects.add(newBestiary);
     		newBestiary.id = newId;
     		loadBestiary(newBestiary);
-    		window.ui.hideAllModals(); // Corrected function call
-    		window.ui.newBestiaryNameInput.value = ""; // Corrected property access
+    		window.ui.hideAllModals();
+    		window.ui.newBestiaryNameInput.value = "";
     	} catch (error) {
     		console.error("Failed to create bestiary:", error);
     		alert("Error: Could not create bestiary. Check console for details.");
@@ -272,15 +295,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 	
 	function healBestiary(bestiary) {
-		// Ensure metadata object and its properties exist
 		if (typeof bestiary.metadata !== 'object' || bestiary.metadata === null) {
 			bestiary.metadata = {};
 		}
 		if (!Array.isArray(bestiary.metadata.userDefinedLanguages)) {
-			bestiary.metadata.userDefinedLanguages = []; // Initialize new property
+			bestiary.metadata.userDefinedLanguages = [];
 		}
 		if (!Array.isArray(bestiary.metadata.savedTraits)) {
-			bestiary.metadata.savedTraits = []; // Initialize new property
+			bestiary.metadata.savedTraits = [];
 		}
 		
 		const propsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
@@ -288,16 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (typeof bestiary.metadata[prop] === 'number') {
 				bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
 			} else if (bestiary.metadata[prop] === undefined) {
-				bestiary.metadata[prop] = true; // Default to true if missing
+				bestiary.metadata[prop] = true;
 			}
 		});
 
-		// Ensure npcs is an array
 		if (!Array.isArray(bestiary.npcs)) {
 			bestiary.npcs = [];
 		}
 
-		// Data Healing: Ensure all properties exist on each NPC.
 		let unnamedCounter = 1;
 		bestiary.npcs = bestiary.npcs.map(npc => {
 			if (typeof npc !== 'object' || npc === null) {
@@ -314,16 +334,27 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			});
 			
-			// --- Language property healing (Phase 1) ---
 			if (!Array.isArray(healedNpc.selectedLanguages)) healedNpc.selectedLanguages = [];
 			if (healedNpc.specialLanguageOption === undefined) healedNpc.specialLanguageOption = 0;
 			if (healedNpc.hasTelepathy === undefined) healedNpc.hasTelepathy = false;
 			if (healedNpc.telepathyRange === undefined) healedNpc.telepathyRange = 0;
-			// --- End language healing ---
 			
-			// --- Trait property healing ---
 			if (!Array.isArray(healedNpc.traits)) healedNpc.traits = [];
 			if (healedNpc.sortTraitsAlpha === undefined) healedNpc.sortTraitsAlpha = true;
+
+			// Heal actions
+			if (typeof healedNpc.actions !== 'object' || healedNpc.actions === null) {
+                healedNpc.actions = JSON.parse(JSON.stringify(app.defaultNPC.actions));
+            } else {
+                for (const key in app.defaultNPC.actions) {
+                    if (!Array.isArray(healedNpc.actions[key])) {
+                        healedNpc.actions[key] = [];
+                    }
+                }
+            }
+			if (healedNpc.legendaryBoilerplate === undefined) healedNpc.legendaryBoilerplate = app.defaultNPC.legendaryBoilerplate;
+			if (healedNpc.lairBoilerplate === undefined) healedNpc.lairBoilerplate = app.defaultNPC.lairBoilerplate;
+
 
 			if (!healedNpc.name || healedNpc.name.trim() === "") {
 				let uniqueName = `Unnamed NPC`;
@@ -376,7 +407,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	async function saveActiveBestiaryToDB() {
 		if (app.activeBestiary && app.activeBestiary.id) {
 			try {
-				// Create a stripped down copy before saving (remove circular references, large data if needed)
 				const bestiaryToSave = JSON.parse(JSON.stringify(app.activeBestiary));
 				await app.db.projects.put(bestiaryToSave);
 			} catch (error) {
@@ -449,7 +479,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	// --- NPC Management ---
 	function createNewNpc() {
 		if (!app.activeBestiary) return;
-		// By creating a deep copy, we ensure arrays like 'traits' and 'selectedLanguages' are new instances.
 		const newNpc = JSON.parse(JSON.stringify(app.defaultNPC));
 		
 		newNpc.name = findUniqueNpcName("New NPC");
@@ -457,7 +486,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		newNpc.addDescription = app.activeBestiary.metadata.addDescription;
 		newNpc.addTitle = app.activeBestiary.metadata.addTitle;
 		newNpc.addImageLink = app.activeBestiary.metadata.addImageLink;
-		newNpc.fg_group = app.activeBestiary.projectName; // Set default group
+		newNpc.fg_group = app.activeBestiary.projectName;
 		
 		app.activeBestiary.npcs.push(newNpc);
 		sortAndSwitchToNpc(newNpc);
@@ -525,8 +554,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (err.name !== "AbortError") console.error("Error exporting NPC:", err);
 		}
 	}
-	
-	
 
 	function updateActiveNPCFromForm() {
 		if (app.isUpdatingForm || !app.activeNPC) return;
@@ -565,7 +592,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 
-		// --- Language section read ---
 		const selectedLanguages = new Set();
 		window.ui.languageListboxes.forEach(listbox => {
 			if (listbox) {
@@ -596,13 +622,11 @@ document.addEventListener("DOMContentLoaded", () => {
 				...app.monstrousLanguages2,
 				...(app.activeBestiary.metadata.userDefinedLanguages || [])
 			];
-			// A simple length check is sufficient to see if we need to update.
 			if (app.activeNPC.selectedLanguages.length !== allLangs.length) {
 				 app.activeNPC.selectedLanguages = allLangs;
 				 languagesModified = true;
 			}
 		}
-		// --- End language section ---
 
 		for (const key in window.ui.npcSettingsCheckboxes) {
 			app.activeNPC[key] = window.ui.npcSettingsCheckboxes[key].checked;
@@ -647,7 +671,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		window.ui.updateStatDisplays();
 		window.viewport.updateViewport();
 		
-		// Just update the name in the dropdown, don't re-sort on every keystroke
 		const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
 		if(currentOption) {
 			currentOption.textContent = app.activeNPC.name;
@@ -656,9 +679,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			window.ui.updateFormFromActiveNPC();
 		}
 
-		saveActiveBestiaryToDB(); // Auto-save on any change
+		saveActiveBestiaryToDB();
 	}
-
+	
+	// --- Calculation Functions ---
 	function calculateAbilityBonus(score) {
 		return Math.floor((parseInt(score, 10) - 10) / 2);
 	}
@@ -807,37 +831,24 @@ document.addEventListener("DOMContentLoaded", () => {
 		return immuneConditions.join(', ');
 	}
 
-	// Helper function for Phase 1
 	function calculateLanguagesString(npc) {
 		if (!npc) return "";
 
-		// First, handle the special override cases
 		switch (npc.specialLanguageOption) {
-			case 1: // Speaks no languages
-				// Per instructions, this option should clear any selected languages.
-				// However, this function is for display only. We will just return the desired string.
-				// The actual data change should be handled in the event listener if needed.
-				return "—";
-			case 2: // Speaks all languages
-				return "All";
-			case 3: // Speaks languages it knew in life
-				return "the languages it knew in life";
-			case 4: // Can't speak; knows selected languages
+			case 1: return "—";
+			case 2: return "All";
+			case 3: return "the languages it knew in life";
+			case 4:
 				const knownLanguages = [...(npc.selectedLanguages || [])].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).join(', ');
 				return `Understands ${knownLanguages || 'no languages'} but can't speak`;
-			case 5: // Can't speak; knows creator's languages
-				return "Understands the languages of its creator but can't speak";
-			case 6: // Can't speak; knows languages known in life
-				return "Understands the languages it knew in life but can't speak";
-			case 0: // No special conditions - fall through to default handling
-			default:
-				break; // Continue to the standard logic below
+			case 5: return "Understands the languages of its creator but can't speak";
+			case 6: return "Understands the languages it knew in life but can't speak";
+			case 0: default: break;
 		}
 	
-		// Default behavior for "No special conditions"
 		let languages = [...(npc.selectedLanguages || [])];
 		if (languages.length === 0 && !npc.hasTelepathy) {
-			return ""; // Return nothing if there are no languages or telepathy to display
+			return "";
 		}
 	
 		languages.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
@@ -860,13 +871,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 		const abilityAbbr = { strength: 'Str', dexterity: 'Dex', constitution: 'Con', intelligence: 'Int', wisdom: 'Wis', charisma: 'Cha' };
 		
-		// 1. Calculate ability bonuses
 		abilities.forEach(ability => {
 			const score = app.activeNPC[ability] || 10;
 			app.activeNPC[`${ability}Bonus`] = calculateAbilityBonus(score);
 		});
 
-		// 2. Calculate saving throws
 		const profBonus = app.activeNPC.proficiencyBonus || 2;
 		const savesArray = [];
 		abilities.forEach(ability => {
@@ -881,10 +890,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 		app.activeNPC.saves = savesArray.join(', ');
 		
-		// 3. Calculate Skills
 		calculateAllSkills();
 
-		// 4. Calculate Passive Perception
 		const perceptionProf = app.activeNPC.skill_perception_prof || false;
 		const perceptionExp = app.activeNPC.skill_perception_exp || false;
 		const perceptionAdjust = app.activeNPC.skill_perception_adjust || 0;
@@ -894,7 +901,6 @@ document.addEventListener("DOMContentLoaded", () => {
 								perceptionAdjust;
 		app.activeNPC.passivePerception = 10 + perceptionBonus;
 		
-		// 5. Calculate Speed String
 		app.activeNPC.speed = calculateSpeedString(app.activeNPC);
 	}
 	
@@ -918,10 +924,222 @@ document.addEventListener("DOMContentLoaded", () => {
         app.activeNPC.npcSkills = skillsArray.join(', ');
     }
 
+	// --- NEW ACTION FUNCTIONS ---
+	function addOrUpdateAction(type) {
+		if (!app.activeNPC) return;
+		const name = window.ui.inputs.commonName.value.trim();
+		const desc = window.ui.inputs.commonDesc.value.trim();
+		if (!name || !desc) {
+			showAlert("Please provide both a name and a description.");
+			return;
+		}
 
-	
+		if (currentlyEditingAction) {
+			const oldType = currentlyEditingAction.dataset.actionType;
+			const oldIndex = parseInt(currentlyEditingAction.dataset.actionIndex, 10);
+			
+			// If type is different, remove from old list
+			if(oldType !== type) {
+				app.activeNPC.actions[oldType].splice(oldIndex, 1);
+			}
+			
+			// Add/update in the new list
+			const newAction = { name, desc };
+			if(oldType === type) {
+				app.activeNPC.actions[type][oldIndex] = newAction;
+			} else {
+				app.activeNPC.actions[type].push(newAction);
+			}
+		} else {
+			app.activeNPC.actions[type].push({ name, desc });
+		}
+		
+		window.ui.renderActions();
+		clearInputs();
+		saveActiveBestiaryToDB();
+		window.viewport.updateViewport();
+	}
+
+	function editAction(element) {
+		if (currentlyEditingAction) {
+			currentlyEditingAction.classList.remove("editing");
+		}
+		currentlyEditingAction = element;
+		currentlyEditingAction.classList.add("editing");
+
+		const name = element.querySelector(".action-name").textContent;
+		const desc = element.querySelector(".action-desc").textContent;
+
+		window.ui.inputs.commonName.value = name;
+		window.ui.inputs.commonDesc.value = desc;
+		window.ui.clearEditBtn.classList.remove("hidden");
+		window.ui.inputs.commonName.focus();
+	}
+
+	function clearInputs() {
+		window.ui.inputs.commonName.value = "";
+		window.ui.inputs.commonDesc.value = "";
+		if (currentlyEditingAction) {
+			currentlyEditingAction.classList.remove("editing");
+			currentlyEditingAction = null;
+		}
+		window.ui.clearEditBtn.classList.add("hidden");
+	}
+
+	function editBoilerplate(element) {
+        boilerplateTarget = element;
+        document.getElementById("boilerplate-editor").value = element.textContent;
+        openModal('boilerplate-modal');
+    }
+
+    function saveBoilerplate() {
+        if (boilerplateTarget && app.activeNPC) {
+            const newText = document.getElementById("boilerplate-editor").value;
+            boilerplateTarget.textContent = newText;
+            if (boilerplateTarget.id === 'legendary-boilerplate') {
+                app.activeNPC.legendaryBoilerplate = newText;
+            } else if (boilerplateTarget.id === 'lair-boilerplate') {
+                app.activeNPC.lairBoilerplate = newText;
+            }
+            saveActiveBestiaryToDB();
+            window.viewport.updateViewport();
+        }
+        closeModal('boilerplate-modal');
+    }
+
+	// --- DICE SELECTOR LOGIC (REUSABLE) ---
+	function createDiceSelector(container, targetInput) {
+		if (!container || !targetInput) return;
+		container.innerHTML = ''; // Clear previous icons
+		const dice = [4, 6, 8, 10, 12, 20, 100];
+
+		dice.forEach((sides) => {
+			const dieWrapper = document.createElement('div');
+			dieWrapper.className = 'die-icon';
+			dieWrapper.title = `Left click to add 1d${sides}.\nRight click to remove 1d${sides}.`;
+			dieWrapper.innerHTML = `<svg viewBox="0 0 1000 1000" width="32" height="32"><use href="#icon-die-d${sides}" fill="currentColor"></use></svg>`;
+			
+			dieWrapper.addEventListener('click', () => updateDiceString(targetInput, sides, 1));
+			dieWrapper.addEventListener('contextmenu', (e) => { e.preventDefault(); updateDiceString(targetInput, sides, -1); });
+			container.appendChild(dieWrapper);
+		});
+
+		const bonusWrapper = document.createElement('div');
+		bonusWrapper.className = 'bonus-icon die-icon';
+		bonusWrapper.title = `Left click to add 1 to the bonus.\nRight click to subtract 1 from the bonus.`;
+		bonusWrapper.innerHTML = `<svg viewBox="0 0 1000 1000" width="32" height="32"><use href="#icon-die-bonus" fill="currentColor"></use></svg>`;
+		bonusWrapper.addEventListener('click', () => updateBonus(targetInput, 1));
+		bonusWrapper.addEventListener('contextmenu', (e) => { e.preventDefault(); updateBonus(targetInput, -1); });
+		container.appendChild(bonusWrapper);
+	}
+
+	function updateDiceString(targetInput, sides, change) {
+		let currentValue = targetInput.value.trim(); const dieTerm = `d${sides}`; let terms = currentValue.split('+').map(t => t.trim()).filter(t => t); let found = false;
+		terms = terms.map(term => { if (term.endsWith(dieTerm)) { found = true; const count = parseInt(term.slice(0, -dieTerm.length), 10) || 1; const newCount = count + change; return newCount > 0 ? `${newCount}${dieTerm}` : null; } return term; }).filter(t => t);
+		if (!found && change > 0) { terms.push(`1${dieTerm}`); }
+		targetInput.value = terms.join(' + ');
+	}
+
+	function updateBonus(targetInput, change) {
+		if (!targetInput) return;
+		let expression = targetInput.value.trim();
+		
+		let dicePart = expression;
+		let bonus = 0;
+
+		const bonusRegex = /([+\-]\s*\d+)$/;
+		const match = expression.match(bonusRegex);
+
+		if (match) {
+			const sign = match[1].includes('+') ? 1 : -1;
+			const value = parseInt(match[1].replace(/[+\-]/g, '').trim(), 10);
+			bonus = sign * value;
+			dicePart = expression.substring(0, match.index).trim();
+		} else if (!isNaN(parseInt(expression)) && expression.indexOf('d') === -1) {
+			bonus = parseInt(expression, 10) || 0;
+			dicePart = '';
+		}
+
+		const newBonus = bonus + change;
+
+		let newExpression = dicePart;
+		if (newBonus !== 0) {
+			if (dicePart) {
+				newExpression += newBonus > 0 ? ` + ${newBonus}` : ` - ${Math.abs(newBonus)}`;
+			} else {
+				newExpression = `${newBonus}`;
+			}
+		}
+
+		targetInput.value = newExpression;
+	}
+
+	// --- ATTACK HELPER SPECIFIC LOGIC ---
+	function addDamageRow() {
+		const container = document.getElementById('all-damage-rows-container');
+		const newRow = document.createElement('div');
+		const newIdSuffix = container.children.length;
+		newRow.className = 'additional-damage-row p-3 border rounded-lg bg-gray-50';
+		newRow.innerHTML = `
+			<div class="flex flex-wrap items-center gap-4 text-sm">
+				<div class="flex-grow"><input id="add-damage-dice-${newIdSuffix}" type="text" placeholder="Damage" class="w-full rounded-md border-gray-300 info-input damage-expression" title="Enter the damage dice and bonus manually, or use the clickable icons."></div>
+				<div id="add-dice-selector-${newIdSuffix}" class="dice-selector-container flex items-center"></div>
+				<div><select id="add-damage-type-${newIdSuffix}" class="rounded-md border-gray-300 info-select damage-type" title="Select the type of damage this attack deals."></select></div>
+				<button onclick="this.parentElement.parentElement.remove()" class="px-2 py-0.5 border rounded-full text-xs font-bold self-start">X</button>
+			</div>
+		`;
+		container.appendChild(newRow);
+		window.ui.populateDamageTypes(`add-damage-type-${newIdSuffix}`);
+		createDiceSelector(document.getElementById(`add-dice-selector-${newIdSuffix}`), document.getElementById(`add-damage-dice-${newIdSuffix}`));
+	}
+
+	function generateAttackString() {
+		const type = document.getElementById('attack-type').value; const bonusRaw = document.getElementById('attack-bonus').value; const reachRaw = document.getElementById('attack-reach').value; const target = document.getElementById('attack-target').value;
+		if (!bonusRaw || !reachRaw) { showAlert('Please provide at least a bonus and reach/range.'); return; }
+		const bonus = parseInt(bonusRaw) >= 0 ? `+${bonusRaw}` : bonusRaw; const reach = `${reachRaw} ft.`; let fullString = `${type}: ${bonus} to hit, reach ${reach}, ${target}. Hit: `; let damageParts = [];
+		
+		const pExpression = document.getElementById('attack-damage-dice').value.trim();
+		const pType = document.getElementById('attack-damage-type').value;
+		if (pExpression) { damageParts.push(`(${pExpression}) ${pType} damage`); }
+		
+		document.querySelectorAll('.additional-damage-row').forEach(row => {
+			const aExpression = row.querySelector('.damage-expression').value.trim();
+			const aType = row.querySelector('.damage-type').value;
+			 if (aExpression) { damageParts.push(`plus (${aExpression}) ${aType} damage`); }
+		});
+		
+		if(damageParts.length === 0) { showAlert('Please add at least one damage component.'); return; }
+		fullString += damageParts.join(' ') + '.';
+		window.ui.inputs.commonDesc.value = fullString;
+		closeModal('attack-helper-modal');
+	}
+
+	// --- MODAL & ALERT HELPERS ---
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+			window.ui.modalOverlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+			const allModals = document.querySelectorAll('.modal-content');
+			const isAnyModalOpen = Array.from(allModals).some(m => !m.classList.contains('hidden'));
+			if (!isAnyModalOpen) {
+				window.ui.modalOverlay.classList.add('hidden');
+			}
+        }
+    }
+
+    function showAlert(message) {
+        document.getElementById("alert-message").textContent = message;
+        openModal('alert-modal');
+    }
+
 	// --- INITIALIZATION ---
 	window.ui.init();
-
-
 });

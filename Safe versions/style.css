@@ -162,6 +162,19 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
 	font-size: 16pt;
 	font-weight: bold;
 }
+.action-header {
+	font-family: 'Raleway', sans-serif;
+	font-weight: 400;
+	font-variant: small-caps;
+	color: #7A200D;
+	font-size: 18pt;
+	padding-bottom: 0em;
+	margin-bottom: -0.2em;
+	border-left: 1px solid #BA4E3B;
+	border-right: 1px solid #BA4E3B;
+	padding-left: 0.15cm;
+	padding-right: 0.15cm;
+}
 .post-container {
 	margin: 20px 20px 0 0;
 	overflow: auto;
@@ -195,7 +208,7 @@ div.npcdiv {
 	border-left-width: 1px;
 	border-right-color: #BA4E3B;
 	border-left-color: #BA4E3B;
-	padding: 0cm 0.15cm 0cm 0.15cm;
+	padding: 0.15cm 0.15cm 0.15cm 0.15cm;
 }
 .whoosh { /* This class is now used on an SVG polyline, styled via attributes */ }
 table.attr {
@@ -286,3 +299,47 @@ table.spell td {
     border-bottom: 2px solid #87CC24;
     margin-bottom: 2px; /* Prevent layout shift */
 }
+
+/* --- Action & Dice Icon Styles --- */
+.action-list-item {
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+}
+.action-list-item:hover {
+    background-color: #f0fdf4; /* A very light green for hover */
+}
+.editing {
+    background-color: #fefce8 !important; /* A light yellow for editing */
+    border-color: #facc15;
+}
+.die-icon, .bonus-icon {
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s ease-in-out;
+}
+.die-icon:not(:first-child) {
+    margin-left: -8px;
+}
+.die-icon:hover, .bonus-icon:hover {
+    transform: scale(1.1);
+}
+.die-icon {
+    color: #166534; /* Dark Green */
+}
+.bonus-icon {
+    color: #581c87; /* Purple */
+}
+/* --- Hide viewport scrollbar --- */
+#viewport {
+    /* For Firefox */
+    scrollbar-width: none;
+    
+    /* For IE and Edge (older versions) */
+    -ms-overflow-style: none;
+}
+
+#viewport::-webkit-scrollbar {
+    /* For Chrome, Safari, and new Edge */
+    display: none;
+}
+
