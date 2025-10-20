@@ -1,3 +1,4 @@
+// main.js
 document.addEventListener("DOMContentLoaded", () => {
 	
 	// --- DATABASE SETUP ---
@@ -274,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
     	
     	const newBestiary = {
     		projectName: bestiaryName, // This remains projectName for DB compatibility
-    		metadata: { 
+    		metadata: { 
     			createdAt: new Date(),
     			addDescription: true,
     			addTitle: true,
@@ -458,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const content = await file.text();
 			let importedBestiary = JSON.parse(content);
 			
-			delete importedBestiary.id; 
+			delete importedBestiary.id; 
 
 			const existing = await app.db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
 			if (existing) {
@@ -565,7 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const newName = window.ui.inputs.name.value.trim();
 		if (newName && newName.toLowerCase() !== (app.activeNPC.name || "").toLowerCase()) {
-			const isDuplicate = app.activeBestiary.npcs.some((npc, index) => 
+			const isDuplicate = app.activeBestiary.npcs.some((npc, index) => 
 				index !== app.activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
 			);
 
@@ -1405,4 +1406,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// --- INITIALIZATION ---
 	window.ui.init();
+	window.importer.init(); // This will fetch and inject the import.html
 });

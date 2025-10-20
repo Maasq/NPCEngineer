@@ -401,3 +401,28 @@ table.spell td {
     padding-right: 0.5rem; /* px-2 */
     font-size: 0.75rem; /* text-xs */
 }
+
+/* --- Add to end of style.css --- */
+#import-viewport {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+#import-viewport::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, new Edge */
+}
+#import-text-area {
+    font-family: monospace;
+    font-size: 10pt;
+}
+
+/* --- Add to end of style.css --- */
+
+/* --- Fixed Footer Styles --- */
+#fixed-footer {
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2); /* Optional: Add a top shadow */
+}
+
+/* Ensure body padding matches footer height + bottom bar height */
+body {
+    padding-bottom: calc(4rem + 3px); /* 4rem for h-16 + 3px for the bar */
+}
