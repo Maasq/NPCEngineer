@@ -32,6 +32,7 @@ window.ui = {
 	menuExportNpc: null,
 	menuDeleteNpc: null,
 	menuSettings: null,
+	menuExportFg: null, // *** NEW ***
 
 	// NPC Selector
 	npcSelector: null,
@@ -108,7 +109,7 @@ window.ui = {
 
     // Footer Buttons (Add these)
     footerImportTextBtn: null,
-    footerExportFgBtn: null,
+    footerExportFgBtn: null, // *** NEW ***
 
 	// Settings Checkboxes (initialized in init)
 	bestiarySettingsCheckboxes: {},
@@ -145,10 +146,11 @@ window.ui = {
         this.menuNewNpc = document.getElementById('menu-new-npc');
         this.menuDuplicateNpc = document.getElementById('menu-duplicate-npc');
         this.menuImportNpc = document.getElementById('menu-import-npc');
-        this.menuImportText = document.getElementById('menu-import-text'); // Assigned here
+        this.menuImportText = document.getElementById('menu-import-text');
         this.menuExportNpc = document.getElementById('menu-export-npc');
         this.menuDeleteNpc = document.getElementById('menu-delete-npc');
         this.menuSettings = document.getElementById('menu-settings');
+        this.menuExportFg = document.getElementById('menu-export-fg'); // *** NEW ***
 
         this.npcSelector = document.getElementById("npc-selector");
         this.npcOptionsContainer = document.getElementById('npc-options-container');
@@ -218,7 +220,7 @@ window.ui = {
 
         // Assign Footer Buttons
         this.footerImportTextBtn = document.getElementById('footer-import-text-btn');
-        this.footerExportFgBtn = document.getElementById('footer-export-fg-btn');
+        this.footerExportFgBtn = document.getElementById('footer-export-fg-btn'); // *** NEW ***
 
         this.bestiarySettingsCheckboxes = {
             addDescription: document.getElementById('bestiary-add-description'),
@@ -313,6 +315,9 @@ window.ui = {
         if (this.menuExportNpc) this.menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportNpc.classList.contains('disabled')) window.app.exportNpc(); this.mainMenu.classList.add('hidden'); });
         if (this.menuDeleteNpc) this.menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDeleteNpc.classList.contains('disabled')) window.app.deleteCurrentNpc(); this.mainMenu.classList.add('hidden'); });
         if (this.menuSettings) this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuSettings.classList.contains('disabled')) this.showSettingsModal(); this.mainMenu.classList.add('hidden'); });
+        // *** NEW *** Listener for Export FG menu item
+        if (this.menuExportFg) this.menuExportFg.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportFg.classList.contains('disabled')) window.app.exportBestiaryToFG(); this.mainMenu.classList.add('hidden'); });
+
 
         if (this.hamburgerBtn) {
             this.hamburgerBtn.addEventListener('click', (e) => {
@@ -573,7 +578,7 @@ window.ui = {
             });
         }
 
-        // Add listener for the new footer import button
+        // *** UPDATED *** Listener for footer import button
         if (this.footerImportTextBtn) {
             this.footerImportTextBtn.addEventListener('click', () => {
                 if (!this.footerImportTextBtn.disabled) {
@@ -581,7 +586,14 @@ window.ui = {
                 }
             });
         }
-        // Listener for footerExportFgBtn will be added later
+        // *** NEW *** Listener for footer export FG button
+        if (this.footerExportFgBtn) {
+            this.footerExportFgBtn.addEventListener('click', () => {
+                if (!this.footerExportFgBtn.disabled) {
+                    window.app.exportBestiaryToFG(); // Call placeholder function
+                }
+            });
+        }
 
         // --- Setup functions called last ---
         this.setupCustomToggles();
@@ -595,7 +607,7 @@ window.ui = {
         this.setupActionListeners();
     },
 
-    // ... (rest of the file remains the same, including the safety checks added in the previous step) ...
+    // ... (rest of the file remains the same) ...
 
     showNewBestiaryModal: function() {
 		if (this.newBestiaryModal) {
@@ -618,7 +630,8 @@ window.ui = {
 		const hasActiveBestiary = !!window.app.activeBestiary;
 		const menuItemsToToggle = [
 			this.menuExportBestiary, this.menuNewNpc, this.menuDuplicateNpc, this.menuImportNpc,
-			this.menuImportText, this.menuExportNpc, this.menuDeleteNpc, this.menuSettings
+			this.menuImportText, this.menuExportNpc, this.menuDeleteNpc, this.menuSettings,
+            this.menuExportFg // *** NEW *** Include Export FG menu item
 		].filter(item => item); // Filter out nulls if init failed
 
 		menuItemsToToggle.forEach(item => {
@@ -632,10 +645,10 @@ window.ui = {
 		// Also disable/enable footer buttons
         if (this.footerImportTextBtn) {
             this.footerImportTextBtn.disabled = !hasActiveBestiary;
-        } else { /*console.error("Element #footer-import-text-btn not found!")*/ } // Silenced console error for now
+        }
          if (this.footerExportFgBtn) {
-            this.footerExportFgBtn.disabled = !hasActiveBestiary;
-        } else { /*console.error("Element #footer-export-fg-btn not found!")*/ } // Silenced console error for now
+            this.footerExportFgBtn.disabled = !hasActiveBestiary; // *** NEW *** Handle Export FG button state
+        }
 		
 		if (this.menuDeleteNpc && hasActiveBestiary && window.app.activeBestiary.npcs.length <= 1) {
 			this.menuDeleteNpc.classList.add('disabled');
@@ -1199,8 +1212,9 @@ window.ui = {
         const attackHelperModal = document.getElementById('attack-helper-modal'); 
         if (attackHelperModal) {
             const primaryBtn = attackHelperModal.querySelector('button.btn-primary');
-            const cancelBtn = attackHelperModal.querySelector('button.hover\\:bg-gray-100[title*="Close"]');
-            const addDamageBtn = attackHelperModal.querySelector('button[title*="Add another damage component"]');
+            // *** REFINED SELECTOR *** Use :not(.btn-xs) to distinguish the main Cancel button
+            const cancelBtn = attackHelperModal.querySelector('button.btn-secondary:not(.btn-xs)'); 
+            const addDamageBtn = attackHelperModal.querySelector('button.btn-secondary.btn-xs'); 
 			if (primaryBtn) primaryBtn.addEventListener('click', window.app.generateAttackString);
             if (cancelBtn) cancelBtn.addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
             if (addDamageBtn) addDamageBtn.addEventListener('click', window.app.addDamageRow);
@@ -1214,7 +1228,7 @@ window.ui = {
         const boilerplateModal = document.getElementById('boilerplate-modal');
         if(boilerplateModal) {
              const primaryBtn = boilerplateModal.querySelector('button.btn-primary');
-             const cancelBtn = boilerplateModal.querySelector('button.hover\\:bg-gray-100');
+             const cancelBtn = boilerplateModal.querySelector('button.btn-secondary'); 
              if (primaryBtn) primaryBtn.addEventListener('click', window.app.saveBoilerplate);
              if (cancelBtn) cancelBtn.addEventListener('click', () => window.app.closeModal('boilerplate-modal'));
         }

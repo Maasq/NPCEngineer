@@ -161,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteCurrentNpc,
         importNpc,
         exportNpc,
+        exportBestiaryToFG, // *** NEW *** Export function placeholder
         updateActiveNPCFromForm,
         healBestiary,
         sortAndSwitchToNpc,
@@ -560,6 +561,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (err.name !== "AbortError") console.error("Error exporting NPC:", err);
 		}
 	}
+
+    // *** NEW *** Placeholder function for FG Export
+    async function exportBestiaryToFG() {
+        if (!app.activeBestiary) return;
+        showAlert("Fantasy Grounds export is not yet implemented.");
+        console.log("Placeholder: Exporting Bestiary to FG format...");
+        // Future implementation will go here
+    }
 
 	function updateActiveNPCFromForm() {
 		if (app.isUpdatingForm || !app.activeNPC) return;
@@ -1371,7 +1380,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // NEW general dialog function
-    function showDialog(title, message, showCancel = false) {
+function showDialog(title, message, showCancel = false) {
+        // Ensure UI elements exist before using them
+        if (!window.ui.alertTitle || !window.ui.alertMessageText || !window.ui.alertOkBtn || !window.ui.alertCancelBtn) {
+            console.error("Alert modal elements not found!");
+            return; // Stop if elements are missing
+        }
+
         window.ui.alertTitle.textContent = title;
         window.ui.alertMessageText.textContent = message;
 
@@ -1389,20 +1404,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     confirmCallback(); // Execute the stored action
                     confirmCallback = null; // Clear after execution
                 }
-            };
+            }; // Added semicolon for consistency
             window.ui.alertCancelBtn.onclick = () => {
                  closeModal('alert-modal');
                  confirmCallback = null; // Clear on cancel
-            }
+            }; // Added semicolon for consistency
         } else {
             // Simple alert mode
              window.ui.alertOkBtn.textContent = 'OK';
-             window.ui.alertOkBtn.onclick = () => closeModal('alert-modal');
+             window.ui.alertOkBtn.onclick = () => closeModal('alert-modal'); // Added semicolon for consistency
         }
 
         openModal('alert-modal');
     }
-
 
 	// --- INITIALIZATION ---
 	window.ui.init();

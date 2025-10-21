@@ -432,6 +432,147 @@ table.spell td {
     font-size: 0.75rem; /* text-xs */
 }
 
+/* --- NEW Secondary (Cancel) Button Style --- */
+.btn-secondary {
+  background: linear-gradient(to bottom, #FFFFFF 0%, #E0E0E0 100%);
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #B0B0B0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+.btn-secondary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-secondary:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+.btn-secondary:hover {
+  opacity: 0.8;
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary.btn-sm {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.btn-secondary.btn-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* --- NEW Dark Button Style --- */
+.btn-dark {
+  background: linear-gradient(to bottom, #333333 0%, #000000 100%);
+  color: #A6E33C;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #444444;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-dark::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4), rgba(255,255,255,0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+.btn-dark::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-dark:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+.btn-dark:hover {
+  opacity: 0.8;
+}
+.btn-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-dark.btn-sm {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.btn-dark.btn-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+}
+#logo-container {
+    position: absolute; /* Or relative if you didn't use absolute positioning */
+    overflow: hidden; /* Essential for clipping the shine */
+    cursor: pointer; /* To indicate it's clickable/interactive */
+}
+
+/* Hover shine animation for the logo */
+#logo-container::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+#logo-container:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+/* Optional: Add a subtle opacity change on hover like the buttons */
+#logo-container:hover {
+  opacity: 0.9; /* Slightly less than buttons maybe */
+  transition: opacity 0.15s ease-in-out;
+}
+
+
 /* --- Add to end of style.css --- */
 #import-viewport {
     scrollbar-width: none; /* Firefox */
@@ -444,4 +585,3 @@ table.spell td {
     font-family: monospace;
     font-size: 10pt;
 }
-
