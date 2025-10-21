@@ -14,7 +14,7 @@ function updateViewport() {
         name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
         strength, dexterity, constitution, intelligence, wisdom, charisma,
         strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-        useDropCap, addDescription, speed, challenge, experience, traits, sortTraitsAlpha,
+        useDropCap, addDescription, addTitle, /* <--- Make sure addTitle is destructured */ speed, challenge, experience, traits, sortTraitsAlpha,
         actions, legendaryBoilerplate, lairBoilerplate
     } = activeNPC;
     
@@ -47,7 +47,12 @@ function updateViewport() {
     const NPCchabo = charismaBonus !== undefined ? (charismaBonus >= 0 ? `+${charismaBonus}` : charismaBonus) : "+0";
 
     const dropCapClass = useDropCap ? 'drop-cap' : '';
-    const descriptionHtml = addDescription ? `<div class="npcdescrip ${dropCapClass}"> ${NPCDescriptionHTML} </div>` : '';
+    const titleHtml = addTitle ? `<div style="font-family: 'Questrial', sans-serif; font-size: 17pt; color: #7A200D; font-weight: bold; padding-left: 0.1cm; padding-bottom: 0.0cm; padding-top: 0.4cm;">${NPCName}</div>` : '';
+    const descriptionTopPadding = addTitle ? '0.0cm' : '0.4cm';
+    const descriptionBlockHtml = addDescription ? 
+        `${titleHtml}<div class="npcdescrip ${dropCapClass}" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${NPCDescriptionHTML} </div>` 
+        : '';
+
 
     let traitsHtml = '';
 	if (traits && traits.length > 0) {
@@ -156,8 +161,7 @@ function updateViewport() {
             <div class="npcbottom">&nbsp;</div>
             <div class="cap"></div>
         </div>
-        ${descriptionHtml}
+        ${!addDescription ? '<div style="height: 1.5rem;"></div>' : ''} ${descriptionBlockHtml} 
     `;
     viewport.innerHTML = generatedHtml;
 }
-
