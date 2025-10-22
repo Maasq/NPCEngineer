@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.10.08" />
-		<meta name="date" content="2025-10-21" />
+		<meta name="version" content="0.11.05" />
+		<meta name="date" content="2025-10-22" />
 		
 		<title>NPC Engineer</title>
 		
@@ -880,7 +880,49 @@ Double-click to open a window that will help build a correct expression.">
 							</div>
 						</div>
 					</div>
+					
+<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+    <div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center cursor-pointer select-none">
+        <h2 class="font-bold text-slate-700">Spellcasting & Psionics</h2>
+    </div>
+    <div class="card-body">
+        <div class="p-4 space-y-4">
 
+            <div class="flex justify-between items-center pb-2"> <h3 id="innate-spellcasting-header" class="text-lg font-bold text-gray-400">Innate Spellcasting</h3>
+                <div class="flex items-center">
+                    <label for="npc-has-innate-spellcasting" class="label-text text-sm mr-2 whitespace-nowrap">Include Innate Spellcasting section</label>
+                    <input type="checkbox" id="npc-has-innate-spellcasting" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+            </div>
+            <hr id="innate-divider" class="border-gray-200 hidden"> 
+            <div id="innate-spellcasting-fields" class="pt-2 pl-4 space-y-1 transition-opacity duration-300 opacity-0 hidden"> <div class="flex justify-end items-center">
+                    <label for="npc-innate-is-psionics" class="label-text text-sm mr-2">Use as Psionics</label>
+                    <input type="checkbox" id="npc-innate-is-psionics" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+                </div>
+
+
+            <div class="flex justify-between items-center pt-4 pb-2"> <h3 id="spellcasting-header" class="text-lg font-bold text-gray-400">Spellcasting</h3>
+                 <div class="flex items-center">
+                    <label for="npc-has-spellcasting" class="label-text text-sm mr-2 whitespace-nowrap">Include Spellcasting section</label>
+                    <input type="checkbox" id="npc-has-spellcasting" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+            </div>
+             <hr id="spellcasting-divider" class="border-gray-200 hidden">
+            <div id="spellcasting-fields" class="pt-2 pl-4 space-y-1 transition-opacity duration-300 opacity-0 hidden"> <div class="radio-container">
+                    <label for="npc-spellcasting-to-traits" class="label-text text-sm">Use in Traits</label>
+                    <input type="radio" id="npc-spellcasting-to-traits" name="spellcasting-placement" value="traits" checked class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+                <div class="radio-container">
+                    <label for="npc-spellcasting-to-actions" class="label-text text-sm">Use in Actions</label>
+                    <input type="radio" id="npc-spellcasting-to-actions" name="spellcasting-placement" value="actions" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+                </div>
+
+        </div>
+    </div>
+</div>
+					
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Actions</h2>

@@ -15,7 +15,9 @@ function updateViewport() {
         strength, dexterity, constitution, intelligence, wisdom, charisma,
         strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
         useDropCap, addDescription, addTitle, /* <--- Make sure addTitle is destructured */ speed, challenge, experience, traits, sortTraitsAlpha,
-        actions, legendaryBoilerplate, lairBoilerplate
+        actions, legendaryBoilerplate, lairBoilerplate,
+        // NEW Spellcasting properties
+        hasInnateSpellcasting, innateIsPsionics, hasSpellcasting, spellcastingPlacement
     } = activeNPC;
     
     const { vulnerabilities, resistances, immunities } = window.app.calculateDamageModifiersString(activeNPC);
@@ -53,6 +55,20 @@ function updateViewport() {
         `${titleHtml}<div class="npcdescrip ${dropCapClass}" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${NPCDescriptionHTML} </div>` 
         : '';
 
+    // --- NEW Spellcasting/Psionics Headers ---
+    let spellcastingHtml = '';
+    
+    // Innate Spellcasting / Psionics
+    if (hasInnateSpellcasting && spellcastingPlacement === 'traits') {
+        const innateTitle = innateIsPsionics ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting';
+        spellcastingHtml += `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${innateTitle}.</b></i> [Spell/Psionic list goes here]</div>`;
+    }
+    
+    // Regular Spellcasting (Only if placed in Traits for now)
+    if (hasSpellcasting && spellcastingPlacement === 'traits') {
+         spellcastingHtml += `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>Spellcasting.</b></i> [Spell list goes here]</div>`;
+    }
+
 
     let traitsHtml = '';
 	if (traits && traits.length > 0) {
@@ -66,8 +82,35 @@ function updateViewport() {
         }).join('');
 	}
 
+    // Combine Spellcasting (as traits) and normal Traits
+    let allTraitsHtml = spellcastingHtml + traitsHtml;
+    
+    // Spellcasting/Psionics placed in Actions
+    const actionSpellcastingHtml = hasInnateSpellcasting && spellcastingPlacement === 'actions' ? 
+        `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${innateIsPsionics ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting'}.</b></i> [Spell/Psionic list goes here]</div>` : '';
+        
+    const actionRegularSpellcastingHtml = hasSpellcasting && spellcastingPlacement === 'actions' ? 
+        `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>Spellcasting.</b></i> [Spell list goes here]</div>` : '';
+        
+    const combinedActionSpellcastingHtml = actionSpellcastingHtml + actionRegularSpellcastingHtml;
+        
+
     const createActionSection = (actionList, title, boilerplate = '') => {
-        if (!actionList || actionList.length === 0) return '';
+        if (!actionList || actionList.length === 0) {
+            // Check if there is spellcasting content to prepend
+            if (title === 'Actions' && combinedActionSpellcastingHtml) {
+                 return `
+                    <div class="action-header">${title}</div>
+                    <div class="npcdiv2">
+                        <svg viewBox="0 0 200 1" preserveAspectRatio="none" width="100%" height="1">
+                            <polyline points="0,0 200,0 200,1 0,1" fill="#7A200D" class="whoosh"></polyline>
+                        </svg>
+                    </div>
+                    ${combinedActionSpellcastingHtml}
+                 `;
+            }
+             return '';
+        }
         
         let sortedList = [...actionList];
         if(title === 'Actions') {
@@ -92,6 +135,9 @@ function updateViewport() {
 
         const boilerplateHtml = boilerplate ? `<div class="npctop" style="padding-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
 
+        // Prepend action spellcasting content if it exists and this is the Actions section
+        const finalActionItemsHtml = (title === 'Actions' ? combinedActionSpellcastingHtml : '') + actionItemsHtml;
+
         return `
             <div class="action-header">${title}</div>
             <div class="npcdiv2">
@@ -100,7 +146,7 @@ function updateViewport() {
                 </svg>
             </div>
             ${boilerplateHtml}
-            ${actionItemsHtml}
+            ${finalActionItemsHtml}
         `;
     };
 
@@ -151,8 +197,8 @@ function updateViewport() {
             ${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
             ${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
             ${challenge ? `<div class="npctop"><b>Challenge</b> ${challenge} (${experience} XP)</div>` : ''}
-            ${traitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
-            ${traitsHtml}
+            ${allTraitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
+            ${allTraitsHtml}
             ${actionsHtml}
             ${bonusActionsHtml}
             ${reactionsHtml}

@@ -115,6 +115,15 @@ window.ui = {
 	bestiarySettingsCheckboxes: {},
 	npcSettingsCheckboxes: {},
 
+    // Spellcasting Elements (NEW)
+    innateSpellcastingHeader: null,
+    innateSpellcastingFields: null, // Container for psionics checkbox
+    innateDivider: null, // NEW divider element
+    spellcastingHeader: null,
+    spellcastingFields: null, // Container for radio buttons
+    spellcastingDivider: null, // NEW divider element
+
+
 	// --- FORM INPUTS --- (initialized in init)
 	inputs: {},
 	
@@ -222,6 +231,15 @@ window.ui = {
         this.footerImportTextBtn = document.getElementById('footer-import-text-btn');
         this.footerExportFgBtn = document.getElementById('footer-export-fg-btn'); // *** NEW ***
 
+        // Assign Spellcasting Elements (NEW)
+        this.innateSpellcastingHeader = document.getElementById('innate-spellcasting-header');
+        this.innateSpellcastingFields = document.getElementById('innate-spellcasting-fields'); // Container div
+        this.innateDivider = document.getElementById('innate-divider'); // NEW divider
+        this.spellcastingHeader = document.getElementById('spellcasting-header');
+        this.spellcastingFields = document.getElementById('spellcasting-fields'); // Container div
+        this.spellcastingDivider = document.getElementById('spellcasting-divider'); // NEW divider
+
+
         this.bestiarySettingsCheckboxes = {
             addDescription: document.getElementById('bestiary-add-description'),
             addTitle: document.getElementById('bestiary-add-title'),
@@ -269,6 +287,12 @@ window.ui = {
             commonName: document.getElementById('common-name'),
             commonDesc: document.getElementById('common-desc'),
             attackDamageDice: document.getElementById('attack-damage-dice'),
+            // NEW Spellcasting Inputs
+            hasInnateSpellcasting: document.getElementById('npc-has-innate-spellcasting'),
+            innateIsPsionics: document.getElementById('npc-innate-is-psionics'),
+            hasSpellcasting: document.getElementById('npc-has-spellcasting'),
+            spellcastingToTraits: document.getElementById('npc-spellcasting-to-traits'),
+            spellcastingToActions: document.getElementById('npc-spellcasting-to-actions'),
         };
         
         this.languageListboxes = [
@@ -285,11 +309,28 @@ window.ui = {
         this.setupEventListeners(); // Now safe to call
         this.updateUIForActiveBestiary();
         this.populateDamageTypes('attack-damage-type');
+        
+        // --- RESTORED Initial Card State Setup ---
         document.querySelectorAll('.card-body').forEach(cardBody => {
-            cardBody.classList.add('open');
+            // Assume cards start open unless specifically styled otherwise
+            cardBody.classList.add('open'); 
             cardBody.style.paddingTop = '0.5rem';
             cardBody.style.paddingBottom = '0.5rem';
+            // Set max-height AFTER adding class and padding, using scrollHeight
+            // Use setTimeout to allow browser to render layout before measuring
+             setTimeout(() => {
+                // Set max-height explicitly for the initial state animation (or use 'none' if no animation needed)
+                cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; 
+                // After potential initial transition, set to none to allow dynamic content
+                 cardBody.addEventListener('transitionend', function handler() {
+                     if (cardBody.classList.contains('open')) {
+                         cardBody.style.maxHeight = 'none'; 
+                     }
+                    cardBody.removeEventListener('transitionend', handler);
+                }, { once: true });
+            }, 50); // Small delay might be needed for complex layouts
         });
+
     },
 
     setupEventListeners: function() {
@@ -315,7 +356,6 @@ window.ui = {
         if (this.menuExportNpc) this.menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportNpc.classList.contains('disabled')) window.app.exportNpc(); this.mainMenu.classList.add('hidden'); });
         if (this.menuDeleteNpc) this.menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDeleteNpc.classList.contains('disabled')) window.app.deleteCurrentNpc(); this.mainMenu.classList.add('hidden'); });
         if (this.menuSettings) this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuSettings.classList.contains('disabled')) this.showSettingsModal(); this.mainMenu.classList.add('hidden'); });
-        // *** NEW *** Listener for Export FG menu item
         if (this.menuExportFg) this.menuExportFg.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportFg.classList.contains('disabled')) window.app.exportBestiaryToFG(); this.mainMenu.classList.add('hidden'); });
 
 
@@ -367,28 +407,52 @@ window.ui = {
             });
         }
 
+        // --- REVISED Card Toggle Listener ---
         document.querySelectorAll('.card-header').forEach((header) => {
             header.addEventListener("click", (e) => {
-                if (e.target.closest('#fantasy-grounds-group') || e.target.closest('#manage-groups-btn') || e.target.closest('#manage-languages-btn') || e.target.closest('#manage-traits-btn')) {
+                // Prevent toggling if clicking on specific interactive elements within the header
+                if (e.target.closest('#fantasy-grounds-group, #manage-groups-btn, #manage-languages-btn, #manage-traits-btn')) {
                     return;
                 }
                 const cardBody = header.nextElementSibling;
-                if (cardBody) {
+                if (cardBody && cardBody.classList.contains('card-body')) { 
                     if (cardBody.classList.contains('open')) {
-                        cardBody.classList.remove('open');
+                        // Closing
+                        // Set current height explicitly before transitioning to 0
+                        cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; 
+                        // Force reflow
+                        cardBody.offsetHeight; 
+                        // Start transition to 0 AFTER reflow
+                        cardBody.classList.remove('open'); // Remove class to trigger CSS transition
+                        cardBody.style.maxHeight = '0';
                         cardBody.style.paddingTop = '0';
                         cardBody.style.paddingBottom = '0';
                     } else {
+                        // Opening
                         cardBody.classList.add('open');
+                        // Set padding first
                         cardBody.style.paddingTop = '0.5rem';
                         cardBody.style.paddingBottom = '0.5rem';
+                        // Then set max-height to trigger transition using scrollHeight
+                        cardBody.style.maxHeight = cardBody.scrollHeight + 'px';
+
+                        // Set max-height to 'none' after the transition completes
+                         cardBody.addEventListener('transitionend', function handler() {
+                             // Check if it's still supposed to be open before setting max-height to none
+                             if (cardBody.classList.contains('open')) { 
+                                cardBody.style.maxHeight = 'none'; 
+                             }
+                            cardBody.removeEventListener('transitionend', handler);
+                        }, { once: true }); 
                     }
                 }
             });
         });
 
+
         Object.values(this.inputs).forEach((input) => {
-            if(input && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') {
+            // Check if input exists and isn't one of the excluded IDs
+            if(input && input.id && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') {
                 input.addEventListener("input", window.app.updateActiveNPCFromForm);
             }
         });
@@ -594,6 +658,14 @@ window.ui = {
                 }
             });
         }
+        
+        // --- Spellcasting Listeners ---
+        if (this.inputs.hasInnateSpellcasting) this.inputs.hasInnateSpellcasting.addEventListener('input', window.app.updateActiveNPCFromForm);
+        if (this.inputs.innateIsPsionics) this.inputs.innateIsPsionics.addEventListener('input', window.app.updateActiveNPCFromForm);
+        if (this.inputs.hasSpellcasting) this.inputs.hasSpellcasting.addEventListener('input', window.app.updateActiveNPCFromForm);
+        if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.addEventListener('input', window.app.updateActiveNPCFromForm);
+        if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.addEventListener('input', window.app.updateActiveNPCFromForm);
+
 
         // --- Setup functions called last ---
         this.setupCustomToggles();
@@ -607,9 +679,8 @@ window.ui = {
         this.setupActionListeners();
     },
 
-    // ... (rest of the file remains the same) ...
-
-    showNewBestiaryModal: function() {
+    // ... (rest of functions remain the same) ...
+     showNewBestiaryModal: function() {
 		if (this.newBestiaryModal) {
 			window.app.openModal('new-bestiary-modal');
 			if (this.newBestiaryNameInput) this.newBestiaryNameInput.focus();
@@ -731,7 +802,8 @@ window.ui = {
 				Object.values(this.inputs).forEach(input => {
 					if (!input) return;
 					if (input.type === 'checkbox') input.checked = false;
-					else input.value = '';
+					// Don't clear radios here, set default below
+					else if (input.type !== 'radio') input.value = '';
 				});
 				if (trixEditorElement && trixEditorElement.editor) trixEditorElement.editor.loadHTML("");
 				if (this.viewport) this.viewport.innerHTML = '';
@@ -747,8 +819,14 @@ window.ui = {
 				this.updateImageDisplay(); // Clear image
 				// Clear checkboxes etc.
 				document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-				document.querySelectorAll('input[type="radio"][value="none"]').forEach(rb => rb.checked = true);
+				// Set default radio states specifically
+				document.querySelectorAll('input[name="weapon-resistance"][value="none"]').forEach(rb => rb.checked = true);
+				document.querySelectorAll('input[name="weapon-immunity"][value="none"]').forEach(rb => rb.checked = true);
+				if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = true; // Default radio
+				if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = false;
+				
 				if (this.languageListboxes) this.languageListboxes.forEach(lb => {if (lb) lb.selectedIndex = -1;}); // Deselect languages
+                this.updateSpellcastingVisibility(true); // Hide/clear spellcasting elements
 				return;
 			}
 
@@ -758,6 +836,8 @@ window.ui = {
 				if (!element) continue;
                 
 				if (key.startsWith('common') || key === 'attackDamageDice') continue; 
+                // Skip radios, handled specifically later
+                if (element.type === 'radio') continue; 
 
 				if (key === 'description') {
 					element.value = window.app.activeNPC[key] || '';
@@ -791,14 +871,30 @@ window.ui = {
 						customInput.value = ""; // Clear custom input if standard is used
 					}
 				} else if (element.type === "checkbox") {
-					element.checked = window.app.activeNPC[key] || false;
-				} else {
+					// Ensure defaults are applied if the property is missing from the NPC object
+					element.checked = window.app.activeNPC[key] ?? window.app.defaultNPC[key] ?? false;
+				} else { // Handle text, number, select-one etc.
+					// Ensure defaults are applied if the property is missing
+					const valueToSet = window.app.activeNPC[key] ?? window.app.defaultNPC[key] ?? "";
 					// Only update if value is different to avoid cursor jumps
-                    if (element.value !== (window.app.activeNPC[key] || "")) {
-                         element.value = window.app.activeNPC[key] || "";
+                    if (element.value !== valueToSet) {
+                         element.value = valueToSet;
                     }
 				}
 			}
+
+            // --- Spellcasting fields ---
+			// Checkboxes (use ?? false to ensure unchecked if undefined)
+            if(this.inputs.hasInnateSpellcasting) this.inputs.hasInnateSpellcasting.checked = window.app.activeNPC.hasInnateSpellcasting ?? false;
+            if(this.inputs.innateIsPsionics) this.inputs.innateIsPsionics.checked = window.app.activeNPC.innateIsPsionics ?? false;
+            if(this.inputs.hasSpellcasting) this.inputs.hasSpellcasting.checked = window.app.activeNPC.hasSpellcasting ?? false;
+            
+            // Radio buttons (default to 'traits' if undefined)
+            const spellPlacement = window.app.activeNPC.spellcastingPlacement ?? window.app.defaultNPC.spellcastingPlacement;
+            if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = spellPlacement === 'traits';
+            if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = spellPlacement === 'actions';
+            
+            this.updateSpellcastingVisibility(); // Apply visibility changes AFTER setting checkbox states
 
 			// Language population
 			const selectedLangs = window.app.activeNPC.selectedLanguages || [];
@@ -822,8 +918,7 @@ window.ui = {
 			if (this.newTraitDescription) this.newTraitDescription.value = '';
 
             this.renderActions();
-            // Don't clear inputs here, keep them populated if editing
-            // window.app.clearInputs(); 
+            
             if (this.legendaryBoilerplate) this.legendaryBoilerplate.textContent = window.app.activeNPC.legendaryBoilerplate || window.app.defaultNPC.legendaryBoilerplate;
             if (this.lairBoilerplate) this.lairBoilerplate.textContent = window.app.activeNPC.lairBoilerplate || window.app.defaultNPC.lairBoilerplate;
 
@@ -844,7 +939,7 @@ window.ui = {
 			window.app.skills.forEach(skill => {
 				const profCheckbox = document.getElementById(`skill-${skill.id}-prof`);
 				const expCheckbox = document.getElementById(`skill-${skill.id}-exp`);
-				const adjustInput = document.getElementById(`skill-${skill.id}-adjust`);
+				const adjustInput = document.getElementById(`skill-${skill.id}-adjust`); // Correct ID used here
 				if (profCheckbox) profCheckbox.checked = window.app.activeNPC[`skill_${skill.id}_prof`] || false;
 				if (expCheckbox) expCheckbox.checked = window.app.activeNPC[`skill_${skill.id}_exp`] || false;
 				if (adjustInput) adjustInput.value = window.app.activeNPC[`skill_${skill.id}_adjust`] || 0;
@@ -918,7 +1013,71 @@ window.ui = {
 			window.app.isUpdatingForm = false;
 		}
 	},
-    updateStatDisplays: function() {
+    
+    // --- Spellcasting Visibility Function ---
+    updateSpellcastingVisibility: function(isClearing = false) {
+        // Use optional chaining for safer access, especially during clearing
+        const npc = window.app.activeNPC; 
+        
+        // --- Innate Spellcasting ---
+        if (this.innateSpellcastingHeader && this.innateSpellcastingFields && this.innateDivider) {
+             const hasInnate = isClearing ? false : (npc?.hasInnateSpellcasting ?? false);
+             const isPsionics = isClearing ? false : (npc?.innateIsPsionics ?? false);
+
+            // 1. Header Visibility/Color
+            this.innateSpellcastingHeader.classList.toggle('text-gray-400', !hasInnate);
+            this.innateSpellcastingHeader.classList.toggle('text-gray-800', hasInnate); 
+            
+            // 2. Header Text
+            this.innateSpellcastingHeader.textContent = (hasInnate && isPsionics) ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting';
+            
+            // 3. Fields Container Visibility (using hidden class and opacity)
+            this.innateSpellcastingFields.classList.toggle('hidden', !hasInnate);
+             // Ensure transition happens by changing opacity slightly after removing hidden if needed
+             requestAnimationFrame(() => {
+                this.innateSpellcastingFields.style.opacity = hasInnate ? 1 : 0;
+             });
+
+            // 4. Divider Visibility
+            this.innateDivider.classList.toggle('hidden', !hasInnate);
+            
+            // 5. Psionics checkbox state (always sync, visibility handled by parent container)
+             const psionicsCheckbox = this.inputs.innateIsPsionics;
+             if (psionicsCheckbox) {
+                 psionicsCheckbox.checked = isPsionics; 
+             }
+        }
+        
+        // --- Spellcasting ---
+        if (this.spellcastingHeader && this.spellcastingFields && this.spellcastingDivider) {
+            const hasSpellcasting = isClearing ? false : (npc?.hasSpellcasting ?? false);
+
+            // 1. Header Visibility/Color
+            this.spellcastingHeader.classList.toggle('text-gray-400', !hasSpellcasting);
+             this.spellcastingHeader.classList.toggle('text-gray-800', hasSpellcasting); // Match active color
+
+            // 2. Fields Container Visibility
+            this.spellcastingFields.classList.toggle('hidden', !hasSpellcasting);
+            requestAnimationFrame(() => {
+                this.spellcastingFields.style.opacity = hasSpellcasting ? 1 : 0; 
+            });
+            
+            // 3. Divider Visibility
+            this.spellcastingDivider.classList.toggle('hidden', !hasSpellcasting);
+
+            // 4. Radio buttons (keep visually synced) - ONLY if not clearing and npc exists
+            if (!isClearing && npc) { 
+                const spellPlacement = npc.spellcastingPlacement ?? window.app.defaultNPC.spellcastingPlacement; // Default if missing
+                if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = spellPlacement === 'traits';
+                if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = spellPlacement === 'actions';
+            } else { // Handle clearing
+                 if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = true; // Default to traits when clearing
+                 if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = false;
+            }
+        }
+    },
+    
+	updateStatDisplays: function() {
 		if (!window.app.activeNPC) {
 			// Clear displays if no NPC
 			const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
@@ -1698,7 +1857,11 @@ window.ui = {
                     
                     // Find the actual current indices in the array based on originalIndex
                     const currentDraggedIndex = window.app.activeNPC.traits.findIndex(t => t === window.app.activeNPC.traits[draggedOriginalIndex]);
-                    let currentDroppedOnIndex = window.app.activeNPC.traits.findIndex(t => t === window.app.activeNPC.traits[droppedOnOriginalIndex]);
+                     // Need to find the index of the item we dropped onto *after* splicing the dragged item
+                    let currentDroppedOnIndex = window.app.activeNPC.traits.findIndex(t => t === window.app.activeNPC.traits.find(item => item.name === traitData.name && item.description === traitData.description)); // Find by content might be more robust?
+                    // Fallback index logic if content finding fails
+                    if (currentDroppedOnIndex === -1) currentDroppedOnIndex = currentDraggedIndex < droppedOnOriginalIndex ? droppedOnOriginalIndex -1 : droppedOnOriginalIndex;
+
 
                     if (currentDraggedIndex === -1 || currentDroppedOnIndex === -1) {
                          console.error("Drag/Drop index error");
@@ -1712,15 +1875,25 @@ window.ui = {
 					// Perform the move
 					const [movedItem] = window.app.activeNPC.traits.splice(currentDraggedIndex, 1);
                     
-                    // Adjust insertion index based on original position and drop position
-                     // Need to find the new index of the item we dropped onto *after* splicing the dragged item
-                    let insertionIndex = window.app.activeNPC.traits.findIndex(t => t === window.app.activeNPC.traits.find(item => item.name === traitData.name && item.description === traitData.description)); // Find by content might be more robust?
-                    if (insertionIndex === -1) insertionIndex = currentDroppedOnIndex > currentDraggedIndex ? currentDroppedOnIndex -1 : currentDroppedOnIndex; // Fallback index logic
+                     // Adjust insertion index based on original position and drop position
+                    let insertionIndex = currentDroppedOnIndex; // Start with the index of the target
+                    
+                    // If dropping below the target, increment the index
+                    if (!isDroppingAbove) {
+                        insertionIndex++;
+                    }
+                     // If moving an item downwards, the target's original index needs adjustment if it was after the moved item
+                    if(currentDraggedIndex < insertionIndex && !isDroppingAbove) {
+                         // We already removed the item, so indices shifted.
+                         // No adjustment might be needed here if currentDroppedOnIndex is correct AFTER splice
+                    } else if (currentDraggedIndex > insertionIndex && isDroppingAbove) {
+                         // Moving upwards, index is correct
+                    }
 
 
-					window.app.activeNPC.traits.splice(isDroppingAbove ? insertionIndex : insertionIndex + 1, 0, movedItem);
+					window.app.activeNPC.traits.splice(insertionIndex, 0, movedItem);
 					
-					// Re-render the entire list to reflect the new order and update indices
+					// Re-render the entire list to reflect the new order and update original indices
 					this.renderNpcTraits(); 
 					window.viewport.updateViewport();
 					window.app.saveActiveBestiaryToDB();

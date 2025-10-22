@@ -92,6 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
 		specialLanguageOption: 0,
 		hasTelepathy: false,
 		telepathyRange: 0,
+		
+		// --- NEW SPELLCASTING PROPERTIES ---
+		hasInnateSpellcasting: false,
+		innateIsPsionics: false,
+		hasSpellcasting: false,
+		spellcastingPlacement: 'traits', // 'traits' or 'actions'
 	};
 	
 	// Dynamically create the full defaultNPC object with resistance and skill properties
@@ -361,6 +367,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 			if (healedNpc.legendaryBoilerplate === undefined) healedNpc.legendaryBoilerplate = app.defaultNPC.legendaryBoilerplate;
 			if (healedNpc.lairBoilerplate === undefined) healedNpc.lairBoilerplate = app.defaultNPC.lairBoilerplate;
+			
+			// --- SPELLCASTING HEALING ---
+			if (healedNpc.hasInnateSpellcasting === undefined) healedNpc.hasInnateSpellcasting = app.defaultNPC.hasInnateSpellcasting;
+			if (healedNpc.innateIsPsionics === undefined) healedNpc.innateIsPsionics = app.defaultNPC.innateIsPsionics;
+			if (healedNpc.hasSpellcasting === undefined) healedNpc.hasSpellcasting = app.defaultNPC.hasSpellcasting;
+			if (healedNpc.spellcastingPlacement === undefined) healedNpc.spellcastingPlacement = app.defaultNPC.spellcastingPlacement;
 
 
 			if (!healedNpc.name || healedNpc.name.trim() === "") {
@@ -589,17 +601,26 @@ document.addEventListener("DOMContentLoaded", () => {
 		for (const key in window.ui.inputs) {
              // Skip action inputs and attack damage dice input
             if (key.startsWith('common') || key === 'attackDamageDice') continue;
+            // Skip spellcasting radios, handled separately
+            if (key.startsWith('spellcastingTo')) continue; 
             
 			if (key === 'description') {
 				app.activeNPC[key] = window.ui.inputs.description.value;
 				continue;
 			}
 			const element = window.ui.inputs[key];
+			// Check if element exists before accessing properties (Fix for TypeError)
+			if (!element) {
+				// console.warn(`Form element with key "${key}" not found.`);
+				continue; 
+			}
+			
 			const customToggle = document.getElementById(`toggle-custom-${key}`);
 			if (customToggle) {
 				if (customToggle.checked) {
 					const customInput = document.getElementById(`npc-${key}-custom`);
-					app.activeNPC[key] = customInput.value;
+					// Check if custom input exists
+					app.activeNPC[key] = customInput ? customInput.value : ''; 
 				} else {
 					app.activeNPC[key] = element.value;
 				}
@@ -609,6 +630,28 @@ document.addEventListener("DOMContentLoaded", () => {
 				app.activeNPC[key] = element.value;
 			}
 		}
+		
+		// --- Spellcasting fields (with checks) ---
+		// Checkboxes
+		const hasInnateCheck = window.ui.inputs.hasInnateSpellcasting;
+		if (hasInnateCheck) app.activeNPC.hasInnateSpellcasting = hasInnateCheck.checked;
+		
+		const isPsionicsCheck = window.ui.inputs.innateIsPsionics;
+		if (isPsionicsCheck) app.activeNPC.innateIsPsionics = isPsionicsCheck.checked;
+		
+		const hasSpellCheck = window.ui.inputs.hasSpellcasting;
+		if (hasSpellCheck) app.activeNPC.hasSpellcasting = hasSpellCheck.checked;
+
+		// Radio buttons
+		const spellPlacementRadio = document.querySelector('input[name="spellcasting-placement"]:checked');
+		// Only update if a radio button is actually selected
+		if (spellPlacementRadio) { 
+			app.activeNPC.spellcastingPlacement = spellPlacementRadio.value;
+		} else {
+			// Fallback to default if somehow none are checked (shouldn't happen with proper HTML)
+			app.activeNPC.spellcastingPlacement = app.defaultNPC.spellcastingPlacement; 
+		}
+
 
 		const selectedLanguages = new Set();
 		window.ui.languageListboxes.forEach(listbox => {
@@ -638,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				...app.exoticLanguages,
 				...app.monstrousLanguages1,
 				...app.monstrousLanguages2,
-				...(app.activeBestiary.metadata.userDefinedLanguages || [])
+				...(app.activeBestiary?.metadata?.userDefinedLanguages || []) // Added optional chaining
 			];
 			if (app.activeNPC.selectedLanguages.length !== allLangs.length) {
 				 app.activeNPC.selectedLanguages = allLangs;
@@ -647,29 +690,40 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		for (const key in window.ui.npcSettingsCheckboxes) {
-			app.activeNPC[key] = window.ui.npcSettingsCheckboxes[key].checked;
+			const checkbox = window.ui.npcSettingsCheckboxes[key];
+			// Check if checkbox exists before reading property
+			if(checkbox) app.activeNPC[key] = checkbox.checked; 
 		}
 		
 		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 		abilities.forEach(ability => {
-			app.activeNPC[`${ability}SavingThrowProf`] = document.getElementById(`npc-${ability}-saving-throw-prof`).checked;
-			app.activeNPC[`${ability}SavingThrowAdjust`] = parseInt(document.getElementById(`npc-${ability}-saving-throw-adjust`).value, 10) || 0;
+			const profCheck = document.getElementById(`npc-${ability}-saving-throw-prof`);
+			const adjustInput = document.getElementById(`npc-${ability}-saving-throw-adjust`);
+			if (profCheck) app.activeNPC[`${ability}SavingThrowProf`] = profCheck.checked;
+			if (adjustInput) app.activeNPC[`${ability}SavingThrowAdjust`] = parseInt(adjustInput.value, 10) || 0;
 		});
 		
 		skills.forEach(skill => {
-            app.activeNPC[`skill_${skill.id}_prof`] = document.getElementById(`skill-${skill.id}-prof`).checked;
-            app.activeNPC[`skill_${skill.id}_exp`] = document.getElementById(`skill-${skill.id}-exp`).checked;
-            app.activeNPC[`skill_${skill.id}_adjust`] = parseInt(document.getElementById(`skill-${skill.id}-adjust`).value, 10) || 0;
+			const profCheck = document.getElementById(`skill-${skill.id}-prof`);
+			const expCheck = document.getElementById(`skill-${skill.id}-exp`);
+			const adjustInput = document.getElementById(`skill-${skill.id}_adjust`); // Fix: underscore in adjust ID
+			if (profCheck) app.activeNPC[`skill_${skill.id}_prof`] = profCheck.checked;
+			if (expCheck) app.activeNPC[`skill_${skill.id}_exp`] = expCheck.checked;
+			if (adjustInput) app.activeNPC[`skill_${skill.id}_adjust`] = parseInt(adjustInput.value, 10) || 0;
         });
 		
 		damageTypes.forEach(type => {
-			app.activeNPC[`vulnerability_${type}`] = document.getElementById(`vuln-${type}`).checked;
-			app.activeNPC[`resistance_${type}`] = document.getElementById(`res-${type}`).checked;
-			app.activeNPC[`immunity_${type}`] = document.getElementById(`imm-${type}`).checked;
+			const vulnCheck = document.getElementById(`vuln-${type}`);
+			const resCheck = document.getElementById(`res-${type}`);
+			const immCheck = document.getElementById(`imm-${type}`);
+			if(vulnCheck) app.activeNPC[`vulnerability_${type}`] = vulnCheck.checked;
+			if(resCheck) app.activeNPC[`resistance_${type}`] = resCheck.checked;
+			if(immCheck) app.activeNPC[`immunity_${type}`] = immCheck.checked;
 		});
 
 		conditions.forEach(condition => {
-			app.activeNPC[`ci_${condition}`] = document.getElementById(`ci-${condition}`).checked;
+			const ciCheck = document.getElementById(`ci-${condition}`);
+			if(ciCheck) app.activeNPC[`ci_${condition}`] = ciCheck.checked;
 		});
 
 		const selectedWeaponRes = document.querySelector('input[name="weapon-resistance"]:checked');
@@ -682,20 +736,26 @@ document.addEventListener("DOMContentLoaded", () => {
 			app.activeNPC.weaponImmunity = selectedWeaponImm.value;
 		}
 
-		app.activeNPC.experience = window.ui.experienceDisplay.textContent;
-		app.activeNPC.proficiencyBonus = parseInt(window.ui.proficiencyBonusDisplay.textContent.replace('+', ''), 10);
+		// Ensure experienceDisplay and proficiencyBonusDisplay exist before accessing textContent
+		if(window.ui.experienceDisplay) app.activeNPC.experience = window.ui.experienceDisplay.textContent;
+		if(window.ui.proficiencyBonusDisplay) app.activeNPC.proficiencyBonus = parseInt(window.ui.proficiencyBonusDisplay.textContent.replace('+', ''), 10);
 		
 		calculateAllStats();
 		window.ui.updateStatDisplays();
 		window.viewport.updateViewport();
 		
-		const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
-		if(currentOption) {
-			currentOption.textContent = app.activeNPC.name;
+		if(window.ui.npcSelector && window.ui.npcSelector.selectedIndex >= 0) { // Check if selector and selection exist
+			const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
+			if(currentOption) {
+				currentOption.textContent = app.activeNPC.name;
+			}
 		}
 		if (languagesModified) {
-			window.ui.updateFormFromActiveNPC();
+			window.ui.updateFormFromActiveNPC(); // Re-render form if languages changed drastically
 		}
+		
+		// Update UI visibility/titles dynamically after state change
+		window.ui.updateSpellcastingVisibility();
 
 		saveActiveBestiaryToDB();
 	}
@@ -782,7 +842,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const vulnerabilities = [];
 		const resistances = [];
-		const immunities = [];
 
 		damageTypes.forEach(type => {
 			if (npc[`vulnerability_${type}`]) {
@@ -791,13 +850,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (npc[`resistance_${type}`]) {
 				resistances.push(type);
 			}
-			if (npc[`immunity_${type}`]) {
-				immunities.push(type);
-			}
 		});
 		
 		let resistanceString = resistances.join(', ');
-		let immunityString = immunities.join(', ');
 		
 		const weaponResTextMap = {
 			'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
@@ -814,6 +869,16 @@ document.addEventListener("DOMContentLoaded", () => {
 				resistanceString = weaponResText;
 			}
 		}
+		
+		const immunities = [];
+
+		damageTypes.forEach(type => {
+			if (npc[`immunity_${type}`]) {
+				immunities.push(type);
+			}
+		});
+		
+		let immunityString = immunities.join(', ');
 		
 		const weaponImmTextMap = {
 			'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
