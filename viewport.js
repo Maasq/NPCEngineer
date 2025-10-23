@@ -14,10 +14,11 @@ function updateViewport() {
         name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
         strength, dexterity, constitution, intelligence, wisdom, charisma,
         strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-        useDropCap, addDescription, addTitle, /* <--- Make sure addTitle is destructured */ speed, challenge, experience, traits, sortTraitsAlpha,
+        useDropCap, addDescription, addTitle, speed, challenge, experience, traits, sortTraitsAlpha,
         actions, legendaryBoilerplate, lairBoilerplate,
-        // NEW Spellcasting properties
-        hasInnateSpellcasting, innateIsPsionics, hasSpellcasting, spellcastingPlacement
+        // Spellcasting properties
+        hasInnateSpellcasting, innateIsPsionics, innateAbility, innateDC, innateBonus, innateComponents, innateSpells,
+        hasSpellcasting, spellcastingPlacement
     } = activeNPC;
     
     const { vulnerabilities, resistances, immunities } = window.app.calculateDamageModifiersString(activeNPC);
@@ -55,21 +56,57 @@ function updateViewport() {
         `${titleHtml}<div class="npcdescrip ${dropCapClass}" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${NPCDescriptionHTML} </div>` 
         : '';
 
-    // --- NEW Spellcasting/Psionics Headers ---
-    let spellcastingHtml = '';
-    
-    // Innate Spellcasting / Psionics
-    if (hasInnateSpellcasting && spellcastingPlacement === 'traits') {
+    // --- Helper function to italicize spell names ---
+    function formatSpellList(listString) {
+        if (!listString) return "";
+        return listString
+            .toLowerCase()
+            .split(',') // Split by comma
+            .map(spell => spell.trim()) // Remove whitespace
+            .filter(spell => spell.length > 0) // Remove empty entries
+            .map(spell => `<i>${spell}</i>`) // Italicize
+            .join(', '); // Re-join with roman comma and space
+    }
+
+    // --- Build Innate Spellcasting Trait ---
+    let innateSpellcastingTrait = '';
+    if (hasInnateSpellcasting) {
         const innateTitle = innateIsPsionics ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting';
-        spellcastingHtml += `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${innateTitle}.</b></i> [Spell/Psionic list goes here]</div>`;
-    }
-    
-    // Regular Spellcasting (Only if placed in Traits for now)
-    if (hasSpellcasting && spellcastingPlacement === 'traits') {
-         spellcastingHtml += `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>Spellcasting.</b></i> [Spell list goes here]</div>`;
+        const abilityName = innateAbility.charAt(0).toUpperCase() + innateAbility.slice(1);
+        const bonusString = innateBonus >= 0 ? `+${innateBonus}` : innateBonus;
+        
+        // Build boilerplate string
+        let boilerplate = `The ${NPCName}'s innate spellcasting ability is ${abilityName} (spell save DC ${innateDC}, ${bonusString} to hit with spell attacks). `;
+        boilerplate += `It can innately cast the following spells${innateComponents ? `, ${innateComponents}` : ''}:`;
+        
+        // Build spell list
+        const spellListHtml = innateSpells
+            .filter(spell => spell.freq && spell.list) // Only include rows that have both a frequency and a spell list
+            .map(spell => {
+                // Change 3: Format spell list to italicize names
+                const formattedList = formatSpellList(spell.list);
+                // Change 1: Removed padding-left. 
+                // Change 2: Removed <i><b> tags from spell.freq
+                return `<div style="color: black; padding-bottom: 0.25em;">${spell.freq}: ${formattedList}</div>`;
+            })
+            .join('');
+
+        innateSpellcastingTrait = `
+            <div class="npctop" style="padding-bottom: 0.5em; color: black;">
+                <i><b>${innateTitle}.</b></i> ${boilerplate}
+                ${spellListHtml}
+            </div>
+        `;
     }
 
+    // --- Build Spellcasting Trait (Placeholder) ---
+    let spellcastingTrait = '';
+    if (hasSpellcasting) {
+         // This will be expanded later
+         spellcastingTrait = `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>Spellcasting.</b></i> [Spell list goes here]</div>`;
+    }
 
+    // --- Combine Traits and Spellcasting Traits based on placement ---
     let traitsHtml = '';
 	if (traits && traits.length > 0) {
 		let traitsToRender = [...traits];
@@ -82,37 +119,25 @@ function updateViewport() {
         }).join('');
 	}
 
-    // Combine Spellcasting (as traits) and normal Traits
-    let allTraitsHtml = spellcastingHtml + traitsHtml;
+    let allTraitsHtml = '';
+    if (spellcastingPlacement === 'traits') {
+        allTraitsHtml = (hasInnateSpellcasting ? innateSpellcastingTrait : '') + (hasSpellcasting ? spellcastingTrait : '') + traitsHtml;
+    } else {
+        allTraitsHtml = traitsHtml; // Only regular traits
+    }
     
-    // Spellcasting/Psionics placed in Actions
-    const actionSpellcastingHtml = hasInnateSpellcasting && spellcastingPlacement === 'actions' ? 
-        `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${innateIsPsionics ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting'}.</b></i> [Spell/Psionic list goes here]</div>` : '';
-        
-    const actionRegularSpellcastingHtml = hasSpellcasting && spellcastingPlacement === 'actions' ? 
-        `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>Spellcasting.</b></i> [Spell list goes here]</div>` : '';
-        
-    const combinedActionSpellcastingHtml = actionSpellcastingHtml + actionRegularSpellcastingHtml;
-        
+    // --- Build Action Spellcasting HTML ---
+    let actionSpellcastingHtml = '';
+    if (spellcastingPlacement === 'actions') {
+        actionSpellcastingHtml = (hasInnateSpellcasting ? innateSpellcastingTrait : '') + (hasSpellcasting ? spellcastingTrait : '');
+    }
 
     const createActionSection = (actionList, title, boilerplate = '') => {
-        if (!actionList || actionList.length === 0) {
-            // Check if there is spellcasting content to prepend
-            if (title === 'Actions' && combinedActionSpellcastingHtml) {
-                 return `
-                    <div class="action-header">${title}</div>
-                    <div class="npcdiv2">
-                        <svg viewBox="0 0 200 1" preserveAspectRatio="none" width="100%" height="1">
-                            <polyline points="0,0 200,0 200,1 0,1" fill="#7A200D" class="whoosh"></polyline>
-                        </svg>
-                    </div>
-                    ${combinedActionSpellcastingHtml}
-                 `;
-            }
-             return '';
-        }
+        const hasSpellcastingContent = (title === 'Actions' && actionSpellcastingHtml.length > 0);
         
-        let sortedList = [...actionList];
+        if ((!actionList || actionList.length === 0) && !hasSpellcastingContent) return '';
+        
+        let sortedList = [...(actionList || [])];
         if(title === 'Actions') {
             let multiattack = null;
             const otherItems = sortedList.filter(item => {
@@ -134,9 +159,9 @@ function updateViewport() {
         }).join('');
 
         const boilerplateHtml = boilerplate ? `<div class="npctop" style="padding-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
-
-        // Prepend action spellcasting content if it exists and this is the Actions section
-        const finalActionItemsHtml = (title === 'Actions' ? combinedActionSpellcastingHtml : '') + actionItemsHtml;
+        
+        // Prepend action spellcasting content if it exists
+        const finalActionItemsHtml = (hasSpellcastingContent ? actionSpellcastingHtml : '') + actionItemsHtml;
 
         return `
             <div class="action-header">${title}</div>

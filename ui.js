@@ -32,7 +32,7 @@ window.ui = {
 	menuExportNpc: null,
 	menuDeleteNpc: null,
 	menuSettings: null,
-	menuExportFg: null, // *** NEW ***
+	menuExportFg: null, 
 
 	// NPC Selector
 	npcSelector: null,
@@ -109,7 +109,7 @@ window.ui = {
 
     // Footer Buttons (Add these)
     footerImportTextBtn: null,
-    footerExportFgBtn: null, // *** NEW ***
+    footerExportFgBtn: null, 
 
 	// Settings Checkboxes (initialized in init)
 	bestiarySettingsCheckboxes: {},
@@ -117,11 +117,11 @@ window.ui = {
 
     // Spellcasting Elements (NEW)
     innateSpellcastingHeader: null,
-    innateSpellcastingFields: null, // Container for psionics checkbox
-    innateDivider: null, // NEW divider element
+    innateSpellcastingFields: null, // Container for psionics checkbox + groups
+    innateDivider: null, 
     spellcastingHeader: null,
     spellcastingFields: null, // Container for radio buttons
-    spellcastingDivider: null, // NEW divider element
+    spellcastingDivider: null, 
 
 
 	// --- FORM INPUTS --- (initialized in init)
@@ -159,7 +159,7 @@ window.ui = {
         this.menuExportNpc = document.getElementById('menu-export-npc');
         this.menuDeleteNpc = document.getElementById('menu-delete-npc');
         this.menuSettings = document.getElementById('menu-settings');
-        this.menuExportFg = document.getElementById('menu-export-fg'); // *** NEW ***
+        this.menuExportFg = document.getElementById('menu-export-fg'); 
 
         this.npcSelector = document.getElementById("npc-selector");
         this.npcOptionsContainer = document.getElementById('npc-options-container');
@@ -287,13 +287,22 @@ window.ui = {
             commonName: document.getElementById('common-name'),
             commonDesc: document.getElementById('common-desc'),
             attackDamageDice: document.getElementById('attack-damage-dice'),
-            // NEW Spellcasting Inputs
+            // Spellcasting Inputs
             hasInnateSpellcasting: document.getElementById('npc-has-innate-spellcasting'),
             innateIsPsionics: document.getElementById('npc-innate-is-psionics'),
+            innateAbility: document.getElementById('npc-innate-ability'), // NEW
+            innateDC: document.getElementById('npc-innate-dc'),           // NEW
+            innateBonus: document.getElementById('npc-innate-bonus'),     // NEW
+            innateComponents: document.getElementById('npc-innate-components'),// NEW
             hasSpellcasting: document.getElementById('npc-has-spellcasting'),
             spellcastingToTraits: document.getElementById('npc-spellcasting-to-traits'),
             spellcastingToActions: document.getElementById('npc-spellcasting-to-actions'),
         };
+        // Add innate spell list inputs dynamically (Adjusted loop to 4)
+        for (let i = 0; i < 4; i++) {
+            this.inputs[`innate-freq-${i}`] = document.getElementById(`npc-innate-freq-${i}`);
+            this.inputs[`innate-list-${i}`] = document.getElementById(`npc-innate-list-${i}`);
+        }
         
         this.languageListboxes = [
             document.getElementById('language-list-standard'),
@@ -310,7 +319,7 @@ window.ui = {
         this.updateUIForActiveBestiary();
         this.populateDamageTypes('attack-damage-type');
         
-        // --- RESTORED Initial Card State Setup ---
+        // --- Initial Card State Setup ---
         document.querySelectorAll('.card-body').forEach(cardBody => {
             // Assume cards start open unless specifically styled otherwise
             cardBody.classList.add('open'); 
@@ -407,7 +416,7 @@ window.ui = {
             });
         }
 
-        // --- REVISED Card Toggle Listener ---
+        // --- Card Toggle Listener ---
         document.querySelectorAll('.card-header').forEach((header) => {
             header.addEventListener("click", (e) => {
                 // Prevent toggling if clicking on specific interactive elements within the header
@@ -418,27 +427,20 @@ window.ui = {
                 if (cardBody && cardBody.classList.contains('card-body')) { 
                     if (cardBody.classList.contains('open')) {
                         // Closing
-                        // Set current height explicitly before transitioning to 0
                         cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; 
-                        // Force reflow
                         cardBody.offsetHeight; 
-                        // Start transition to 0 AFTER reflow
-                        cardBody.classList.remove('open'); // Remove class to trigger CSS transition
+                        cardBody.classList.remove('open'); 
                         cardBody.style.maxHeight = '0';
                         cardBody.style.paddingTop = '0';
                         cardBody.style.paddingBottom = '0';
                     } else {
                         // Opening
                         cardBody.classList.add('open');
-                        // Set padding first
                         cardBody.style.paddingTop = '0.5rem';
                         cardBody.style.paddingBottom = '0.5rem';
-                        // Then set max-height to trigger transition using scrollHeight
                         cardBody.style.maxHeight = cardBody.scrollHeight + 'px';
 
-                        // Set max-height to 'none' after the transition completes
                          cardBody.addEventListener('transitionend', function handler() {
-                             // Check if it's still supposed to be open before setting max-height to none
                              if (cardBody.classList.contains('open')) { 
                                 cardBody.style.maxHeight = 'none'; 
                              }
@@ -453,7 +455,28 @@ window.ui = {
         Object.values(this.inputs).forEach((input) => {
             // Check if input exists and isn't one of the excluded IDs
             if(input && input.id && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') {
-                input.addEventListener("input", window.app.updateActiveNPCFromForm);
+                 // Add specific listeners for spellcasting calculation triggers
+                 // Add innateAbility listener specifically to trigger recalculation
+                 if (input.id === 'npc-innate-ability') {
+                     input.addEventListener("input", () => {
+                         // Directly call update and recalculation here
+                         const changedAbility = input.value;
+                         if (window.app.activeNPC && changedAbility) {
+                             window.app.activeNPC.innateAbility = changedAbility; // Update NPC data
+                             this.updateInnateCalculatedFields(); // Recalculate and update UI
+                             window.app.updateActiveNPCFromForm(); // Save other changes
+                         }
+                     });
+                 } else if (['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'challenge'].includes(input.id.replace('npc-', ''))) {
+                      input.addEventListener("input", () => {
+                         // Update form data first, which updates NPC scores and prof bonus
+                         window.app.updateActiveNPCFromForm(); 
+                         // Then recalculate DC/Bonus based on the potentially updated stats/prof bonus
+                         this.updateInnateCalculatedFields(); 
+                     });
+                 } else {
+                     input.addEventListener("input", window.app.updateActiveNPCFromForm);
+                 }
             }
         });
         
@@ -487,16 +510,6 @@ window.ui = {
                     }
                 });
             }
-        }
-
-        if (this.inputs.challenge) {
-            this.inputs.challenge.addEventListener('change', () => {
-                const selectedCr = this.inputs.challenge.value;
-                if (this.experienceDisplay) this.experienceDisplay.textContent = window.app.crToXpMap[selectedCr] || ''; // Added check
-                const profBonus = window.app.calculateProficiencyBonus(selectedCr);
-                 if (this.proficiencyBonusDisplay) this.proficiencyBonusDisplay.textContent = `+${profBonus}`; // Added check
-                window.app.updateActiveNPCFromForm();
-            });
         }
 
         const trixEditor = document.querySelector("trix-editor");
@@ -659,13 +672,7 @@ window.ui = {
             });
         }
         
-        // --- Spellcasting Listeners ---
-        if (this.inputs.hasInnateSpellcasting) this.inputs.hasInnateSpellcasting.addEventListener('input', window.app.updateActiveNPCFromForm);
-        if (this.inputs.innateIsPsionics) this.inputs.innateIsPsionics.addEventListener('input', window.app.updateActiveNPCFromForm);
-        if (this.inputs.hasSpellcasting) this.inputs.hasSpellcasting.addEventListener('input', window.app.updateActiveNPCFromForm);
-        if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.addEventListener('input', window.app.updateActiveNPCFromForm);
-        if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.addEventListener('input', window.app.updateActiveNPCFromForm);
-
+        // --- Spellcasting Listeners (already added above in the inputs loop) ---
 
         // --- Setup functions called last ---
         this.setupCustomToggles();
@@ -679,7 +686,32 @@ window.ui = {
         this.setupActionListeners();
     },
 
-    // ... (rest of functions remain the same) ...
+    // --- Update Innate DC/Bonus Fields ---
+    updateInnateCalculatedFields: function() {
+        if (!window.app.activeNPC || !this.inputs.innateDC || !this.inputs.innateBonus) return;
+        
+        // Calculate based on current NPC data (ensure stats are up-to-date first)
+        window.app.calculateAllStats(); // Recalculate bonuses based on current scores
+        
+        const { dc, bonus } = window.app.calculateInnateDCBonus(
+            window.app.activeNPC.innateAbility,
+            window.app.activeNPC.proficiencyBonus,
+            window.app.activeNPC
+        );
+
+        // Update the input fields directly
+        this.inputs.innateDC.value = dc;
+        this.inputs.innateBonus.value = bonus;
+
+        // Save the newly calculated values back to the NPC object
+        window.app.activeNPC.innateDC = dc;
+        window.app.activeNPC.innateBonus = bonus;
+        window.app.saveActiveBestiaryToDB(); // Save immediately
+        window.viewport.updateViewport(); // Update preview if needed
+    },
+
+
+    // ... (rest of functions: show..., hide..., updateMenuState, updateUIForActiveBestiary, etc.) ...
      showNewBestiaryModal: function() {
 		if (this.newBestiaryModal) {
 			window.app.openModal('new-bestiary-modal');
@@ -702,7 +734,7 @@ window.ui = {
 		const menuItemsToToggle = [
 			this.menuExportBestiary, this.menuNewNpc, this.menuDuplicateNpc, this.menuImportNpc,
 			this.menuImportText, this.menuExportNpc, this.menuDeleteNpc, this.menuSettings,
-            this.menuExportFg // *** NEW *** Include Export FG menu item
+            this.menuExportFg 
 		].filter(item => item); // Filter out nulls if init failed
 
 		menuItemsToToggle.forEach(item => {
@@ -718,7 +750,7 @@ window.ui = {
             this.footerImportTextBtn.disabled = !hasActiveBestiary;
         }
          if (this.footerExportFgBtn) {
-            this.footerExportFgBtn.disabled = !hasActiveBestiary; // *** NEW *** Handle Export FG button state
+            this.footerExportFgBtn.disabled = !hasActiveBestiary; 
         }
 		
 		if (this.menuDeleteNpc && hasActiveBestiary && window.app.activeBestiary.npcs.length <= 1) {
@@ -805,6 +837,13 @@ window.ui = {
 					// Don't clear radios here, set default below
 					else if (input.type !== 'radio') input.value = '';
 				});
+				// Set default innate spell list values (Adjusted loop to 4)
+                for (let i = 0; i < 4; i++) {
+                    const freqInput = this.inputs[`innate-freq-${i}`];
+                    const listInput = this.inputs[`innate-list-${i}`];
+                    if(freqInput) freqInput.value = window.app.defaultNPC.innateSpells[i]?.freq || '';
+                    if(listInput) listInput.value = ''; // Clear spell lists
+                }
 				if (trixEditorElement && trixEditorElement.editor) trixEditorElement.editor.loadHTML("");
 				if (this.viewport) this.viewport.innerHTML = '';
 				if (this.npcSelector) this.npcSelector.innerHTML = ''; // Clear selector too
@@ -838,6 +877,8 @@ window.ui = {
 				if (key.startsWith('common') || key === 'attackDamageDice') continue; 
                 // Skip radios, handled specifically later
                 if (element.type === 'radio') continue; 
+                 // Skip innate spell lists/freqs, handled below
+                 if (key.startsWith('innate-freq-') || key.startsWith('innate-list-')) continue; 
 
 				if (key === 'description') {
 					element.value = window.app.activeNPC[key] || '';
@@ -877,7 +918,15 @@ window.ui = {
 					// Ensure defaults are applied if the property is missing
 					const valueToSet = window.app.activeNPC[key] ?? window.app.defaultNPC[key] ?? "";
 					// Only update if value is different to avoid cursor jumps
-                    if (element.value !== valueToSet) {
+                    // For numbers, compare parsed values
+                     if (element.type === "number") {
+						const currentVal = parseInt(element.value, 10);
+						const newVal = parseInt(valueToSet, 10);
+                        // Check for NaN as well
+                         if (isNaN(currentVal) || isNaN(newVal) || currentVal !== newVal) {
+                             element.value = isNaN(newVal) ? '' : newVal; // Set to empty if default is NaN/invalid
+                         }
+                    } else if (element.value !== valueToSet) {
                          element.value = valueToSet;
                     }
 				}
@@ -889,6 +938,32 @@ window.ui = {
             if(this.inputs.innateIsPsionics) this.inputs.innateIsPsionics.checked = window.app.activeNPC.innateIsPsionics ?? false;
             if(this.inputs.hasSpellcasting) this.inputs.hasSpellcasting.checked = window.app.activeNPC.hasSpellcasting ?? false;
             
+             // Calculate DC/Bonus before setting values if needed (especially on load or if data is missing)
+             const needsDCBonusCalc = window.app.activeNPC.innateDC === undefined || window.app.activeNPC.innateBonus === undefined;
+             const { dc: calculatedDC, bonus: calculatedBonus } = window.app.calculateInnateDCBonus(
+                window.app.activeNPC.innateAbility ?? window.app.defaultNPC.innateAbility,
+                window.app.activeNPC.proficiencyBonus ?? window.app.defaultNPC.proficiencyBonus,
+                window.app.activeNPC
+            );
+            
+            // Innate Ability, DC, Bonus, Components
+            if(this.inputs.innateAbility) this.inputs.innateAbility.value = window.app.activeNPC.innateAbility ?? window.app.defaultNPC.innateAbility;
+            // Use calculated value ONLY if the NPC doesn't have one set yet
+            if(this.inputs.innateDC) this.inputs.innateDC.value = needsDCBonusCalc ? calculatedDC : (window.app.activeNPC.innateDC ?? calculatedDC); 
+            if(this.inputs.innateBonus) this.inputs.innateBonus.value = needsDCBonusCalc ? calculatedBonus : (window.app.activeNPC.innateBonus ?? calculatedBonus);
+            if(this.inputs.innateComponents) this.inputs.innateComponents.value = window.app.activeNPC.innateComponents ?? window.app.defaultNPC.innateComponents;
+
+            // Innate Spell Lists (Adjusted loop to 4)
+             const innateSpells = window.app.activeNPC.innateSpells || window.app.defaultNPC.innateSpells;
+             for (let i = 0; i < 4; i++) {
+                const freqInput = this.inputs[`innate-freq-${i}`];
+                const listInput = this.inputs[`innate-list-${i}`];
+                // Ensure default structure exists if accessing an index beyond defaultNPC's array
+                const defaultSlot = window.app.defaultNPC.innateSpells[i] || { freq: "", list: "" }; 
+                 if (freqInput) freqInput.value = innateSpells[i]?.freq ?? defaultSlot.freq;
+                 if (listInput) listInput.value = innateSpells[i]?.list ?? defaultSlot.list;
+            }
+
             // Radio buttons (default to 'traits' if undefined)
             const spellPlacement = window.app.activeNPC.spellcastingPlacement ?? window.app.defaultNPC.spellcastingPlacement;
             if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = spellPlacement === 'traits';
@@ -939,7 +1014,7 @@ window.ui = {
 			window.app.skills.forEach(skill => {
 				const profCheckbox = document.getElementById(`skill-${skill.id}-prof`);
 				const expCheckbox = document.getElementById(`skill-${skill.id}-exp`);
-				const adjustInput = document.getElementById(`skill-${skill.id}-adjust`); // Correct ID used here
+				const adjustInput = document.getElementById(`skill-${skill.id}-adjust`); 
 				if (profCheckbox) profCheckbox.checked = window.app.activeNPC[`skill_${skill.id}_prof`] || false;
 				if (expCheckbox) expCheckbox.checked = window.app.activeNPC[`skill_${skill.id}_exp`] || false;
 				if (adjustInput) adjustInput.value = window.app.activeNPC[`skill_${skill.id}_adjust`] || 0;

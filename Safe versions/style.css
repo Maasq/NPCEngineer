@@ -1,3 +1,4 @@
+// style.css
 body { /* A simple style for our application font */
 	font-family: "Lexend", sans-serif;
 }
@@ -162,7 +163,7 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
 	font-size: 16pt;
 	font-weight: bold;
 }
-.action-header {
+.action-header { /* Style used for Actions, Bonus Actions etc in Viewport */
 	font-family: 'Raleway', sans-serif;
 	font-weight: 400;
 	font-variant: small-caps;
@@ -175,6 +176,45 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
 	padding-left: 0.15cm;
 	padding-right: 0.15cm;
 }
+
+/* --- Spellcasting/Psionics Header Styling (Action CARD Subheading Style) --- */
+#innate-spellcasting-header,
+#spellcasting-header {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 700; /* font-bold */
+    color: #333; /* Dark grey/black, replace slate-700 when active */
+    /* Remove Raleway font and small-caps */
+    transition: color 0.3s ease-in-out;
+}
+/* Ensure the text-gray-400 class is applied initially via HTML for the dimmed look */
+
+
+/* Define hidden field styles for transitions */
+#innate-spellcasting-fields,
+#spellcasting-fields {
+    /* Max-height and opacity are set inline in ui.js for dynamic transition control. */
+    /* Set height transition duration */
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
+    padding: 0; /* Default padding should be 0 when collapsed */
+    overflow: hidden; /* Added to ensure content doesn't peek */
+}
+
+/* --- Radio Button Alignment --- */
+.radio-container {
+    display: flex;
+    justify-content: flex-end; /* Align items to the right */
+    align-items: center; /* Vertically center items */
+    width: auto; /* Allow container to shrink-wrap content */
+    margin-left: auto; /* Push container to the right */
+}
+.radio-container label {
+    order: 1; /* Label comes first */
+    margin-right: 0.5rem; /* Space between label and radio */
+}
+.radio-container input[type="radio"] {
+    order: 2; /* Radio comes second */
+}
+
 .post-container {
 	margin: 20px 20px 0 0;
 	overflow: auto;
@@ -366,29 +406,59 @@ table.spell td {
 
 /* --- NEW Primary Button Style --- */
 .btn-primary {
-    background-color: #87CC24; /* Original green */
-    color: black;
-    font-weight: 600; /* semibold */
-    font-size: 0.875rem; /* text-sm */
-    padding-left: 1rem; /* px-4 */
-    padding-right: 1rem; /* px-4 */
-    padding-top: 0.25rem; /* py-1 */
-    padding-bottom: 0.25rem; /* py-1 */
-    border-radius: 0.375rem; /* rounded-md */
-    transition: opacity 0.15s ease-in-out; /* Match Tailwind's  transition */
-    border: 1px solid transparent; /* Added border */
-	box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
-    cursor: pointer;
+  background: linear-gradient(to bottom, #A6E33C 0%, #6BAF1A 100%);
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #558B2F;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glossy top highlight */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+
+/* Hover shine animation */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-primary:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
 }
 
 .btn-primary:hover {
-    opacity: 0.8; /* hover:opacity-80 */
+  opacity: 0.8;
 }
 
 .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
+
 
 /* Specific adjustments for smaller buttons if needed */
 .btn-primary.btn-sm { /* Example for smaller padding */
@@ -400,4 +470,186 @@ table.spell td {
     padding-left: 0.5rem; /* px-2 */
     padding-right: 0.5rem; /* px-2 */
     font-size: 0.75rem; /* text-xs */
+}
+
+/* --- NEW Secondary (Cancel) Button Style --- */
+.btn-secondary {
+  background: linear-gradient(to bottom, #FFFFFF 0%, #E0E0E0 100%);
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #B0B0B0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+.btn-secondary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-secondary:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+.btn-secondary:hover {
+  opacity: 0.8;
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary.btn-sm {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.btn-secondary.btn-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* --- NEW Dark Button Style --- */
+.btn-dark {
+  background: linear-gradient(to bottom, #333333 0%, #000000 100%);
+  color: #A6E33C;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #444444;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-dark::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+.btn-dark::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-dark:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+.btn-dark:hover {
+  opacity: 0.8;
+}
+.btn-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-dark.btn-sm {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.btn-dark.btn-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+}
+#logo-container {
+    position: absolute; /* Or relative if you didn't use absolute positioning */
+    overflow: hidden; /* Essential for clipping the shine */
+    cursor: pointer; /* To indicate it's clickable/interactive */
+}
+
+/* Hover shine animation for the logo */
+#logo-container::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+#logo-container:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+/* Optional: Add a subtle opacity change on hover like the buttons */
+#logo-container:hover {
+  opacity: 0.9; /* Slightly less than buttons maybe */
+  transition: opacity 0.15s ease-in-out;
+}
+
+
+/* --- Import Modal Styles --- */
+#import-viewport {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+#import-viewport::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, new Edge */
+}
+#import-text-area {
+    font-family: monospace;
+    font-size: 10pt;
+}
+
+/* --- Header Icon Button Hover Styles --- */
+#bestiary-buttons button svg,
+#npc-buttons button svg {
+    transition: color 0.15s ease-in-out; /* Smooth color transition */
+}
+
+/* Bestiary buttons hover: Darker Green */
+#bestiary-buttons button:hover svg {
+    color: #558B2F; /* Darker green */
+}
+
+/* NPC buttons hover: Bright Green */
+#npc-buttons button:hover svg {
+    color: #87CC24; /* Green title color */
+}
+
+/* Remove Flash effect */
+/* #bestiary-buttons button::after,
+#npc-buttons button::after { ... } 
+#bestiary-buttons button:hover::after,
+#npc-buttons button:hover::after { ... } 
+*/
+
+/* Ensure disabled NPC buttons don't show hover effects */
+#npc-buttons button:disabled:hover svg {
+    color: white; /* Or original color */
 }

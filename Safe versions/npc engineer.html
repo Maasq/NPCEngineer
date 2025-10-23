@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="author" content="Maasq" />
 		<meta name="description" content="A tool for creating and managing NPCs." />
-		<meta name="version" content="0.09.12" />
-		<meta name="date" content="2025-10-19" />
+		<meta name="version" content="0.11.20" />
+		<meta name="date" content="2025-10-23" />
 		
 		<title>NPC Engineer</title>
 		
@@ -30,88 +30,89 @@
 		<div class="max-w-screen-2xl mx-auto px-6 pb-6">
 
 			<header class="sticky top-0 z-50 bg-[#E2E8F0] pt-1 pb-12">
-				<div class="relative h-24">
-					
-					<div class="absolute top-2 left-2 z-40">
-						<button id="hamburger-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-violet-200 transition-colors">
-							<svg class="h-6 w-6 text-black"><use href="#icon-hamburger"></use></svg>
-						</button>
-						<div id="main-menu" class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden">
-							<div class="relative group/bestiaries">
-								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
-									<span>Bestiaries</span>
-									<svg class="w-4 h-4"><use href="#icon-chevron"></use></svg>
-								</div>
-								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/bestiaries:block">
-									<a href="#" id="menu-new-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New Bestiary</a>
-									<a href="#" id="menu-load-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Select Bestiary</a>
-									<a href="#" id="menu-import-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import Bestiary</a>
-									<a href="#" id="menu-export-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Bestiary</a>
-								</div>
-							</div>
-							<hr class="my-1"/>
-							<div class="relative group/npcs">
-								<div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
-									<span>NPCs</span>
-									<svg class="w-4 h-4"><use href="#icon-chevron"></use></svg>
-								</div>
-								<div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/npcs:block">
-									<a href="#" id="menu-new-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New NPC</a>
-									<a href="#" id="menu-duplicate-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Duplicate NPC</a>
-									<a href="#" id="menu-import-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import NPC</a>
-									<a href="#" id="menu-export-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export NPC</a>
-									<a href="#" id="menu-delete-npc" class="menu-item block px-4 py-1 text-sm text-red-600 hover:bg-red-50">Delete NPC</a>
-								</div>
-							</div>
-							<hr class="my-1"/>
-							<a href="#" id="menu-settings" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
-						</div>
-					</div>
+				 <div class="relative h-24">
 
-					<div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
-					<img src="graphics/npc engineer.webp" alt="NPC Engineer Logo" class="absolute w-32 h-32 rounded-full z-30" style="top: 16px; left: 28px" />
-					
-					
-					<div id="bestiary-buttons" class="absolute right-3 top-[15px] z-30 flex items-center space-x-4">
-						<span id="bestiary-status" class="text-sm font-medium text-gray-600 mr-2">No Bestiary Loaded</span>
-						<button id="newBestiaryBtn" title="Create a new Bestiary" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-new-bestiary"></use></svg>
-						</button>
-						<button id="loadBestiaryBtn" title="Select one of your Bestiaries to edit" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-load-bestiary"></use></svg>
-						</button>
-						<button id="importBestiaryBtn" title="Import Bestiary (JSON) from Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-import-bestiary"></use></svg>
-						</button>
-						<button id="exportBestiaryBtn" title="Export Bestiary (JSON) to Disk" class="transition duration-150 p-1.5 text-black rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black">
-							<svg class="h-6 w-6" fill="currentColor"><use href="#icon-export-bestiary"></use></svg>
-						</button>
-					</div>
-					
-					<div class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center justify-between px-4">
-						<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
-						<div id="npc-buttons" class="flex items-center space-x-4">
-							<button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
-								<svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-5 w-5"><use href="#icon-new-npc"></use></svg>
+					  <div class="absolute top-2 left-2 z-40">
+							<button id="hamburger-btn" class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-violet-200 transition-colors">
+								 <svg class="h-6 w-6 text-black"><use href="#icon-hamburger"></use></svg>
 							</button>
-							<button id="duplicateNpcBtn" title="Duplicate this NPC." class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
-								<svg class="h-5 w-5" fill="currentColor"><use href="#icon-duplicate-npc"></use></svg>
+							<div id="main-menu" class="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg z-50 hidden">
+								 <div class="relative group/bestiaries">
+									  <div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
+											<span>Bestiaries</span>
+											<svg class="w-4 h-4"><use href="#icon-chevron"></use></svg>
+									  </div>
+									  <div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/bestiaries:block">
+											<a href="#" id="menu-new-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New Bestiary</a>
+											<a href="#" id="menu-load-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Select Bestiary</a>
+											<a href="#" id="menu-import-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import Bestiary</a>
+											<a href="#" id="menu-export-bestiary" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Bestiary</a>
+									  </div>
+								 </div>
+								 <hr class="my-1"/>
+								 <div class="relative group/npcs">
+									  <div class="flex justify-between items-center w-full px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 cursor-default">
+											<span>NPCs</span>
+											<svg class="w-4 h-4"><use href="#icon-chevron"></use></svg>
+									  </div>
+									  <div class="absolute left-full top-0 w-56 bg-white rounded-md shadow-lg z-50 hidden group-hover/npcs:block">
+											<a href="#" id="menu-new-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">New NPC</a>
+											<a href="#" id="menu-duplicate-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Duplicate NPC</a>
+											<a href="#" id="menu-import-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import NPC</a>
+											<a href="#" id="menu-export-npc" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export NPC</a>
+											<a href="#" id="menu-delete-npc" class="menu-item block px-4 py-1 text-sm text-red-600 hover:bg-red-50">Delete NPC</a>
+									  </div>
+								 </div>
+								 <hr class="my-1"/>
+								 <a href="#" id="menu-import-text" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import NPC from Text</a>
+								 <a href="#" id="menu-export-fg" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Bestiary to FG</a>
+								 <hr class="my-1"/>
+								 <a href="#" id="menu-settings" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+							</div>
+					  </div>
+
+					  <div class="absolute w-32 h-32 bg-black rounded-full custom-shadow z-10" style="top: 16px; left: 28px"></div>
+					  <div id="logo-container" class="absolute w-32 h-32 rounded-full z-30 overflow-hidden cursor-pointer" style="top: 16px; left: 28px;">
+							<img src="graphics/npc engineer.webp" alt="NPC Engineer Logo" class="block w-full h-full" />
+					  </div>
+
+
+					  <div id="bestiary-buttons" class="absolute right-3 top-[15px] z-30 flex items-center space-x-4">
+							<span id="bestiary-status" class="text-sm font-medium text-gray-600 mr-2">No Bestiary Loaded</span>
+							<button id="newBestiaryBtn" title="Create a new Bestiary" class="transition duration-150 p-1.5 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black"> <svg class="h-6 w-6" fill="currentColor"><use href="#icon-new-bestiary"></use></svg>
 							</button>
-							<button id="importNpcBtn" title="Import NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
-								<svg class="h-5 w-5" fill="currentColor" stroke="currentColor" stroke-width="1"><use href="#icon-import-npc"></use></svg>
+							<button id="loadBestiaryBtn" title="Select one of your Bestiaries to edit" class="transition duration-150 p-1.5 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black"> <svg class="h-6 w-6" fill="currentColor"><use href="#icon-load-bestiary"></use></svg>
 							</button>
-							<button id="exportNpcBtn" title="Export NPC" class="transition duration-150 p-1.5 text-white rounded-lg hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed">
-								<svg class="h-5 w-5" fill="currentColor" stroke="currentColor" stroke-width="1"><use href="#icon-export-npc"></use></svg>
+							<button id="importBestiaryBtn" title="Import Bestiary (JSON) from Disk" class="transition duration-150 p-1.5 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black"> <svg class="h-6 w-6" fill="currentColor"><use href="#icon-import-bestiary"></use></svg>
 							</button>
-						</div>
-					</div>
-					<div id="npc-selector-container" class="absolute left-0 right-0 pr-6" style="top: 100px; display: flex; justify-content: flex-end; align-items: center;">
-						<select id="npc-selector" class="info-select hidden" style="width: 450px; font-size: 11pt;" title="Select an NPC to edit"></select>
-						<button id="deleteNpcBtn" title="Delete Current NPC" class="ml-2 p-1.5 text-red-600 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 hidden">
-							<svg class="h-5 w-5"><use href="#icon-trash"></use></svg>
-						</button>
-					</div>
-				</div>
+							<button id="exportBestiaryBtn" title="Export Bestiary (JSON) to Disk" class="transition duration-150 p-1.5 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-black"> <svg class="h-6 w-6" fill="currentColor"><use href="#icon-export-bestiary"></use></svg>
+							</button>
+					  </div>
+
+					  <div class="absolute bottom-0 left-0 right-0 h-[50px] bg-gradient-to-b from-black via-gray-500 to-black border border-black rounded-xl custom-shadow z-20 flex items-center justify-between px-4">
+							<h1 class="text-3xl font-bold text-[#87CC24] ml-48">NPC Engineer</h1>
+							<div id="npc-buttons" class="flex items-center space-x-4">
+								 <button id="newNpcBtn" title="New NPC" class="transition duration-150 p-1.5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"> <svg fill="currentColor" stroke="currentColor" stroke-width="0.5" class="h-5 w-5"><use href="#icon-new-npc"></use></svg>
+								 </button>
+								 <button id="duplicateNpcBtn" title="Duplicate this NPC." class="transition duration-150 p-1.5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed"> <svg class="h-5 w-5" fill="currentColor"><use href="#icon-duplicate-npc"></use></svg>
+								 </button>
+								 <button id="importNpcBtn" title="Import NPC" class="transition duration-150 p-1.5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed"> <svg class="h-5 w-5" fill="currentColor" stroke="currentColor" stroke-width="1"><use href="#icon-import-npc"></use></svg>
+								 </button>
+								 <button id="exportNpcBtn" title="Export NPC" class="transition duration-150 p-1.5 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white disabled:opacity-25 disabled:cursor-not-allowed"> <svg class="h-5 w-5" fill="currentColor" stroke="currentColor" stroke-width="1"><use href="#icon-export-npc"></use></svg>
+								 </button>
+							</div>
+					  </div>
+					  <div id="footer-buttons-container" class="absolute left-0 pr-6 space-x-2" style="top: 105px; left: 290px; display: flex; align-items: center;">
+							<button id="footer-import-text-btn" class="btn-dark btn-xs" title="Import an NPC from copied text">Import NPC from Text</button>
+							<button id="footer-export-fg-btn" class="btn-dark btn-xs" title="Export the current bestiary for Fantasy Grounds">Export Bestiary to FG</button>
+					  </div>
+					  <div id="npc-selector-container" class="absolute right-0 pr-6" style="top: 100px; display: flex; justify-content: flex-end; align-items: center;">
+							<select id="npc-selector" class="info-select hidden" style="width: 450px; font-size: 11pt;" title="Select an NPC to edit"></select>
+							<button id="deleteNpcBtn" title="Delete Current NPC" class="ml-2 p-1.5 text-red-600 rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 hidden">
+								 <svg class="h-5 w-5"><use href="#icon-trash"></use></svg>
+							</button>
+					  </div>
+				 </div>
 			</header>
 
 			<main class="flex flex-wrap justify-center gap-6 pt-6">
@@ -871,7 +872,98 @@ Double-click to open a window that will help build a correct expression.">
 							</div>
 						</div>
 					</div>
+					
+<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+    <div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 flex justify-between items-center cursor-pointer select-none">
+        <h2 class="font-bold text-slate-700">Spellcasting & Psionics</h2>
+    </div>
+    <div class="card-body">
+        <div class="p-4 space-y-4">
 
+            <div class="flex justify-between items-center pb-0"> <h3 id="innate-spellcasting-header" class="text-lg font-bold text-gray-400 mb-0">Innate Spellcasting</h3> <div class="flex items-center">
+                    <label for="npc-has-innate-spellcasting" class="label-text text-sm mr-2 whitespace-nowrap">Include Innate Spellcasting section</label>
+                    <input type="checkbox" id="npc-has-innate-spellcasting" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+            </div>
+            <hr id="innate-divider" class="border-gray-300 border-t-2 hidden my-0"> <div id="innate-spellcasting-fields" class="pt-2 pl-4 space-y-4 transition-opacity duration-300 opacity-0 hidden"> 
+                <div class="flex justify-end items-center pt-0"> <label for="npc-innate-is-psionics" class="label-text text-sm mr-2">Use as Psionics</label>
+                    <input type="checkbox" id="npc-innate-is-psionics" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+
+                <div class="relative border border-gray-300 rounded-md p-4 pt-5">
+                     <h4 class="absolute -top-2.5 left-4 bg-white px-1 text-sm font-medium text-gray-600">Caster Information</h4>
+                     <div class="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-x-2 gap-y-2"> 
+                         <label for="npc-innate-ability" class="label-text text-xs text-right pr-2">Spellcasting Ability</label>
+                         <div class="flex items-center space-x-4"> <select id="npc-innate-ability" class="info-select h-6 text-xs flex-grow"> <option value="strength">Strength</option>
+                                 <option value="dexterity">Dexterity</option>
+                                 <option value="constitution">Constitution</option>
+                                 <option value="intelligence">Intelligence</option>
+                                 <option value="wisdom">Wisdom</option>
+                                 <option value="charisma">Charisma</option>
+                             </select>
+                             <div class="flex items-center space-x-2 flex-shrink-0"> 
+                                 <label for="npc-innate-dc" class="label-text text-xs whitespace-nowrap">Spell Save DC</label> 
+                                 <input type="number" id="npc-innate-dc" class="info-input h-6 text-xs w-16" min="0" max="30"> 
+                             </div>
+                             <div class="flex items-center space-x-2 flex-shrink-0"> 
+                                 <label for="npc-innate-bonus" class="label-text text-xs whitespace-nowrap">Spell Hit Bonus</label> 
+                                 <input type="number" id="npc-innate-bonus" class="info-input h-6 text-xs w-16" min="-5" max="15"> 
+                             </div>
+                         </div>
+
+                         <label for="npc-innate-components" class="label-text text-xs text-right pr-2">Component Text</label> 
+                         <input type="text" id="npc-innate-components" class="info-input h-6 text-xs w-full" placeholder="e.g., (requires no components)">
+                     </div>
+                </div>
+
+                <div class="relative border border-gray-300 rounded-md p-4 pt-5">
+                     <h4 class="absolute -top-2.5 left-4 bg-white px-1 text-sm font-medium text-gray-600">Spell Selection</h4>
+                     <div class="grid grid-cols-[100px_auto] gap-x-4 mb-1"> 
+                         <div class="label-text text-xs text-center font-semibold">No. of Casts</div>
+                         <div class="label-text text-xs font-semibold">Spells</div>
+                     </div>
+                     <div class="space-y-1">
+                         <div class="grid grid-cols-[100px_auto] gap-x-4 items-center">
+                            <input type="text" id="npc-innate-freq-0" class="info-input h-6 text-xs text-center" value="At will">
+                            <input type="text" id="npc-innate-list-0" class="info-input h-6 text-xs" placeholder="e.g., mage hand, prestidigitation">
+                         </div>
+                          <div class="grid grid-cols-[100px_auto] gap-x-4 items-center">
+                            <input type="text" id="npc-innate-freq-1" class="info-input h-6 text-xs text-center" value="3/day each">
+                            <input type="text" id="npc-innate-list-1" class="info-input h-6 text-xs" placeholder="e.g., detect magic, disguise self">
+                         </div>
+                          <div class="grid grid-cols-[100px_auto] gap-x-4 items-center">
+                            <input type="text" id="npc-innate-freq-2" class="info-input h-6 text-xs text-center" value="1/day each">
+                            <input type="text" id="npc-innate-list-2" class="info-input h-6 text-xs" placeholder="e.g., shield, misty step">
+                         </div>
+                          <div class="grid grid-cols-[100px_auto] gap-x-4 items-center">
+                            <input type="text" id="npc-innate-freq-3" class="info-input h-6 text-xs text-center" value="">
+                            <input type="text" id="npc-innate-list-3" class="info-input h-6 text-xs" placeholder="Additional spells...">
+                         </div>
+                     </div>
+                 </div>
+            </div>
+
+
+            <div class="flex justify-between items-center pt-4 pb-0"> <h3 id="spellcasting-header" class="text-lg font-bold text-gray-400 mb-0">Spellcasting</h3> <div class="flex items-center">
+                    <label for="npc-has-spellcasting" class="label-text text-sm mr-2 whitespace-nowrap">Include Spellcasting section</label>
+                    <input type="checkbox" id="npc-has-spellcasting" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+            </div>
+             <hr id="spellcasting-divider" class="border-gray-300 border-t-2 hidden my-0"> <div id="spellcasting-fields" class="pt-2 pl-4 space-y-1 transition-opacity duration-300 opacity-0 hidden"> 
+                 <div class="radio-container">
+                    <label for="npc-spellcasting-to-traits" class="label-text text-sm">Use in Traits</label>
+                    <input type="radio" id="npc-spellcasting-to-traits" name="spellcasting-placement" value="traits" checked class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+                <div class="radio-container">
+                    <label for="npc-spellcasting-to-actions" class="label-text text-sm">Use in Actions</label>
+                    <input type="radio" id="npc-spellcasting-to-actions" name="spellcasting-placement" value="actions" class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </div>
+                </div>
+
+        </div>
+    </div>
+</div>
+					
 					<div class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
 						<div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
 							<h2 class="font-bold text-slate-700 relative" style="top: 0px;">Actions</h2>
@@ -897,7 +989,7 @@ Double-click to open a window that will help build a correct expression.">
 										<button data-action-type="legendary-actions" class="btn-primary" title="Add the current entry to the Legendary Actions list.">Legendary</button>
 										<button data-action-type="lair-actions" class="btn-primary" title="Add the current entry to the Lair Actions list.">Lair</button>
 									</div>
-									<button id="clear-edit-btn" class="hidden w-full mt-2 px-3 py-1 border rounded-md text-xs bg-gray-200 hover:bg-gray-300" title="Clear the input fields and cancel the current edit.">Cancel Edit</button>
+									<button id="clear-edit-btn" class="btn-secondary btn-xs hidden w-full mt-2" title="Clear the input fields and cancel the current edit.">Cancel Edit</button>
 								</div>
 
 								<div class="border-t border-gray-300 pt-4 mt-4"><h2 class="text-lg font-bold">Actions</h2><ul id="actions-container" class="space-y-2 mt-2 list-none p-0"></ul></div>
@@ -1061,7 +1153,6 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 			</div>
 
-
 			<div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden modal-content">
 				<div class="flex justify-between items-center mb-2">
 					<h3 class="font-bold text-slate-700">Hit Dice Calculator</h3>
@@ -1081,16 +1172,16 @@ Double-click to open a window that will help build a correct expression.">
 				</div>
 			</div>
 
-            <div id="boilerplate-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-lg transform scale-95 hidden" onclick="event.stopPropagation()">
+			<div id="boilerplate-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-lg transform scale-95 hidden" onclick="event.stopPropagation()">
                 <h3 class="text-lg font-bold">Edit Description</h3>
                 <textarea id="boilerplate-editor" rows="6" class="mt-4 w-full rounded-md border-gray-300 info-input"></textarea>
                 <div class="mt-4 flex justify-end gap-2">
-                    <button class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100">Cancel</button>
+                    <button class="btn-secondary">Cancel</button>
                     <button class="btn-primary">Save</button>
                 </div>
             </div>
             
-            <div id="attack-helper-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-4xl transform scale-95 overflow-y-auto max-h-screen hidden" onclick="event.stopPropagation()">
+			<div id="attack-helper-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-4xl transform scale-95 overflow-y-auto max-h-screen hidden" onclick="event.stopPropagation()">
                 <h3 class="text-lg font-bold">Attack Helper</h3>
                 
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -1128,28 +1219,53 @@ Double-click to open a window that will help build a correct expression.">
                     </div>
                 </div>
                 
-                <button class="mt-2 px-3 py-1.5 border rounded-md text-xs font-semibold hover:bg-gray-100" title="Add another damage component to this attack, for effects like poison or secondary magic damage.">+ Add Damage Type</button>
+                <button class="btn-secondary btn-xs mt-2" title="Add another damage component to this attack, for effects like poison or secondary magic damage.">+ Add Damage Type</button>
                 
                 <div class="mt-6 flex justify-end gap-2">
-                    <button class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100" title="Close the Attack Helper without making changes.">Cancel</button>
+                    <button class="btn-secondary" title="Close the Attack Helper without making changes.">Cancel</button>
                     <button class="btn-primary" title="Create the formatted attack description and put it in the main description box.">Generate & Insert</button>
                 </div>
             </div>
 
-            <div id="alert-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-sm transform scale-95 hidden" onclick="event.stopPropagation()">
+			<div id="alert-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-sm transform scale-95 hidden" onclick="event.stopPropagation()">
                 <h3 id="alert-title" class="text-lg font-bold">Alert</h3>
                 <p id="alert-message-text" class="mt-2"></p>
                 <div class="mt-4 flex justify-end space-x-2">
-					<button id="alert-cancel-btn" class="px-4 py-2 border rounded-md text-sm font-semibold hover:bg-gray-100 hidden">Cancel</button>
+					<button id="alert-cancel-btn" class="btn-secondary hidden">Cancel</button>
                     <button id="alert-ok-btn" class="btn-primary">OK</button>
                 </div>
             </div>
 
-		</div>
-		
-		<script src="icons.js" defer></script>
+				<div id="import-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-7xl h-[95vh] hidden transform scale-95" onclick="event.stopPropagation()">
+
+					 <div class="flex justify-between items-center mb-4">
+						  <h3 class="text-lg font-bold">Import NPC from Text</h3>
+						  <button class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button> </div>
+
+					 <div class="flex gap-6 h-[calc(100%-80px)]">
+						  <div class="w-1/2 h-full flex flex-col">
+								<textarea id="import-text-area" class="w-full h-full info-input rounded-xl custom-shadow bordered-container p-4" style="min-height: 600px; resize: none;" placeholder="Paste raw NPC text here..."></textarea>
+								<div class="flex justify-between items-center mt-4">
+									 <button id="import-append-btn" class="btn-primary">Append Clipboard</button>
+									 <button id="import-clear-btn" class="btn-primary">Clear Text Window</button>
+								</div>
+						  </div>
+
+						  <div class="w-1/2 h-full flex flex-col">
+								<div id="import-viewport" class="w-full h-full bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container" style="padding-top: 10px; background-image: url('graphics/viewport.jpg');">
+								</div>
+								<div class="flex justify-end items-center mt-4 space-x-2">
+									<button id="import-cancel-btn" class="btn-secondary" title="Close the importer.">Cancel</button>
+									<button id="import-confirm-btn" class="btn-primary">Import NPC</button>
+								</div>
+						  </div>
+					 </div>
+				</div>
+			
+		</div> <script src="icons.js" defer></script>
 		<script src="ui.js" defer></script>
 		<script src="viewport.js" defer></script>
 		<script src="main.js" defer></script>
+		<script src="import.js" defer></script>
 	</body>
 </html>

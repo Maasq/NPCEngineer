@@ -93,9 +93,19 @@ document.addEventListener("DOMContentLoaded", () => {
 		hasTelepathy: false,
 		telepathyRange: 0,
 		
-		// --- NEW SPELLCASTING PROPERTIES ---
+		// --- SPELLCASTING PROPERTIES ---
 		hasInnateSpellcasting: false,
 		innateIsPsionics: false,
+		innateAbility: 'charisma', // Default ability
+		innateDC: 10, // Placeholder, calculated later
+		innateBonus: 2, // Placeholder, calculated later
+		innateComponents: 'requiring no material components.', // CHANGED
+		innateSpells: [ // Array to hold frequency/list pairs (Reduced to 4 rows)
+			{ freq: "At will", list: "" },
+			{ freq: "3/day each", list: "" },
+			{ freq: "1/day each", list: "" },
+			{ freq: "", list: "" } 
+		],
 		hasSpellcasting: false,
 		spellcastingPlacement: 'traits', // 'traits' or 'actions'
 	};
@@ -167,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteCurrentNpc,
         importNpc,
         exportNpc,
-        exportBestiaryToFG, // *** NEW *** Export function placeholder
+        exportBestiaryToFG, 
         updateActiveNPCFromForm,
         healBestiary,
         sortAndSwitchToNpc,
@@ -182,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
         calculateLanguagesString,
         calculateAllStats,
         calculateAllSkills,
+        calculateInnateDCBonus, // NEW function
         // Action functions
         addOrUpdateAction,
         editAction,
@@ -371,6 +382,33 @@ document.addEventListener("DOMContentLoaded", () => {
 			// --- SPELLCASTING HEALING ---
 			if (healedNpc.hasInnateSpellcasting === undefined) healedNpc.hasInnateSpellcasting = app.defaultNPC.hasInnateSpellcasting;
 			if (healedNpc.innateIsPsionics === undefined) healedNpc.innateIsPsionics = app.defaultNPC.innateIsPsionics;
+			if (healedNpc.innateAbility === undefined) healedNpc.innateAbility = app.defaultNPC.innateAbility;
+			if (healedNpc.innateDC === undefined) healedNpc.innateDC = app.defaultNPC.innateDC;
+			if (healedNpc.innateBonus === undefined) healedNpc.innateBonus = app.defaultNPC.innateBonus;
+			if (healedNpc.innateComponents === undefined) healedNpc.innateComponents = app.defaultNPC.innateComponents;
+			// Heal the innateSpells array structure (Adjusted for 4 rows)
+			const defaultInnateSpellsLength = app.defaultNPC.innateSpells.length;
+			if (!Array.isArray(healedNpc.innateSpells)) {
+				healedNpc.innateSpells = JSON.parse(JSON.stringify(app.defaultNPC.innateSpells));
+			} else {
+                 // Ensure it has at least the default number of slots, adding missing ones
+                 while(healedNpc.innateSpells.length < defaultInnateSpellsLength) {
+                     healedNpc.innateSpells.push({ freq: "", list: ""});
+                 }
+                 // Trim excess slots if the default changed
+                 if (healedNpc.innateSpells.length > defaultInnateSpellsLength) {
+                     healedNpc.innateSpells = healedNpc.innateSpells.slice(0, defaultInnateSpellsLength);
+                 }
+                 // Heal individual slots
+                 healedNpc.innateSpells = healedNpc.innateSpells.map((spellSlot, index) => {
+					const defaultSlot = app.defaultNPC.innateSpells[index] || { freq: "", list: "" };
+					return {
+						freq: spellSlot?.freq ?? defaultSlot.freq,
+						list: spellSlot?.list ?? defaultSlot.list
+					};
+				});
+            }
+
 			if (healedNpc.hasSpellcasting === undefined) healedNpc.hasSpellcasting = app.defaultNPC.hasSpellcasting;
 			if (healedNpc.spellcastingPlacement === undefined) healedNpc.spellcastingPlacement = app.defaultNPC.spellcastingPlacement;
 
@@ -506,6 +544,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		newNpc.addTitle = app.activeBestiary.metadata.addTitle;
 		newNpc.addImageLink = app.activeBestiary.metadata.addImageLink;
 		newNpc.fg_group = app.activeBestiary.projectName;
+
+		// Calculate initial DC/Bonus for the new NPC
+		const { dc, bonus } = calculateInnateDCBonus(newNpc.innateAbility, newNpc.proficiencyBonus, newNpc);
+		newNpc.innateDC = dc;
+		newNpc.innateBonus = bonus;
 		
 		app.activeBestiary.npcs.push(newNpc);
 		sortAndSwitchToNpc(newNpc);
@@ -584,6 +627,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	function updateActiveNPCFromForm() {
 		if (app.isUpdatingForm || !app.activeNPC) return;
+		
+		// Store old values *before* reading from form
+		const oldAbility = app.activeNPC.innateAbility; 
+		const oldProfBonus = app.activeNPC.proficiencyBonus; 
+		// Store old calculated DC/Bonus *before* stats change
+		const oldCalculated = calculateInnateDCBonus(oldAbility, oldProfBonus, app.activeNPC);
+		const oldManualDC = app.activeNPC.innateDC;
+		const oldManualBonus = app.activeNPC.innateBonus;
+
 
 		const newName = window.ui.inputs.name.value.trim();
 		if (newName && newName.toLowerCase() !== (app.activeNPC.name || "").toLowerCase()) {
@@ -603,6 +655,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (key.startsWith('common') || key === 'attackDamageDice') continue;
             // Skip spellcasting radios, handled separately
             if (key.startsWith('spellcastingTo')) continue; 
+			// Skip innate spell lists/freqs, handled below
+			if (key.startsWith('innate-freq-') || key.startsWith('innate-list-')) continue; 
             
 			if (key === 'description') {
 				app.activeNPC[key] = window.ui.inputs.description.value;
@@ -611,7 +665,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			const element = window.ui.inputs[key];
 			// Check if element exists before accessing properties (Fix for TypeError)
 			if (!element) {
-				// console.warn(`Form element with key "${key}" not found.`);
 				continue; 
 			}
 			
@@ -626,12 +679,22 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			} else if (element.type === "checkbox") {
 				app.activeNPC[key] = element.checked;
-			} else {
+			} else if (element.type === "number") {
+                // Ensure numbers are stored as numbers
+                const parsedValue = parseInt(element.value, 10);
+                app.activeNPC[key] = isNaN(parsedValue) ? 0 : parsedValue; // Default to 0 if NaN
+            } else {
 				app.activeNPC[key] = element.value;
 			}
 		}
+
+		// Update Proficiency Bonus based on Challenge Rating *first*
+		const newProfBonus = calculateProficiencyBonus(app.activeNPC.challenge);
+        app.activeNPC.proficiencyBonus = newProfBonus;
+		if(window.ui.proficiencyBonusDisplay) window.ui.proficiencyBonusDisplay.textContent = `+${newProfBonus}`;
+        if(window.ui.experienceDisplay) window.ui.experienceDisplay.textContent = crToXpMap[app.activeNPC.challenge] || '';
 		
-		// --- Spellcasting fields (with checks) ---
+		// --- Innate Spellcasting fields (with checks) ---
 		// Checkboxes
 		const hasInnateCheck = window.ui.inputs.hasInnateSpellcasting;
 		if (hasInnateCheck) app.activeNPC.hasInnateSpellcasting = hasInnateCheck.checked;
@@ -639,19 +702,70 @@ document.addEventListener("DOMContentLoaded", () => {
 		const isPsionicsCheck = window.ui.inputs.innateIsPsionics;
 		if (isPsionicsCheck) app.activeNPC.innateIsPsionics = isPsionicsCheck.checked;
 		
+		const innateAbilitySelect = document.getElementById('npc-innate-ability');
+		if (innateAbilitySelect) app.activeNPC.innateAbility = innateAbilitySelect.value;
+
+		const innateDCInput = document.getElementById('npc-innate-dc');
+		const innateBonusInput = document.getElementById('npc-innate-bonus');
+		
+		// --- Recalculate DC/Bonus ---
+		// Recalculate stats *after* reading ability scores but *before* calculating DC/Bonus
+    	calculateAllStats(); // This updates all ability bonuses
+		
+		const newAbility = app.activeNPC.innateAbility;
+		const { dc: newCalculatedDC, bonus: newCalculatedBonus } = calculateInnateDCBonus(newAbility, newProfBonus, app.activeNPC);
+		
+		// Check if the ability or proficiency bonus changed
+		if (newAbility !== oldAbility || newProfBonus !== oldProfBonus) {
+			// If they changed, check if the user had manually edited the DC/Bonus.
+			// If they hadn't (i.e., the value still matches the *old* calculation), update them.
+			if (innateDCInput && oldManualDC === oldCalculated.dc) {
+				app.activeNPC.innateDC = newCalculatedDC;
+				innateDCInput.value = newCalculatedDC; // Update input directly
+			} else if (innateDCInput) {
+				// User *had* edited it, so just read their manual value
+				app.activeNPC.innateDC = parseInt(innateDCInput.value, 10) || newCalculatedDC;
+			}
+			
+			if (innateBonusInput && oldManualBonus === oldCalculated.bonus) {
+				app.activeNPC.innateBonus = newCalculatedBonus;
+				innateBonusInput.value = newCalculatedBonus; // Update input directly
+			} else if (innateBonusInput) {
+				// User *had* edited it
+				app.activeNPC.innateBonus = parseInt(innateBonusInput.value, 10) || newCalculatedBonus;
+			}
+		} else {
+			// If ability/prof didn't change, just read the current values (in case of manual edit)
+			if (innateDCInput) app.activeNPC.innateDC = parseInt(innateDCInput.value, 10) || newCalculatedDC;
+			if (innateBonusInput) app.activeNPC.innateBonus = parseInt(innateBonusInput.value, 10) || newCalculatedBonus;
+		}
+
+
+		const innateComponentsInput = document.getElementById('npc-innate-components');
+		if (innateComponentsInput) app.activeNPC.innateComponents = innateComponentsInput.value;
+
+		// Innate Spell List inputs (Adjusted loop to 4)
+		for (let i = 0; i < 4; i++) {
+			const freqInput = document.getElementById(`npc-innate-freq-${i}`);
+			const listInput = document.getElementById(`npc-innate-list-${i}`);
+			// Ensure the array structure exists and update
+			if (freqInput && listInput && app.activeNPC.innateSpells && app.activeNPC.innateSpells[i]) {
+				app.activeNPC.innateSpells[i].freq = freqInput.value.trim();
+				app.activeNPC.innateSpells[i].list = listInput.value.trim();
+			}
+		}
+
+		// --- Spellcasting fields ---
 		const hasSpellCheck = window.ui.inputs.hasSpellcasting;
 		if (hasSpellCheck) app.activeNPC.hasSpellcasting = hasSpellCheck.checked;
 
 		// Radio buttons
 		const spellPlacementRadio = document.querySelector('input[name="spellcasting-placement"]:checked');
-		// Only update if a radio button is actually selected
 		if (spellPlacementRadio) { 
 			app.activeNPC.spellcastingPlacement = spellPlacementRadio.value;
 		} else {
-			// Fallback to default if somehow none are checked (shouldn't happen with proper HTML)
 			app.activeNPC.spellcastingPlacement = app.defaultNPC.spellcastingPlacement; 
 		}
-
 
 		const selectedLanguages = new Set();
 		window.ui.languageListboxes.forEach(listbox => {
@@ -706,7 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		skills.forEach(skill => {
 			const profCheck = document.getElementById(`skill-${skill.id}-prof`);
 			const expCheck = document.getElementById(`skill-${skill.id}-exp`);
-			const adjustInput = document.getElementById(`skill-${skill.id}_adjust`); // Fix: underscore in adjust ID
+			const adjustInput = document.getElementById(`skill-${skill.id}-adjust`); 
 			if (profCheck) app.activeNPC[`skill_${skill.id}_prof`] = profCheck.checked;
 			if (expCheck) app.activeNPC[`skill_${skill.id}_exp`] = expCheck.checked;
 			if (adjustInput) app.activeNPC[`skill_${skill.id}_adjust`] = parseInt(adjustInput.value, 10) || 0;
@@ -736,13 +850,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			app.activeNPC.weaponImmunity = selectedWeaponImm.value;
 		}
 
-		// Ensure experienceDisplay and proficiencyBonusDisplay exist before accessing textContent
-		if(window.ui.experienceDisplay) app.activeNPC.experience = window.ui.experienceDisplay.textContent;
-		if(window.ui.proficiencyBonusDisplay) app.activeNPC.proficiencyBonus = parseInt(window.ui.proficiencyBonusDisplay.textContent.replace('+', ''), 10);
+		// Experience and Proficiency Bonus are now updated earlier based on CR change
 		
-		calculateAllStats();
-		window.ui.updateStatDisplays();
-		window.viewport.updateViewport();
+		// calculateAllStats() was already called
+		window.ui.updateStatDisplays(); // Updates bonuses, saves, passive perception in UI
+		window.ui.updateSkillDisplays(); // Updates skill totals in UI
+		window.viewport.updateViewport(); // Updates the preview pane
 		
 		if(window.ui.npcSelector && window.ui.npcSelector.selectedIndex >= 0) { // Check if selector and selection exist
 			const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
@@ -751,7 +864,8 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 		if (languagesModified) {
-			window.ui.updateFormFromActiveNPC(); // Re-render form if languages changed drastically
+			// Need to re-populate lists and potentially re-select options
+			window.ui.updateFormFromActiveNPC(); 
 		}
 		
 		// Update UI visibility/titles dynamically after state change
@@ -775,6 +889,20 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (crValue <= 24) return 7;
 		if (crValue <= 28) return 8;
 		return 9; // for CR 29-30
+	}
+	
+	// --- Calculate Innate DC and Bonus ---
+	function calculateInnateDCBonus(abilityKey, profBonus, npc) {
+		// Ensure NPC object exists and abilityKey is valid before calculation
+		if (!npc || !abilityKey || !npc.hasOwnProperty(`${abilityKey}Bonus`)) {
+			// Fallback calculation (e.g., during initialization before npc stats are ready)
+			const tempBonus = npc ? calculateAbilityBonus(npc[abilityKey] || 10) : 0;
+			return { dc: 8 + (profBonus || 2) + tempBonus, bonus: (profBonus || 2) + tempBonus };
+		}
+		const abilityBonus = npc[`${abilityKey}Bonus`] ?? 0; // Use nullish coalescing for safety
+		const dc = 8 + profBonus + abilityBonus;
+		const bonus = profBonus + abilityBonus;
+		return { dc, bonus };
 	}
 	
 	function calculateSpeedString(npc) {
@@ -1469,15 +1597,15 @@ function showDialog(title, message, showCancel = false) {
                     confirmCallback(); // Execute the stored action
                     confirmCallback = null; // Clear after execution
                 }
-            }; // Added semicolon for consistency
+            }; 
             window.ui.alertCancelBtn.onclick = () => {
                  closeModal('alert-modal');
                  confirmCallback = null; // Clear on cancel
-            }; // Added semicolon for consistency
+            }; 
         } else {
             // Simple alert mode
              window.ui.alertOkBtn.textContent = 'OK';
-             window.ui.alertOkBtn.onclick = () => closeModal('alert-modal'); // Added semicolon for consistency
+             window.ui.alertOkBtn.onclick = () => closeModal('alert-modal'); 
         }
 
         openModal('alert-modal');
@@ -1485,5 +1613,5 @@ function showDialog(title, message, showCancel = false) {
 
 	// --- INITIALIZATION ---
 	window.ui.init();
-	window.importer.init(); // This will fetch and inject the import.html
+	window.importer.init(); // Initialize importer
 });

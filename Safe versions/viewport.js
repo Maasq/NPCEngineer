@@ -14,8 +14,11 @@ function updateViewport() {
         name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
         strength, dexterity, constitution, intelligence, wisdom, charisma,
         strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-        useDropCap, addDescription, speed, challenge, experience, traits, sortTraitsAlpha,
-        actions, legendaryBoilerplate, lairBoilerplate
+        useDropCap, addDescription, addTitle, speed, challenge, experience, traits, sortTraitsAlpha,
+        actions, legendaryBoilerplate, lairBoilerplate,
+        // Spellcasting properties
+        hasInnateSpellcasting, innateIsPsionics, innateAbility, innateDC, innateBonus, innateComponents, innateSpells,
+        hasSpellcasting, spellcastingPlacement
     } = activeNPC;
     
     const { vulnerabilities, resistances, immunities } = window.app.calculateDamageModifiersString(activeNPC);
@@ -47,8 +50,63 @@ function updateViewport() {
     const NPCchabo = charismaBonus !== undefined ? (charismaBonus >= 0 ? `+${charismaBonus}` : charismaBonus) : "+0";
 
     const dropCapClass = useDropCap ? 'drop-cap' : '';
-    const descriptionHtml = addDescription ? `<div class="npcdescrip ${dropCapClass}"> ${NPCDescriptionHTML} </div>` : '';
+    const titleHtml = addTitle ? `<div style="font-family: 'Questrial', sans-serif; font-size: 17pt; color: #7A200D; font-weight: bold; padding-left: 0.1cm; padding-bottom: 0.0cm; padding-top: 0.4cm;">${NPCName}</div>` : '';
+    const descriptionTopPadding = addTitle ? '0.0cm' : '0.4cm';
+    const descriptionBlockHtml = addDescription ? 
+        `${titleHtml}<div class="npcdescrip ${dropCapClass}" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${NPCDescriptionHTML} </div>` 
+        : '';
 
+    // --- Helper function to italicize spell names ---
+    function formatSpellList(listString) {
+        if (!listString) return "";
+        return listString
+            .toLowerCase()
+            .split(',') // Split by comma
+            .map(spell => spell.trim()) // Remove whitespace
+            .filter(spell => spell.length > 0) // Remove empty entries
+            .map(spell => `<i>${spell}</i>`) // Italicize
+            .join(', '); // Re-join with roman comma and space
+    }
+
+    // --- Build Innate Spellcasting Trait ---
+    let innateSpellcastingTrait = '';
+    if (hasInnateSpellcasting) {
+        const innateTitle = innateIsPsionics ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting';
+        const abilityName = innateAbility.charAt(0).toUpperCase() + innateAbility.slice(1);
+        const bonusString = innateBonus >= 0 ? `+${innateBonus}` : innateBonus;
+        
+        // Build boilerplate string
+        let boilerplate = `The ${NPCName}'s innate spellcasting ability is ${abilityName} (spell save DC ${innateDC}, ${bonusString} to hit with spell attacks). `;
+        boilerplate += `It can innately cast the following spells${innateComponents ? `, ${innateComponents}` : ''}:`;
+        
+        // Build spell list
+        const spellListHtml = innateSpells
+            .filter(spell => spell.freq && spell.list) // Only include rows that have both a frequency and a spell list
+            .map(spell => {
+                // Change 3: Format spell list to italicize names
+                const formattedList = formatSpellList(spell.list);
+                // Change 1: Removed padding-left. 
+                // Change 2: Removed <i><b> tags from spell.freq
+                return `<div style="color: black; padding-bottom: 0.25em;">${spell.freq}: ${formattedList}</div>`;
+            })
+            .join('');
+
+        innateSpellcastingTrait = `
+            <div class="npctop" style="padding-bottom: 0.5em; color: black;">
+                <i><b>${innateTitle}.</b></i> ${boilerplate}
+                ${spellListHtml}
+            </div>
+        `;
+    }
+
+    // --- Build Spellcasting Trait (Placeholder) ---
+    let spellcastingTrait = '';
+    if (hasSpellcasting) {
+         // This will be expanded later
+         spellcastingTrait = `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>Spellcasting.</b></i> [Spell list goes here]</div>`;
+    }
+
+    // --- Combine Traits and Spellcasting Traits based on placement ---
     let traitsHtml = '';
 	if (traits && traits.length > 0) {
 		let traitsToRender = [...traits];
@@ -61,10 +119,25 @@ function updateViewport() {
         }).join('');
 	}
 
+    let allTraitsHtml = '';
+    if (spellcastingPlacement === 'traits') {
+        allTraitsHtml = (hasInnateSpellcasting ? innateSpellcastingTrait : '') + (hasSpellcasting ? spellcastingTrait : '') + traitsHtml;
+    } else {
+        allTraitsHtml = traitsHtml; // Only regular traits
+    }
+    
+    // --- Build Action Spellcasting HTML ---
+    let actionSpellcastingHtml = '';
+    if (spellcastingPlacement === 'actions') {
+        actionSpellcastingHtml = (hasInnateSpellcasting ? innateSpellcastingTrait : '') + (hasSpellcasting ? spellcastingTrait : '');
+    }
+
     const createActionSection = (actionList, title, boilerplate = '') => {
-        if (!actionList || actionList.length === 0) return '';
+        const hasSpellcastingContent = (title === 'Actions' && actionSpellcastingHtml.length > 0);
         
-        let sortedList = [...actionList];
+        if ((!actionList || actionList.length === 0) && !hasSpellcastingContent) return '';
+        
+        let sortedList = [...(actionList || [])];
         if(title === 'Actions') {
             let multiattack = null;
             const otherItems = sortedList.filter(item => {
@@ -86,6 +159,9 @@ function updateViewport() {
         }).join('');
 
         const boilerplateHtml = boilerplate ? `<div class="npctop" style="padding-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
+        
+        // Prepend action spellcasting content if it exists
+        const finalActionItemsHtml = (hasSpellcastingContent ? actionSpellcastingHtml : '') + actionItemsHtml;
 
         return `
             <div class="action-header">${title}</div>
@@ -95,7 +171,7 @@ function updateViewport() {
                 </svg>
             </div>
             ${boilerplateHtml}
-            ${actionItemsHtml}
+            ${finalActionItemsHtml}
         `;
     };
 
@@ -146,8 +222,8 @@ function updateViewport() {
             ${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
             ${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
             ${challenge ? `<div class="npctop"><b>Challenge</b> ${challenge} (${experience} XP)</div>` : ''}
-            ${traitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
-            ${traitsHtml}
+            ${allTraitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
+            ${allTraitsHtml}
             ${actionsHtml}
             ${bonusActionsHtml}
             ${reactionsHtml}
@@ -156,8 +232,7 @@ function updateViewport() {
             <div class="npcbottom">&nbsp;</div>
             <div class="cap"></div>
         </div>
-        ${descriptionHtml}
+        ${!addDescription ? '<div style="height: 1.5rem;"></div>' : ''} ${descriptionBlockHtml} 
     `;
     viewport.innerHTML = generatedHtml;
 }
-

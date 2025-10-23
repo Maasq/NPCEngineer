@@ -1,394 +1,680 @@
+// ui.js (Complete, updated)
 window.ui = {
     // --- UI ELEMENTS ---
-	mainContentColumn: document.getElementById('main-content-column'),
-	viewport: document.getElementById("viewport"),
-	bestiaryStatusEl: document.getElementById("bestiary-status"),
+	mainContentColumn: null, // Initialized in init
+	viewport: null, // Initialized in init
+	bestiaryStatusEl: null, // Initialized in init
 	
 	// Bestiary Buttons
-	newBestiaryBtn: document.getElementById("newBestiaryBtn"),
-	loadBestiaryBtn: document.getElementById("loadBestiaryBtn"),
-	exportBestiaryBtn: document.getElementById("exportBestiaryBtn"),
-	importBestiaryBtn: document.getElementById("importBestiaryBtn"),
+	newBestiaryBtn: null, // ...
+	loadBestiaryBtn: null,
+	exportBestiaryBtn: null,
+	importBestiaryBtn: null,
 
 	// NPC Buttons
-	newNpcBtn: document.getElementById("newNpcBtn"),
-	duplicateNpcBtn: document.getElementById("duplicateNpcBtn"),
-	importNpcBtn: document.getElementById("importNpcBtn"),
-	exportNpcBtn: document.getElementById("exportNpcBtn"),
-	deleteNpcBtn: document.getElementById("deleteNpcBtn"),
+	newNpcBtn: null,
+	duplicateNpcBtn: null,
+	importNpcBtn: null,
+	exportNpcBtn: null,
+	deleteNpcBtn: null,
 	
 	// Menu Items
-	hamburgerBtn: document.getElementById('hamburger-btn'),
-	mainMenu: document.getElementById('main-menu'),
-	menuNewBestiary: document.getElementById('menu-new-bestiary'),
-	menuLoadBestiary: document.getElementById('menu-load-bestiary'),
-	menuImportBestiary: document.getElementById('menu-import-bestiary'),
-	menuExportBestiary: document.getElementById('menu-export-bestiary'),
-	menuNewNpc: document.getElementById('menu-new-npc'),
-	menuDuplicateNpc: document.getElementById('menu-duplicate-npc'),
-	menuImportNpc: document.getElementById('menu-import-npc'),
-	menuExportNpc: document.getElementById('menu-export-npc'),
-	menuDeleteNpc: document.getElementById('menu-delete-npc'),
-	menuSettings: document.getElementById('menu-settings'),
-
+	hamburgerBtn: null,
+	mainMenu: null,
+	menuNewBestiary: null,
+	menuLoadBestiary: null,
+	menuImportBestiary: null,
+	menuExportBestiary: null,
+	menuNewNpc: null,
+	menuDuplicateNpc: null,
+	menuImportNpc: null,
+	menuImportText: null, // Definition moved to init
+	menuExportNpc: null,
+	menuDeleteNpc: null,
+	menuSettings: null,
+	menuExportFg: null, 
 
 	// NPC Selector
-	npcSelector: document.getElementById("npc-selector"),
-	npcOptionsContainer: document.getElementById('npc-options-container'),
+	npcSelector: null,
+	npcOptionsContainer: null,
 
 	// Modals & Overlays
-	modalOverlay: document.getElementById("modal-overlay"),
-	newBestiaryModal: document.getElementById("new-bestiary-modal"),
-	loadBestiaryModal: document.getElementById("load-bestiary-modal"),
-	hpModal: document.getElementById("hp-modal"),
-	settingsModal: document.getElementById('settings-modal'),
-	manageLanguagesModal: document.getElementById('manage-languages-modal'),
-	manageTraitsModal: document.getElementById('manage-traits-modal'),
-    boilerplateModal: document.getElementById('boilerplate-modal'),
-    attackHelperModal: document.getElementById('attack-helper-modal'),
-    alertModal: document.getElementById('alert-modal'), // Now also used for confirmations
+	modalOverlay: null,
+	newBestiaryModal: null,
+	loadBestiaryModal: null,
+	hpModal: null,
+	settingsModal: null,
+	manageLanguagesModal: null,
+	manageTraitsModal: null,
+    boilerplateModal: null,
+    attackHelperModal: null,
+    alertModal: null,
 
 	// Modal-specific elements
-	createBestiaryBtn: document.getElementById("create-bestiary-btn"),
-	newBestiaryNameInput: document.getElementById("new-bestiary-name"),
-	bestiaryListDiv: document.getElementById("bestiary-list"),
-	manageGroupsBtn: document.getElementById('manage-groups-btn'),
-	manageGroupsModal: document.getElementById('manage-groups-modal'),
-	addGroupBtn: document.getElementById('add-group-btn'),
-	newGroupNameInput: document.getElementById('new-group-name'),
-	groupListDiv: document.getElementById('group-list'),
-	settingsOkBtn: document.getElementById('settings-ok-btn'),
+	createBestiaryBtn: null,
+	newBestiaryNameInput: null,
+	bestiaryListDiv: null,
+	manageGroupsBtn: null,
+	manageGroupsModal: null,
+	addGroupBtn: null,
+	newGroupNameInput: null,
+	groupListDiv: null,
+	settingsOkBtn: null,
 	
 	// Language Modal Elements
-	manageLanguagesBtn: document.getElementById('manage-languages-btn'),
-	newLanguageNameInput: document.getElementById('new-language-name'),
-	addLanguageBtn: document.getElementById('add-language-btn'),
-	languageListDiv: document.getElementById('language-list-div'),
+	manageLanguagesBtn: null,
+	newLanguageNameInput: null,
+	addLanguageBtn: null,
+	languageListDiv: null,
 
 	// Trait Elements
-	manageTraitsBtn: document.getElementById('manage-traits-btn'),
-	npcTraitList: document.getElementById('npc-trait-list'),
-	newTraitName: document.getElementById('new-trait-name'),
-	savedTraitList: document.getElementById('saved-trait-list'),
-	newTraitDescription: document.getElementById('new-trait-description'),
-	addTraitBtn: document.getElementById('add-trait-btn'),
-	modalTraitName: document.getElementById('modal-trait-name'),
-	modalTraitDescription: document.getElementById('modal-trait-description'),
-	modalTokenButtons: document.getElementById('modal-token-buttons'),
-	addManagedTraitBtn: document.getElementById('add-managed-trait-btn'),
-	managedTraitListDiv: document.getElementById('managed-trait-list-div'),
-	sortTraitsAlphaCheckbox: document.getElementById('sort-traits-alpha'),
+	manageTraitsBtn: null,
+	npcTraitList: null,
+	newTraitName: null,
+	savedTraitList: null,
+	newTraitDescription: null,
+	addTraitBtn: null,
+	modalTraitName: null,
+	modalTraitDescription: null,
+	modalTokenButtons: null,
+	addManagedTraitBtn: null,
+	managedTraitListDiv: null,
+	sortTraitsAlphaCheckbox: null,
 	
-	tokenBox: document.getElementById("npc-token"),
-	tokenUpload: document.getElementById("token-upload"),
-	imageBox: document.getElementById("npc-image"),
-	imageUpload: document.getElementById("image-upload"),
+	tokenBox: null,
+	tokenUpload: null,
+	imageBox: null,
+	imageUpload: null,
 
-	hpModalCloseBtn: document.getElementById("hp-modal-close"),
-	hpApplyBtn: document.getElementById("hp-apply-btn"),
-    hpDiceString: document.getElementById('hp-dice-string'),
-    hpDiceSelector: document.getElementById('hp-dice-selector'),
-    hpClearBtn: document.getElementById('hp-clear-btn'), // New
+	hpModalCloseBtn: null,
+	hpApplyBtn: null,
+    hpDiceString: null,
+    hpDiceSelector: null,
+    hpClearBtn: null,
 
-	experienceDisplay: document.getElementById("npc-experience-display"),
-	proficiencyBonusDisplay: document.getElementById("npc-proficiency-bonus-display"),
+	experienceDisplay: null,
+	proficiencyBonusDisplay: null,
 
     // Action Elements
-    clearEditBtn: document.getElementById('clear-edit-btn'),
-    legendaryBoilerplate: document.getElementById('legendary-boilerplate'),
-    lairBoilerplate: document.getElementById('lair-boilerplate'),
-    attackDamageDiceClearBtn: document.getElementById('attack-damage-dice-clear-btn'), // New
+    clearEditBtn: null,
+    legendaryBoilerplate: null,
+    lairBoilerplate: null,
+    attackDamageDiceClearBtn: null,
 
     // Alert/Confirm Modal Elements
-    alertTitle: document.getElementById('alert-title'),
-    alertMessageText: document.getElementById('alert-message-text'),
-    alertOkBtn: document.getElementById('alert-ok-btn'),
-    alertCancelBtn: document.getElementById('alert-cancel-btn'),
+    alertTitle: null,
+    alertMessageText: null,
+    alertOkBtn: null,
+    alertCancelBtn: null,
 
-	// Settings Checkboxes
-	bestiarySettingsCheckboxes: {
-		addDescription: document.getElementById('bestiary-add-description'),
-		addTitle: document.getElementById('bestiary-add-title'),
-		addImageLink: document.getElementById('bestiary-add-image-link'),
-		useDropCap: document.getElementById('bestiary-use-drop-cap'),
-	},
-	npcSettingsCheckboxes: {
-		addDescription: document.getElementById('npc-add-description'),
-		addTitle: document.getElementById('npc-add-title'),
-		addImageLink: document.getElementById('npc-add-image-link'),
-		useDropCap: document.getElementById('npc-use-drop-cap'),
-	},
+    // Footer Buttons (Add these)
+    footerImportTextBtn: null,
+    footerExportFgBtn: null, 
 
-	// --- FORM INPUTS ---
-	inputs: {
-		name: document.getElementById("npc-name"),
-		size: document.getElementById("npc-size"),
-		type: document.getElementById("npc-type"),
-		species: document.getElementById("npc-species"),
-		alignment: document.getElementById("npc-alignment"),
-		armorClass: document.getElementById("npc-ac"),
-		hitPoints: document.getElementById("npc-hp"),
-		challenge: document.getElementById("npc-challenge"),
-		strength: document.getElementById("npc-strength"),
-		dexterity: document.getElementById("npc-dexterity"),
-		constitution: document.getElementById("npc-constitution"),
-		intelligence: document.getElementById("npc-intelligence"),
-		wisdom: document.getElementById("npc-wisdom"),
-		charisma: document.getElementById("npc-charisma"),
-		gender: document.getElementById("npc-gender"),
-		isUnique: document.getElementById("npc-unique"),
-		isProperName: document.getElementById("npc-proper"),
-		description: document.getElementById("npc-description"), // hidden input for Trix
-		speedBase: document.getElementById('npc-speed-base'),
-		speedFly: document.getElementById('npc-speed-fly'),
-		flyHover: document.getElementById('npc-fly-hover'),
-		speedClimb: document.getElementById('npc-speed-climb'),
-		speedSwim: document.getElementById('npc-speed-swim'),
-		speedBurrow: document.getElementById('npc-speed-burrow'),
-		senseBlindsight: document.getElementById('npc-sense-blindsight'),
-		blindBeyond: document.getElementById('npc-blind-beyond'),
-		senseDarkvision: document.getElementById('npc-sense-darkvision'),
-		senseTremorsense: document.getElementById('npc-sense-tremorsense'),
-		senseTruesight: document.getElementById('npc-sense-truesight'),
-		fg_group: document.getElementById('fantasy-grounds-group'),
-        // Action Inputs
-        commonName: document.getElementById('common-name'),
-        commonDesc: document.getElementById('common-desc'),
-        attackDamageDice: document.getElementById('attack-damage-dice'), // Added for clear button
-	},
+	// Settings Checkboxes (initialized in init)
+	bestiarySettingsCheckboxes: {},
+	npcSettingsCheckboxes: {},
+
+    // Spellcasting Elements (NEW)
+    innateSpellcastingHeader: null,
+    innateSpellcastingFields: null, // Container for psionics checkbox + groups
+    innateDivider: null, 
+    spellcastingHeader: null,
+    spellcastingFields: null, // Container for radio buttons
+    spellcastingDivider: null, 
+
+
+	// --- FORM INPUTS --- (initialized in init)
+	inputs: {},
 	
-	languageListboxes: [
-		document.getElementById('language-list-standard'),
-		document.getElementById('language-list-exotic'),
-		document.getElementById('language-list-monstrous1'),
-		document.getElementById('language-list-monstrous2'),
-		document.getElementById('language-list-user'),
-	],
+	languageListboxes: [], // Will populate IDs in init
+
     init: function() {
+        // --- Assign elements now that DOM is ready ---
+        this.mainContentColumn = document.getElementById('main-content-column');
+        this.viewport = document.getElementById("viewport");
+        this.bestiaryStatusEl = document.getElementById("bestiary-status");
+        
+        this.newBestiaryBtn = document.getElementById("newBestiaryBtn");
+        this.loadBestiaryBtn = document.getElementById("loadBestiaryBtn");
+        this.exportBestiaryBtn = document.getElementById("exportBestiaryBtn");
+        this.importBestiaryBtn = document.getElementById("importBestiaryBtn");
+
+        this.newNpcBtn = document.getElementById("newNpcBtn");
+        this.duplicateNpcBtn = document.getElementById("duplicateNpcBtn");
+        this.importNpcBtn = document.getElementById("importNpcBtn");
+        this.exportNpcBtn = document.getElementById("exportNpcBtn");
+        this.deleteNpcBtn = document.getElementById("deleteNpcBtn");
+        
+        this.hamburgerBtn = document.getElementById('hamburger-btn');
+        this.mainMenu = document.getElementById('main-menu');
+        this.menuNewBestiary = document.getElementById('menu-new-bestiary');
+        this.menuLoadBestiary = document.getElementById('menu-load-bestiary');
+        this.menuImportBestiary = document.getElementById('menu-import-bestiary');
+        this.menuExportBestiary = document.getElementById('menu-export-bestiary');
+        this.menuNewNpc = document.getElementById('menu-new-npc');
+        this.menuDuplicateNpc = document.getElementById('menu-duplicate-npc');
+        this.menuImportNpc = document.getElementById('menu-import-npc');
+        this.menuImportText = document.getElementById('menu-import-text');
+        this.menuExportNpc = document.getElementById('menu-export-npc');
+        this.menuDeleteNpc = document.getElementById('menu-delete-npc');
+        this.menuSettings = document.getElementById('menu-settings');
+        this.menuExportFg = document.getElementById('menu-export-fg'); 
+
+        this.npcSelector = document.getElementById("npc-selector");
+        this.npcOptionsContainer = document.getElementById('npc-options-container');
+
+        this.modalOverlay = document.getElementById("modal-overlay");
+        this.newBestiaryModal = document.getElementById("new-bestiary-modal");
+        this.loadBestiaryModal = document.getElementById("load-bestiary-modal");
+        this.hpModal = document.getElementById("hp-modal");
+        this.settingsModal = document.getElementById('settings-modal');
+        this.manageLanguagesModal = document.getElementById('manage-languages-modal');
+        this.manageTraitsModal = document.getElementById('manage-traits-modal');
+        this.boilerplateModal = document.getElementById('boilerplate-modal');
+        this.attackHelperModal = document.getElementById('attack-helper-modal');
+        this.alertModal = document.getElementById('alert-modal');
+
+        this.createBestiaryBtn = document.getElementById("create-bestiary-btn");
+        this.newBestiaryNameInput = document.getElementById("new-bestiary-name");
+        this.bestiaryListDiv = document.getElementById("bestiary-list");
+        this.manageGroupsBtn = document.getElementById('manage-groups-btn');
+        this.manageGroupsModal = document.getElementById('manage-groups-modal');
+        this.addGroupBtn = document.getElementById('add-group-btn');
+        this.newGroupNameInput = document.getElementById('new-group-name');
+        this.groupListDiv = document.getElementById('group-list');
+        this.settingsOkBtn = document.getElementById('settings-ok-btn');
+        
+        this.manageLanguagesBtn = document.getElementById('manage-languages-btn');
+        this.newLanguageNameInput = document.getElementById('new-language-name');
+        this.addLanguageBtn = document.getElementById('add-language-btn');
+        this.languageListDiv = document.getElementById('language-list-div');
+
+        this.manageTraitsBtn = document.getElementById('manage-traits-btn');
+        this.npcTraitList = document.getElementById('npc-trait-list');
+        this.newTraitName = document.getElementById('new-trait-name');
+        this.savedTraitList = document.getElementById('saved-trait-list');
+        this.newTraitDescription = document.getElementById('new-trait-description');
+        this.addTraitBtn = document.getElementById('add-trait-btn');
+        this.modalTraitName = document.getElementById('modal-trait-name');
+        this.modalTraitDescription = document.getElementById('modal-trait-description');
+        this.modalTokenButtons = document.getElementById('modal-token-buttons');
+        this.addManagedTraitBtn = document.getElementById('add-managed-trait-btn');
+        this.managedTraitListDiv = document.getElementById('managed-trait-list-div');
+        this.sortTraitsAlphaCheckbox = document.getElementById('sort-traits-alpha');
+        
+        this.tokenBox = document.getElementById("npc-token");
+        this.tokenUpload = document.getElementById("token-upload");
+        this.imageBox = document.getElementById("npc-image");
+        this.imageUpload = document.getElementById("image-upload");
+
+        this.hpModalCloseBtn = document.getElementById("hp-modal-close");
+        this.hpApplyBtn = document.getElementById("hp-apply-btn");
+        this.hpDiceString = document.getElementById('hp-dice-string');
+        this.hpDiceSelector = document.getElementById('hp-dice-selector');
+        this.hpClearBtn = document.getElementById('hp-clear-btn');
+
+        this.experienceDisplay = document.getElementById("npc-experience-display");
+        this.proficiencyBonusDisplay = document.getElementById("npc-proficiency-bonus-display");
+
+        this.clearEditBtn = document.getElementById('clear-edit-btn');
+        this.legendaryBoilerplate = document.getElementById('legendary-boilerplate');
+        this.lairBoilerplate = document.getElementById('lair-boilerplate');
+        this.attackDamageDiceClearBtn = document.getElementById('attack-damage-dice-clear-btn');
+
+        this.alertTitle = document.getElementById('alert-title');
+        this.alertMessageText = document.getElementById('alert-message-text');
+        this.alertOkBtn = document.getElementById('alert-ok-btn');
+        this.alertCancelBtn = document.getElementById('alert-cancel-btn');
+
+        // Assign Footer Buttons
+        this.footerImportTextBtn = document.getElementById('footer-import-text-btn');
+        this.footerExportFgBtn = document.getElementById('footer-export-fg-btn'); // *** NEW ***
+
+        // Assign Spellcasting Elements (NEW)
+        this.innateSpellcastingHeader = document.getElementById('innate-spellcasting-header');
+        this.innateSpellcastingFields = document.getElementById('innate-spellcasting-fields'); // Container div
+        this.innateDivider = document.getElementById('innate-divider'); // NEW divider
+        this.spellcastingHeader = document.getElementById('spellcasting-header');
+        this.spellcastingFields = document.getElementById('spellcasting-fields'); // Container div
+        this.spellcastingDivider = document.getElementById('spellcasting-divider'); // NEW divider
+
+
+        this.bestiarySettingsCheckboxes = {
+            addDescription: document.getElementById('bestiary-add-description'),
+            addTitle: document.getElementById('bestiary-add-title'),
+            addImageLink: document.getElementById('bestiary-add-image-link'),
+            useDropCap: document.getElementById('bestiary-use-drop-cap'),
+        };
+        this.npcSettingsCheckboxes = {
+            addDescription: document.getElementById('npc-add-description'),
+            addTitle: document.getElementById('npc-add-title'),
+            addImageLink: document.getElementById('npc-add-image-link'),
+            useDropCap: document.getElementById('npc-use-drop-cap'),
+        };
+
+        this.inputs = {
+            name: document.getElementById("npc-name"),
+            size: document.getElementById("npc-size"),
+            type: document.getElementById("npc-type"),
+            species: document.getElementById("npc-species"),
+            alignment: document.getElementById("npc-alignment"),
+            armorClass: document.getElementById("npc-ac"),
+            hitPoints: document.getElementById("npc-hp"),
+            challenge: document.getElementById("npc-challenge"),
+            strength: document.getElementById("npc-strength"),
+            dexterity: document.getElementById("npc-dexterity"),
+            constitution: document.getElementById("npc-constitution"),
+            intelligence: document.getElementById("npc-intelligence"),
+            wisdom: document.getElementById("npc-wisdom"),
+            charisma: document.getElementById("npc-charisma"),
+            gender: document.getElementById("npc-gender"),
+            isUnique: document.getElementById("npc-unique"),
+            isProperName: document.getElementById("npc-proper"),
+            description: document.getElementById("npc-description"), // hidden input for Trix
+            speedBase: document.getElementById('npc-speed-base'),
+            speedFly: document.getElementById('npc-speed-fly'),
+            flyHover: document.getElementById('npc-fly-hover'),
+            speedClimb: document.getElementById('npc-speed-climb'),
+            speedSwim: document.getElementById('npc-speed-swim'),
+            speedBurrow: document.getElementById('npc-speed-burrow'),
+            senseBlindsight: document.getElementById('npc-sense-blindsight'),
+            blindBeyond: document.getElementById('npc-blind-beyond'),
+            senseDarkvision: document.getElementById('npc-sense-darkvision'),
+            senseTremorsense: document.getElementById('npc-sense-tremorsense'),
+            senseTruesight: document.getElementById('npc-sense-truesight'),
+            fg_group: document.getElementById('fantasy-grounds-group'),
+            commonName: document.getElementById('common-name'),
+            commonDesc: document.getElementById('common-desc'),
+            attackDamageDice: document.getElementById('attack-damage-dice'),
+            // Spellcasting Inputs
+            hasInnateSpellcasting: document.getElementById('npc-has-innate-spellcasting'),
+            innateIsPsionics: document.getElementById('npc-innate-is-psionics'),
+            innateAbility: document.getElementById('npc-innate-ability'), // NEW
+            innateDC: document.getElementById('npc-innate-dc'),           // NEW
+            innateBonus: document.getElementById('npc-innate-bonus'),     // NEW
+            innateComponents: document.getElementById('npc-innate-components'),// NEW
+            hasSpellcasting: document.getElementById('npc-has-spellcasting'),
+            spellcastingToTraits: document.getElementById('npc-spellcasting-to-traits'),
+            spellcastingToActions: document.getElementById('npc-spellcasting-to-actions'),
+        };
+        // Add innate spell list inputs dynamically (Adjusted loop to 4)
+        for (let i = 0; i < 4; i++) {
+            this.inputs[`innate-freq-${i}`] = document.getElementById(`npc-innate-freq-${i}`);
+            this.inputs[`innate-list-${i}`] = document.getElementById(`npc-innate-list-${i}`);
+        }
+        
+        this.languageListboxes = [
+            document.getElementById('language-list-standard'),
+            document.getElementById('language-list-exotic'),
+            document.getElementById('language-list-monstrous1'),
+            document.getElementById('language-list-monstrous2'),
+            document.getElementById('language-list-user'),
+        ];
+        // --- End of element assignments ---
+
+
         this.populateChallengeDropdown();
-        this.setupEventListeners();
+        this.setupEventListeners(); // Now safe to call
         this.updateUIForActiveBestiary();
         this.populateDamageTypes('attack-damage-type');
+        
+        // --- Initial Card State Setup ---
         document.querySelectorAll('.card-body').forEach(cardBody => {
-            cardBody.classList.add('open');
+            // Assume cards start open unless specifically styled otherwise
+            cardBody.classList.add('open'); 
             cardBody.style.paddingTop = '0.5rem';
             cardBody.style.paddingBottom = '0.5rem';
+            // Set max-height AFTER adding class and padding, using scrollHeight
+            // Use setTimeout to allow browser to render layout before measuring
+             setTimeout(() => {
+                // Set max-height explicitly for the initial state animation (or use 'none' if no animation needed)
+                cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; 
+                // After potential initial transition, set to none to allow dynamic content
+                 cardBody.addEventListener('transitionend', function handler() {
+                     if (cardBody.classList.contains('open')) {
+                         cardBody.style.maxHeight = 'none'; 
+                     }
+                    cardBody.removeEventListener('transitionend', handler);
+                }, { once: true });
+            }, 50); // Small delay might be needed for complex layouts
         });
+
     },
 
     setupEventListeners: function() {
-        this.newBestiaryBtn.addEventListener('click', this.showNewBestiaryModal.bind(this));
-        this.loadBestiaryBtn.addEventListener('click', this.showLoadBestiaryModal.bind(this));
-        this.importBestiaryBtn.addEventListener('click', window.app.importBestiary);
-        this.exportBestiaryBtn.addEventListener('click', window.app.exportBestiary);
-        this.newNpcBtn.addEventListener("click", window.app.createNewNpc);
-        this.duplicateNpcBtn.addEventListener("click", window.app.duplicateCurrentNpc);
-        this.importNpcBtn.addEventListener("click", window.app.importNpc);
-        this.exportNpcBtn.addEventListener("click", window.app.exportNpc);
-        this.deleteNpcBtn.addEventListener('click', window.app.deleteCurrentNpc);
+        // --- Add basic null checks for safety ---
+        if (this.newBestiaryBtn) this.newBestiaryBtn.addEventListener('click', this.showNewBestiaryModal.bind(this));
+        if (this.loadBestiaryBtn) this.loadBestiaryBtn.addEventListener('click', this.showLoadBestiaryModal.bind(this));
+        if (this.importBestiaryBtn) this.importBestiaryBtn.addEventListener('click', window.app.importBestiary);
+        if (this.exportBestiaryBtn) this.exportBestiaryBtn.addEventListener('click', window.app.exportBestiary);
+        if (this.newNpcBtn) this.newNpcBtn.addEventListener("click", window.app.createNewNpc);
+        if (this.duplicateNpcBtn) this.duplicateNpcBtn.addEventListener("click", window.app.duplicateCurrentNpc);
+        if (this.importNpcBtn) this.importNpcBtn.addEventListener("click", window.app.importNpc);
+        if (this.exportNpcBtn) this.exportNpcBtn.addEventListener("click", window.app.exportNpc);
+        if (this.deleteNpcBtn) this.deleteNpcBtn.addEventListener('click', window.app.deleteCurrentNpc);
 
-        this.menuNewBestiary.addEventListener('click', (e) => { e.preventDefault(); this.showNewBestiaryModal(); this.mainMenu.classList.add('hidden'); });
-        this.menuLoadBestiary.addEventListener('click', (e) => { e.preventDefault(); this.showLoadBestiaryModal(); this.mainMenu.classList.add('hidden'); });
-        this.menuImportBestiary.addEventListener('click', (e) => { e.preventDefault(); window.app.importBestiary(); this.mainMenu.classList.add('hidden'); });
-        this.menuExportBestiary.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportBestiary.classList.contains('disabled')) window.app.exportBestiary(); this.mainMenu.classList.add('hidden'); });
-        this.menuNewNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuNewNpc.classList.contains('disabled')) window.app.createNewNpc(); this.mainMenu.classList.add('hidden'); });
-        this.menuDuplicateNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDuplicateNpc.classList.contains('disabled')) window.app.duplicateCurrentNpc(); this.mainMenu.classList.add('hidden'); });
-        this.menuImportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuImportNpc.classList.contains('disabled')) window.app.importNpc(); this.mainMenu.classList.add('hidden'); });
-        this.menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportNpc.classList.contains('disabled')) window.app.exportNpc(); this.mainMenu.classList.add('hidden'); });
-        this.menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDeleteNpc.classList.contains('disabled')) window.app.deleteCurrentNpc(); this.mainMenu.classList.add('hidden'); });
-        this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuSettings.classList.contains('disabled')) this.showSettingsModal(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuNewBestiary) this.menuNewBestiary.addEventListener('click', (e) => { e.preventDefault(); this.showNewBestiaryModal(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuLoadBestiary) this.menuLoadBestiary.addEventListener('click', (e) => { e.preventDefault(); this.showLoadBestiaryModal(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuImportBestiary) this.menuImportBestiary.addEventListener('click', (e) => { e.preventDefault(); window.app.importBestiary(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuExportBestiary) this.menuExportBestiary.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportBestiary.classList.contains('disabled')) window.app.exportBestiary(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuNewNpc) this.menuNewNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuNewNpc.classList.contains('disabled')) window.app.createNewNpc(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuDuplicateNpc) this.menuDuplicateNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDuplicateNpc.classList.contains('disabled')) window.app.duplicateCurrentNpc(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuImportNpc) this.menuImportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuImportNpc.classList.contains('disabled')) window.app.importNpc(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuImportText) this.menuImportText.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuImportText.classList.contains('disabled')) window.importer.openImportModal(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuExportNpc) this.menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportNpc.classList.contains('disabled')) window.app.exportNpc(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuDeleteNpc) this.menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDeleteNpc.classList.contains('disabled')) window.app.deleteCurrentNpc(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuSettings) this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuSettings.classList.contains('disabled')) this.showSettingsModal(); this.mainMenu.classList.add('hidden'); });
+        if (this.menuExportFg) this.menuExportFg.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportFg.classList.contains('disabled')) window.app.exportBestiaryToFG(); this.mainMenu.classList.add('hidden'); });
 
-        this.hamburgerBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.mainMenu.classList.toggle('hidden');
-        });
+
+        if (this.hamburgerBtn) {
+            this.hamburgerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.mainMenu) this.mainMenu.classList.toggle('hidden');
+            });
+        }
 
         window.addEventListener('click', (e) => {
-            if (!this.mainMenu.classList.contains('hidden') && !this.hamburgerBtn.contains(e.target)) {
+            if (this.mainMenu && !this.mainMenu.classList.contains('hidden') && this.hamburgerBtn && !this.hamburgerBtn.contains(e.target)) {
                 this.mainMenu.classList.add('hidden');
             }
         });
 
-        this.createBestiaryBtn.addEventListener('click', window.app.createNewBestiary);
-        this.newBestiaryNameInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') this.createBestiaryBtn.click();
-        });
-        this.manageGroupsBtn.addEventListener('click', this.showManageGroupsModal.bind(this));
-        this.addGroupBtn.addEventListener('click', this.addNewGroup.bind(this));
-        this.newGroupNameInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter') {
-                this.addNewGroup();
-            }
-        });
-        this.settingsOkBtn.addEventListener('click', this.hideAllModals.bind(this));
+        if (this.createBestiaryBtn) this.createBestiaryBtn.addEventListener('click', window.app.createNewBestiary);
+        if (this.newBestiaryNameInput) {
+            this.newBestiaryNameInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter' && this.createBestiaryBtn) this.createBestiaryBtn.click();
+            });
+        }
+        if (this.manageGroupsBtn) this.manageGroupsBtn.addEventListener('click', this.showManageGroupsModal.bind(this));
+        if (this.addGroupBtn) this.addGroupBtn.addEventListener('click', this.addNewGroup.bind(this));
+        if (this.newGroupNameInput) {
+            this.newGroupNameInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') {
+                    this.addNewGroup();
+                }
+            });
+        }
+        if (this.settingsOkBtn) this.settingsOkBtn.addEventListener('click', this.hideAllModals.bind(this));
 
-        this.npcSelector.addEventListener('change', (e) => {
-            const newIndex = parseInt(e.target.value, 10);
-            if (newIndex !== window.app.activeNPCIndex) {
-                window.app.switchActiveNPC(newIndex);
-            }
-        });
+        if (this.npcSelector) {
+            this.npcSelector.addEventListener('change', (e) => {
+                const newIndex = parseInt(e.target.value, 10);
+                if (newIndex !== window.app.activeNPCIndex) {
+                    window.app.switchActiveNPC(newIndex);
+                }
+            });
+        }
 
         document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', this.hideAllModals.bind(this)));
-        this.modalOverlay.addEventListener('click', (e) => {
-            if (e.target === this.modalOverlay) this.hideAllModals();
-        });
+        if (this.modalOverlay) {
+            this.modalOverlay.addEventListener('click', (e) => {
+                if (e.target === this.modalOverlay && !e.target.closest('.modal-content')) {
+                    this.hideAllModals();
+                }
+            });
+        }
 
+        // --- Card Toggle Listener ---
         document.querySelectorAll('.card-header').forEach((header) => {
             header.addEventListener("click", (e) => {
-                if (e.target.closest('#fantasy-grounds-group') || e.target.closest('#manage-groups-btn') || e.target.closest('#manage-languages-btn') || e.target.closest('#manage-traits-btn')) {
+                // Prevent toggling if clicking on specific interactive elements within the header
+                if (e.target.closest('#fantasy-grounds-group, #manage-groups-btn, #manage-languages-btn, #manage-traits-btn')) {
                     return;
                 }
                 const cardBody = header.nextElementSibling;
-                if (cardBody) {
+                if (cardBody && cardBody.classList.contains('card-body')) { 
                     if (cardBody.classList.contains('open')) {
-                        cardBody.classList.remove('open');
+                        // Closing
+                        cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; 
+                        cardBody.offsetHeight; 
+                        cardBody.classList.remove('open'); 
+                        cardBody.style.maxHeight = '0';
                         cardBody.style.paddingTop = '0';
                         cardBody.style.paddingBottom = '0';
                     } else {
+                        // Opening
                         cardBody.classList.add('open');
                         cardBody.style.paddingTop = '0.5rem';
                         cardBody.style.paddingBottom = '0.5rem';
+                        cardBody.style.maxHeight = cardBody.scrollHeight + 'px';
+
+                         cardBody.addEventListener('transitionend', function handler() {
+                             if (cardBody.classList.contains('open')) { 
+                                cardBody.style.maxHeight = 'none'; 
+                             }
+                            cardBody.removeEventListener('transitionend', handler);
+                        }, { once: true }); 
                     }
                 }
             });
         });
 
+
         Object.values(this.inputs).forEach((input) => {
-            if(input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') { // Exclude specific inputs
-                input.addEventListener("input", window.app.updateActiveNPCFromForm);
+            // Check if input exists and isn't one of the excluded IDs
+            if(input && input.id && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') {
+                 // Add specific listeners for spellcasting calculation triggers
+                 // Add innateAbility listener specifically to trigger recalculation
+                 if (input.id === 'npc-innate-ability') {
+                     input.addEventListener("input", () => {
+                         // Directly call update and recalculation here
+                         const changedAbility = input.value;
+                         if (window.app.activeNPC && changedAbility) {
+                             window.app.activeNPC.innateAbility = changedAbility; // Update NPC data
+                             this.updateInnateCalculatedFields(); // Recalculate and update UI
+                             window.app.updateActiveNPCFromForm(); // Save other changes
+                         }
+                     });
+                 } else if (['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'challenge'].includes(input.id.replace('npc-', ''))) {
+                      input.addEventListener("input", () => {
+                         // Update form data first, which updates NPC scores and prof bonus
+                         window.app.updateActiveNPCFromForm(); 
+                         // Then recalculate DC/Bonus based on the potentially updated stats/prof bonus
+                         this.updateInnateCalculatedFields(); 
+                     });
+                 } else {
+                     input.addEventListener("input", window.app.updateActiveNPCFromForm);
+                 }
             }
         });
         
-        this.inputs.name.addEventListener('blur', () => {
-            if (window.app.activeBestiary) {
-                window.app.sortAndSwitchToNpc(window.app.activeNPC);
-            }
-        });
+        if (this.inputs.name) {
+            this.inputs.name.addEventListener('blur', () => {
+                if (window.app.activeBestiary) {
+                    window.app.sortAndSwitchToNpc(window.app.activeNPC);
+                }
+            });
+        }
 
         for (const key in this.bestiarySettingsCheckboxes) {
-            this.bestiarySettingsCheckboxes[key].addEventListener('input', () => {
-                if (window.app.activeBestiary) {
-                    window.app.activeBestiary.metadata[key] = this.bestiarySettingsCheckboxes[key].checked;
-                    window.app.saveActiveBestiaryToDB();
-                }
-            });
+            const checkbox = this.bestiarySettingsCheckboxes[key];
+            if (checkbox) {
+                checkbox.addEventListener('input', () => {
+                    if (window.app.activeBestiary) {
+                        window.app.activeBestiary.metadata[key] = checkbox.checked;
+                        window.app.saveActiveBestiaryToDB();
+                    }
+                });
+            }
         }
         for (const key in this.npcSettingsCheckboxes) {
-            this.npcSettingsCheckboxes[key].addEventListener('input', () => {
-                if (window.app.activeNPC) {
-                    window.app.activeNPC[key] = this.npcSettingsCheckboxes[key].checked;
-                    window.viewport.updateViewport();
-                    window.app.saveActiveBestiaryToDB();
+            const checkbox = this.npcSettingsCheckboxes[key];
+             if (checkbox) {
+                checkbox.addEventListener('input', () => {
+                    if (window.app.activeNPC) {
+                        window.app.activeNPC[key] = checkbox.checked;
+                        window.viewport.updateViewport();
+                        window.app.saveActiveBestiaryToDB();
+                    }
+                });
+            }
+        }
+
+        const trixEditor = document.querySelector("trix-editor");
+        if (trixEditor) {
+             trixEditor.addEventListener("trix-change", window.app.updateActiveNPCFromForm);
+        }
+
+        if (this.tokenBox) {
+            this.tokenBox.addEventListener('click', () => window.app.activeNPC && this.tokenUpload && this.tokenUpload.click()); // Added check
+        }
+        if (this.tokenUpload) {
+            this.tokenUpload.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp")) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        window.app.activeNPC.token = e.target.result;
+                        this.updateTokenDisplay();
+                        window.app.saveActiveBestiaryToDB();
+                    };
+                    reader.readAsDataURL(file);
                 }
             });
         }
 
-        this.inputs.challenge.addEventListener('change', () => {
-            const selectedCr = this.inputs.challenge.value;
-            this.experienceDisplay.textContent = window.app.crToXpMap[selectedCr] || '';
-            const profBonus = window.app.calculateProficiencyBonus(selectedCr);
-            this.proficiencyBonusDisplay.textContent = `+${profBonus}`;
-            window.app.updateActiveNPCFromForm();
-        });
+        if (this.imageBox) {
+            this.imageBox.addEventListener('click', () => window.app.activeNPC && this.imageUpload && this.imageUpload.click()); // Added check
+        }
+        if (this.imageUpload) {
+            this.imageUpload.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp" || file.type === "image/jpeg")) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        window.app.activeNPC.image = e.target.result;
+                        this.updateImageDisplay();
+                        window.app.saveActiveBestiaryToDB();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
 
-        document.querySelector("trix-editor").addEventListener("trix-change", window.app.updateActiveNPCFromForm);
-
-        this.tokenBox.addEventListener('click', () => window.app.activeNPC && this.tokenUpload.click());
-        this.tokenUpload.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp")) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    window.app.activeNPC.token = e.target.result;
-                    this.updateTokenDisplay();
-                    window.app.saveActiveBestiaryToDB();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        this.imageBox.addEventListener('click', () => window.app.activeNPC && this.imageUpload.click());
-        this.imageUpload.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp" || file.type === "image/jpeg")) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    window.app.activeNPC.image = e.target.result;
-                    this.updateImageDisplay();
-                    window.app.saveActiveBestiaryToDB();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        this.setupDragAndDrop(this.tokenBox, ["image/png","image/webp"], "token", this.updateTokenDisplay.bind(this));
-        this.setupDragAndDrop(this.imageBox, ["image/png","image/webp","image/jpeg"], "image", this.updateImageDisplay.bind(this));
+        if (this.tokenBox) this.setupDragAndDrop(this.tokenBox, ["image/png","image/webp"], "token", this.updateTokenDisplay.bind(this));
+        if (this.imageBox) this.setupDragAndDrop(this.imageBox, ["image/png","image/webp","image/jpeg"], "image", this.updateImageDisplay.bind(this));
         
-        this.inputs.hitPoints.addEventListener('dblclick', () => {
-            if (window.app.activeNPC) {
-                this.parseHpStringToModal();
-                window.app.openModal('hp-modal');
-                window.app.createDiceSelector(this.hpDiceSelector, this.hpDiceString);
-            }
-        });
-        this.hpModalCloseBtn.addEventListener('click', () => {
-            this.hideAllModals();
-        });
-        this.hpApplyBtn.addEventListener('click', () => {
-            const diceString = this.hpDiceString.value.trim();
-            if (!diceString) {
-                this.inputs.hitPoints.value = "";
-                window.app.updateActiveNPCFromForm();
-                this.hideAllModals();
-                return;
-            }
-            // This regex handles dice, bonus, or both
-            const match = diceString.match(/(\d+d\d+)?\s*([+-])?\s*(\d+)?/);
-            if (match) {
-                const dicePart = match[1];
-                const sign = match[2];
-                const bonus = parseInt(match[3] || '0', 10);
-
-                let totalHp = 0;
-                let finalDiceString = "";
-
-                if (dicePart) {
-                    const [numDice, dieType] = dicePart.split('d').map(Number);
-                    const avgRoll = (dieType / 2) + 0.5;
-                    totalHp = Math.floor(numDice * avgRoll);
-                    finalDiceString = `${numDice}d${dieType}`;
+        if (this.inputs.hitPoints) {
+            this.inputs.hitPoints.addEventListener('dblclick', () => {
+                if (window.app.activeNPC) {
+                    this.parseHpStringToModal();
+                    window.app.openModal('hp-modal');
+                    // Ensure elements exist before creating selector
+                    if (this.hpDiceSelector && this.hpDiceString) {
+                        window.app.createDiceSelector(this.hpDiceSelector, this.hpDiceString);
+                    }
                 }
-
-                if (sign === '+') {
-                    totalHp += bonus;
-                    if(bonus !== 0) finalDiceString += ` + ${bonus}`;
-                } else if (sign === '-') {
-                    totalHp -= bonus;
-                    if(bonus !== 0) finalDiceString += ` - ${bonus}`;
-                } else if (bonus > 0 && !dicePart) { // Handles case of just a number like "6"
-                    totalHp = bonus;
-                    finalDiceString = `${bonus}`;
-                } else if (bonus > 0) { // Handles "3d8 6" without a plus, treat as plus
-                    totalHp += bonus;
-                    finalDiceString += ` + ${bonus}`;
+            });
+        }
+        if (this.hpModalCloseBtn) {
+            this.hpModalCloseBtn.addEventListener('click', () => {
+                this.hideAllModals();
+            });
+        }
+        if (this.hpApplyBtn) {
+            this.hpApplyBtn.addEventListener('click', () => {
+                if (!this.hpDiceString || !this.inputs.hitPoints) return; // Need these elements
+                
+                const diceString = this.hpDiceString.value.trim();
+                if (!diceString) {
+                    this.inputs.hitPoints.value = "";
+                    window.app.updateActiveNPCFromForm();
+                    this.hideAllModals();
+                    return;
                 }
+                
+                const match = diceString.match(/^(?:(\d+d\d+)(?:\s*([+-])\s*(\d+))?|([+-]?\d+))$/);
 
-                this.inputs.hitPoints.value = `${totalHp} (${finalDiceString})`;
-                window.app.updateActiveNPCFromForm();
-                this.hideAllModals();
-            } else if (!isNaN(parseInt(diceString, 10))) {
-                // Fallback for a single number if regex fails
-                this.inputs.hitPoints.value = diceString;
-                window.app.updateActiveNPCFromForm();
-                this.hideAllModals();
-            }
-        });
-        // NEW: Event listener for HP clear button
-        this.hpClearBtn.addEventListener('click', () => {
-            this.hpDiceString.value = '';
-        });
+                if (match) {
+                    let totalHp = 0;
+                    let finalDiceString = "";
 
+                    if (match[1]) { // Dice part exists (e.g., "3d8", "3d8 + 5", "3d8 - 2")
+                        const dicePart = match[1];
+                        const sign = match[2];
+                        const bonus = parseInt(match[3] || '0', 10);
+                        const [numDice, dieType] = dicePart.split('d').map(Number);
+                        // Ensure dieType is valid to prevent NaN issues
+                        if (isNaN(numDice) || isNaN(dieType) || dieType <= 0) {
+                            window.app.showAlert("Invalid dice format in Hit Dice.");
+                            return;
+                        }
+                        const avgRoll = (dieType / 2) + 0.5;
+                        totalHp = Math.floor(numDice * avgRoll);
+                        finalDiceString = `${numDice}d${dieType}`;
+                        
+                        if (sign === '+') {
+                            totalHp += bonus;
+                            if (bonus !== 0) finalDiceString += ` + ${bonus}`;
+                        } else if (sign === '-') {
+                            totalHp -= bonus;
+                            if (bonus !== 0) finalDiceString += ` - ${bonus}`;
+                        }
+                    } else if (match[4]) { // Only a number exists (e.g., "15", "-2")
+                        totalHp = parseInt(match[4], 10);
+                        // Validate if it's just a number
+                        if (isNaN(totalHp)) {
+                             window.app.showAlert("Invalid number format in Hit Dice.");
+                            return;
+                        }
+                        finalDiceString = `${totalHp}`;
+                    }
+
+                    this.inputs.hitPoints.value = `${totalHp} (${finalDiceString})`;
+                    window.app.updateActiveNPCFromForm();
+                    this.hideAllModals();
+                } else {
+                     // Handle cases like "3d8 6" (no sign) - treat space as +
+                     const simpleMatch = diceString.match(/^(\d+d\d+)\s+(\d+)$/);
+                     if(simpleMatch) {
+                        const dicePart = simpleMatch[1];
+                        const bonus = parseInt(simpleMatch[2], 10);
+                        const [numDice, dieType] = dicePart.split('d').map(Number);
+                         // Ensure dieType is valid
+                        if (isNaN(numDice) || isNaN(dieType) || dieType <= 0 || isNaN(bonus)) {
+                            window.app.showAlert("Invalid dice format in Hit Dice.");
+                            return;
+                        }
+                        const avgRoll = (dieType / 2) + 0.5;
+                        let totalHp = Math.floor(numDice * avgRoll) + bonus;
+                        let finalDiceString = `${numDice}d${dieType} + ${bonus}`;
+                        this.inputs.hitPoints.value = `${totalHp} (${finalDiceString})`;
+                        window.app.updateActiveNPCFromForm();
+                        this.hideAllModals();
+                     } else {
+                        window.app.showAlert("Invalid Hit Dice format. Please use 'XdY + Z', 'XdY - Z', 'XdY', or just a number.");
+                     }
+                }
+            });
+        }
+        if (this.hpClearBtn) {
+            this.hpClearBtn.addEventListener('click', () => {
+                if (this.hpDiceString) this.hpDiceString.value = '';
+            });
+        }
+
+        // *** UPDATED *** Listener for footer import button
+        if (this.footerImportTextBtn) {
+            this.footerImportTextBtn.addEventListener('click', () => {
+                if (!this.footerImportTextBtn.disabled) {
+                    window.importer.openImportModal(); // Call importer function
+                }
+            });
+        }
+        // *** NEW *** Listener for footer export FG button
+        if (this.footerExportFgBtn) {
+            this.footerExportFgBtn.addEventListener('click', () => {
+                if (!this.footerExportFgBtn.disabled) {
+                    window.app.exportBestiaryToFG(); // Call placeholder function
+                }
+            });
+        }
+        
+        // --- Spellcasting Listeners (already added above in the inputs loop) ---
+
+        // --- Setup functions called last ---
         this.setupCustomToggles();
         this.setupSavingThrowListeners();
         this.setupSkillListeners();
@@ -399,26 +685,57 @@ window.ui = {
         this.setupTraitListeners();
         this.setupActionListeners();
     },
-    showNewBestiaryModal: function() {
-        window.app.openModal('new-bestiary-modal');
-        this.newBestiaryNameInput.focus();
+
+    // --- Update Innate DC/Bonus Fields ---
+    updateInnateCalculatedFields: function() {
+        if (!window.app.activeNPC || !this.inputs.innateDC || !this.inputs.innateBonus) return;
+        
+        // Calculate based on current NPC data (ensure stats are up-to-date first)
+        window.app.calculateAllStats(); // Recalculate bonuses based on current scores
+        
+        const { dc, bonus } = window.app.calculateInnateDCBonus(
+            window.app.activeNPC.innateAbility,
+            window.app.activeNPC.proficiencyBonus,
+            window.app.activeNPC
+        );
+
+        // Update the input fields directly
+        this.inputs.innateDC.value = dc;
+        this.inputs.innateBonus.value = bonus;
+
+        // Save the newly calculated values back to the NPC object
+        window.app.activeNPC.innateDC = dc;
+        window.app.activeNPC.innateBonus = bonus;
+        window.app.saveActiveBestiaryToDB(); // Save immediately
+        window.viewport.updateViewport(); // Update preview if needed
     },
+
+
+    // ... (rest of functions: show..., hide..., updateMenuState, updateUIForActiveBestiary, etc.) ...
+     showNewBestiaryModal: function() {
+		if (this.newBestiaryModal) {
+			window.app.openModal('new-bestiary-modal');
+			if (this.newBestiaryNameInput) this.newBestiaryNameInput.focus();
+		} else { console.error("Element #new-bestiary-modal not found!")}
+	},
     hideAllModals: function() {
-        this.modalOverlay.classList.add('hidden');
+		if (this.modalOverlay) this.modalOverlay.classList.add('hidden'); else { console.error("Element #modal-overlay not found!")}
         document.querySelectorAll('.modal-content').forEach(modal => {
              modal.classList.add('hidden');
         });
-        // Clear any specific modal states if necessary
-        this.alertOkBtn.onclick = null;
-        this.alertCancelBtn.onclick = null;
-        this.alertCancelBtn.classList.add('hidden');
+		if (this.alertOkBtn) this.alertOkBtn.onclick = null;
+        if (this.alertCancelBtn) {
+			this.alertCancelBtn.onclick = null;
+			this.alertCancelBtn.classList.add('hidden');
+		}
     },
     updateMenuState: function() {
 		const hasActiveBestiary = !!window.app.activeBestiary;
 		const menuItemsToToggle = [
 			this.menuExportBestiary, this.menuNewNpc, this.menuDuplicateNpc, this.menuImportNpc,
-			this.menuExportNpc, this.menuDeleteNpc, this.menuSettings
-		];
+			this.menuImportText, this.menuExportNpc, this.menuDeleteNpc, this.menuSettings,
+            this.menuExportFg 
+		].filter(item => item); // Filter out nulls if init failed
 
 		menuItemsToToggle.forEach(item => {
 			if (hasActiveBestiary) {
@@ -427,125 +744,240 @@ window.ui = {
 				item.classList.add('disabled');
 			}
 		});
+
+		// Also disable/enable footer buttons
+        if (this.footerImportTextBtn) {
+            this.footerImportTextBtn.disabled = !hasActiveBestiary;
+        }
+         if (this.footerExportFgBtn) {
+            this.footerExportFgBtn.disabled = !hasActiveBestiary; 
+        }
 		
-		if (hasActiveBestiary && window.app.activeBestiary.npcs.length <= 1) {
+		if (this.menuDeleteNpc && hasActiveBestiary && window.app.activeBestiary.npcs.length <= 1) {
 			this.menuDeleteNpc.classList.add('disabled');
 		}
 	},
 
 	updateUIForActiveBestiary: function() {
-		if (window.app.activeBestiary) {
-			this.bestiaryStatusEl.innerHTML = `Bestiary: <span class="font-bold text-red-700">${window.app.activeBestiary.projectName} (${window.app.activeBestiary.npcs.length} NPCs)</span>`;
-			this.mainContentColumn.style.opacity = '1';
-			this.mainContentColumn.style.pointerEvents = 'auto';
-			this.npcSelector.classList.remove('hidden');
-			this.deleteNpcBtn.classList.remove('hidden');
-			this.npcOptionsContainer.classList.remove('hidden');
-			[this.newNpcBtn, this.duplicateNpcBtn, this.importNpcBtn, this.exportNpcBtn, this.deleteNpcBtn].forEach(btn => btn.disabled = false);
-		} else {
-			this.bestiaryStatusEl.textContent = "No Bestiary Loaded";
-			this.mainContentColumn.style.opacity = '0.3';
-			this.mainContentColumn.style.pointerEvents = 'none';
-			this.npcSelector.classList.add('hidden');
-			this.deleteNpcBtn.classList.add('hidden');
-			this.npcOptionsContainer.classList.add('hidden');
-			[this.newNpcBtn, this.duplicateNpcBtn, this.importNpcBtn, this.exportNpcBtn, this.deleteNpcBtn].forEach(btn => btn.disabled = true);
-		}
-		this.updateMenuState();
-		this.updateFormFromActiveNPC();
+		const hasActiveBestiary = !!window.app.activeBestiary;
+		
+		if (this.bestiaryStatusEl) {
+			this.bestiaryStatusEl.innerHTML = hasActiveBestiary 
+				? `Bestiary: <span class="font-bold text-red-700">${window.app.activeBestiary.projectName} (${window.app.activeBestiary.npcs.length} NPCs)</span>`
+				: "No Bestiary Loaded";
+		} else { console.error("Element #bestiary-status not found!")}
+		
+		if (this.mainContentColumn) {
+			this.mainContentColumn.style.opacity = hasActiveBestiary ? '1' : '0.3';
+			this.mainContentColumn.style.pointerEvents = hasActiveBestiary ? 'auto' : 'none';
+		} else { console.error("Element #main-content-column not found!")}
+		
+		if (this.npcSelector) this.npcSelector.classList.toggle('hidden', !hasActiveBestiary); else { console.error("Element #npc-selector not found!")}
+		if (this.deleteNpcBtn) this.deleteNpcBtn.classList.toggle('hidden', !hasActiveBestiary); else { console.error("Element #deleteNpcBtn not found!")}
+		if (this.npcOptionsContainer) this.npcOptionsContainer.classList.toggle('hidden', !hasActiveBestiary); else { console.error("Element #npc-options-container not found!")}
+		
+		[this.newNpcBtn, this.duplicateNpcBtn, this.importNpcBtn, this.exportNpcBtn, this.deleteNpcBtn]
+			.filter(btn => btn) // Filter out nulls
+			.forEach(btn => btn.disabled = !hasActiveBestiary);
+			
+		this.updateMenuState(); // Update menu and footer buttons
+		this.updateFormFromActiveNPC(); // Update form content
 	},
 	
 	updateNpcSelector: function() {
-		if (!window.app.activeBestiary) return;
+		if (!window.app.activeBestiary || !this.npcSelector) return;
 		
+		const currentScroll = this.npcSelector.scrollTop; // Preserve scroll position
 		this.npcSelector.innerHTML = '';
 		
 		window.app.activeBestiary.npcs.forEach((npc, index) => {
 			const option = document.createElement('option');
 			option.value = index;
-			option.textContent = npc.name;
+			option.textContent = npc.name || "Unnamed NPC"; // Fallback for name
 			if (index === window.app.activeNPCIndex) {
 				option.selected = true;
 			}
 			this.npcSelector.appendChild(option);
 		});
+		this.npcSelector.scrollTop = currentScroll; // Restore scroll position
 
-		this.deleteNpcBtn.disabled = window.app.activeBestiary.npcs.length <= 1;
+		if (this.deleteNpcBtn) {
+			this.deleteNpcBtn.disabled = window.app.activeBestiary.npcs.length <= 1;
+		}
 	},
     populateLanguageListbox: function(listboxId, languageArray, selectedLanguages) {
 		const listbox = document.getElementById(listboxId);
 		if (!listbox) return;
+		
+		const currentScroll = listbox.scrollTop; // Preserve scroll
 		listbox.innerHTML = '';
-		languageArray.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+		const safeLangArray = Array.isArray(languageArray) ? languageArray : []; // Ensure it's an array
+		safeLangArray.sort((a, b) => (a || '').localeCompare(b || '', undefined, { sensitivity: 'base' }));
 
-		languageArray.forEach(lang => {
+		safeLangArray.forEach(lang => {
+			if (!lang) return; // Skip null/empty languages
 			const option = document.createElement('option');
 			option.value = lang;
 			option.textContent = lang;
 			option.selected = (selectedLanguages || []).includes(lang);
 			listbox.appendChild(option);
 		});
+		listbox.scrollTop = currentScroll; // Restore scroll
 	},
     updateFormFromActiveNPC: function() {
 		window.app.isUpdatingForm = true;
 		try {
+			const trixEditorElement = document.querySelector("trix-editor");
+
 			if (!window.app.activeNPC) {
+				// Clear form if no active NPC
 				Object.values(this.inputs).forEach(input => {
+					if (!input) return;
 					if (input.type === 'checkbox') input.checked = false;
-					else input.value = '';
+					// Don't clear radios here, set default below
+					else if (input.type !== 'radio') input.value = '';
 				});
-				document.querySelector("trix-editor").editor.loadHTML("");
-				this.viewport.innerHTML = '';
-				this.updateNpcSelector();
-				this.npcTraitList.innerHTML = '';
-				this.savedTraitList.innerHTML = '';
-                this.renderActions();
+				// Set default innate spell list values (Adjusted loop to 4)
+                for (let i = 0; i < 4; i++) {
+                    const freqInput = this.inputs[`innate-freq-${i}`];
+                    const listInput = this.inputs[`innate-list-${i}`];
+                    if(freqInput) freqInput.value = window.app.defaultNPC.innateSpells[i]?.freq || '';
+                    if(listInput) listInput.value = ''; // Clear spell lists
+                }
+				if (trixEditorElement && trixEditorElement.editor) trixEditorElement.editor.loadHTML("");
+				if (this.viewport) this.viewport.innerHTML = '';
+				if (this.npcSelector) this.npcSelector.innerHTML = ''; // Clear selector too
+				if (this.npcTraitList) this.npcTraitList.innerHTML = '';
+				if (this.savedTraitList) this.savedTraitList.innerHTML = '';
+                this.renderActions(); // Clear action lists
+				// Clear displays
+				if (this.experienceDisplay) this.experienceDisplay.textContent = '';
+				if (this.proficiencyBonusDisplay) this.proficiencyBonusDisplay.textContent = '';
+				this.updateStatDisplays(); // Clear stat bonuses etc.
+				this.updateTokenDisplay(); // Clear token
+				this.updateImageDisplay(); // Clear image
+				// Clear checkboxes etc.
+				document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+				// Set default radio states specifically
+				document.querySelectorAll('input[name="weapon-resistance"][value="none"]').forEach(rb => rb.checked = true);
+				document.querySelectorAll('input[name="weapon-immunity"][value="none"]').forEach(rb => rb.checked = true);
+				if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = true; // Default radio
+				if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = false;
+				
+				if (this.languageListboxes) this.languageListboxes.forEach(lb => {if (lb) lb.selectedIndex = -1;}); // Deselect languages
+                this.updateSpellcastingVisibility(true); // Hide/clear spellcasting elements
 				return;
 			}
 
+			// --- Populate Form from activeNPC ---
 			for (const key in this.inputs) {
-                if (key.startsWith('common') || key === 'attackDamageDice') continue; // Skip action inputs and attack damage dice input
+				const element = this.inputs[key];
+				if (!element) continue;
+                
+				if (key.startsWith('common') || key === 'attackDamageDice') continue; 
+                // Skip radios, handled specifically later
+                if (element.type === 'radio') continue; 
+                 // Skip innate spell lists/freqs, handled below
+                 if (key.startsWith('innate-freq-') || key.startsWith('innate-list-')) continue; 
 
 				if (key === 'description') {
-					const trixEditorElement = document.querySelector("trix-editor");
-					this.inputs.description.value = window.app.activeNPC[key] || '';
+					element.value = window.app.activeNPC[key] || '';
 					if (trixEditorElement && trixEditorElement.editor) {
-						trixEditorElement.editor.loadHTML(window.app.activeNPC[key] || "");
+						// Prevent feedback loop by checking if content is already the same
+						if (trixEditorElement.editor.getDocument().toString().trim() !== (window.app.activeNPC[key] || '').trim()) {
+							trixEditorElement.editor.loadHTML(window.app.activeNPC[key] || "");
+						}
 					}
 					continue;
 				}
-				const element = this.inputs[key];
+				
 				const customToggle = document.getElementById(`toggle-custom-${key}`);
 				if (customToggle) {
 					const select = element;
 					const customInput = document.getElementById(`npc-${key}-custom`);
+					if (!customInput) continue;
+					
 					const npcValue = window.app.activeNPC[key] || "";
 					const isStandardOption = [...select.options].some(opt => opt.value === npcValue && !opt.disabled);
-					if (isStandardOption || npcValue === "") {
-						select.value = npcValue;
-						customToggle.checked = false;
-						select.classList.remove('hidden');
-						customInput.classList.add('hidden');
-					} else {
+					
+					customToggle.checked = !isStandardOption && npcValue !== "";
+					select.classList.toggle('hidden', customToggle.checked);
+					customInput.classList.toggle('hidden', !customToggle.checked);
+
+					if (customToggle.checked) {
 						customInput.value = npcValue;
-						customToggle.checked = true;
-						select.classList.add('hidden');
-						customInput.classList.remove('hidden');
-						select.value = "";
+						select.value = ""; // Clear select value if custom is used
+					} else {
+						select.value = npcValue;
+						customInput.value = ""; // Clear custom input if standard is used
 					}
 				} else if (element.type === "checkbox") {
-					element.checked = window.app.activeNPC[key] || false;
-				} else {
-					element.value = window.app.activeNPC[key] || "";
+					// Ensure defaults are applied if the property is missing from the NPC object
+					element.checked = window.app.activeNPC[key] ?? window.app.defaultNPC[key] ?? false;
+				} else { // Handle text, number, select-one etc.
+					// Ensure defaults are applied if the property is missing
+					const valueToSet = window.app.activeNPC[key] ?? window.app.defaultNPC[key] ?? "";
+					// Only update if value is different to avoid cursor jumps
+                    // For numbers, compare parsed values
+                     if (element.type === "number") {
+						const currentVal = parseInt(element.value, 10);
+						const newVal = parseInt(valueToSet, 10);
+                        // Check for NaN as well
+                         if (isNaN(currentVal) || isNaN(newVal) || currentVal !== newVal) {
+                             element.value = isNaN(newVal) ? '' : newVal; // Set to empty if default is NaN/invalid
+                         }
+                    } else if (element.value !== valueToSet) {
+                         element.value = valueToSet;
+                    }
 				}
 			}
 
+            // --- Spellcasting fields ---
+			// Checkboxes (use ?? false to ensure unchecked if undefined)
+            if(this.inputs.hasInnateSpellcasting) this.inputs.hasInnateSpellcasting.checked = window.app.activeNPC.hasInnateSpellcasting ?? false;
+            if(this.inputs.innateIsPsionics) this.inputs.innateIsPsionics.checked = window.app.activeNPC.innateIsPsionics ?? false;
+            if(this.inputs.hasSpellcasting) this.inputs.hasSpellcasting.checked = window.app.activeNPC.hasSpellcasting ?? false;
+            
+             // Calculate DC/Bonus before setting values if needed (especially on load or if data is missing)
+             const needsDCBonusCalc = window.app.activeNPC.innateDC === undefined || window.app.activeNPC.innateBonus === undefined;
+             const { dc: calculatedDC, bonus: calculatedBonus } = window.app.calculateInnateDCBonus(
+                window.app.activeNPC.innateAbility ?? window.app.defaultNPC.innateAbility,
+                window.app.activeNPC.proficiencyBonus ?? window.app.defaultNPC.proficiencyBonus,
+                window.app.activeNPC
+            );
+            
+            // Innate Ability, DC, Bonus, Components
+            if(this.inputs.innateAbility) this.inputs.innateAbility.value = window.app.activeNPC.innateAbility ?? window.app.defaultNPC.innateAbility;
+            // Use calculated value ONLY if the NPC doesn't have one set yet
+            if(this.inputs.innateDC) this.inputs.innateDC.value = needsDCBonusCalc ? calculatedDC : (window.app.activeNPC.innateDC ?? calculatedDC); 
+            if(this.inputs.innateBonus) this.inputs.innateBonus.value = needsDCBonusCalc ? calculatedBonus : (window.app.activeNPC.innateBonus ?? calculatedBonus);
+            if(this.inputs.innateComponents) this.inputs.innateComponents.value = window.app.activeNPC.innateComponents ?? window.app.defaultNPC.innateComponents;
+
+            // Innate Spell Lists (Adjusted loop to 4)
+             const innateSpells = window.app.activeNPC.innateSpells || window.app.defaultNPC.innateSpells;
+             for (let i = 0; i < 4; i++) {
+                const freqInput = this.inputs[`innate-freq-${i}`];
+                const listInput = this.inputs[`innate-list-${i}`];
+                // Ensure default structure exists if accessing an index beyond defaultNPC's array
+                const defaultSlot = window.app.defaultNPC.innateSpells[i] || { freq: "", list: "" }; 
+                 if (freqInput) freqInput.value = innateSpells[i]?.freq ?? defaultSlot.freq;
+                 if (listInput) listInput.value = innateSpells[i]?.list ?? defaultSlot.list;
+            }
+
+            // Radio buttons (default to 'traits' if undefined)
+            const spellPlacement = window.app.activeNPC.spellcastingPlacement ?? window.app.defaultNPC.spellcastingPlacement;
+            if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = spellPlacement === 'traits';
+            if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = spellPlacement === 'actions';
+            
+            this.updateSpellcastingVisibility(); // Apply visibility changes AFTER setting checkbox states
+
+			// Language population
 			const selectedLangs = window.app.activeNPC.selectedLanguages || [];
 			this.populateLanguageListbox('language-list-standard', window.app.standardLanguages, selectedLangs);
 			this.populateLanguageListbox('language-list-exotic', window.app.exoticLanguages, selectedLangs);
 			this.populateLanguageListbox('language-list-monstrous1', window.app.monstrousLanguages1, selectedLangs);
 			this.populateLanguageListbox('language-list-monstrous2', window.app.monstrousLanguages2, selectedLangs);
-			this.populateLanguageListbox('language-list-user', window.app.activeBestiary.metadata.userDefinedLanguages || [], selectedLangs);
+			this.populateLanguageListbox('language-list-user', window.app.activeBestiary?.metadata?.userDefinedLanguages || [], selectedLangs);
 			
 			const telepathyCheckbox = document.getElementById('npc-has-telepathy');
 			if (telepathyCheckbox) telepathyCheckbox.checked = window.app.activeNPC.hasTelepathy || false;
@@ -555,41 +987,51 @@ window.ui = {
 			if (specialOptionSelect) specialOptionSelect.value = window.app.activeNPC.specialLanguageOption || 0;
 
 			this.populateSavedTraitsDatalist();
-			this.sortTraitsAlphaCheckbox.checked = window.app.activeNPC.sortTraitsAlpha ?? true;
+			if (this.sortTraitsAlphaCheckbox) this.sortTraitsAlphaCheckbox.checked = window.app.activeNPC.sortTraitsAlpha ?? true;
 			this.renderNpcTraits();
-			this.newTraitName.value = '';
-			this.newTraitDescription.value = '';
+			if (this.newTraitName) this.newTraitName.value = '';
+			if (this.newTraitDescription) this.newTraitDescription.value = '';
 
             this.renderActions();
-            window.app.clearInputs();
-            this.legendaryBoilerplate.textContent = window.app.activeNPC.legendaryBoilerplate || window.app.defaultNPC.legendaryBoilerplate;
-            this.lairBoilerplate.textContent = window.app.activeNPC.lairBoilerplate || window.app.defaultNPC.lairBoilerplate;
-
+            
+            if (this.legendaryBoilerplate) this.legendaryBoilerplate.textContent = window.app.activeNPC.legendaryBoilerplate || window.app.defaultNPC.legendaryBoilerplate;
+            if (this.lairBoilerplate) this.lairBoilerplate.textContent = window.app.activeNPC.lairBoilerplate || window.app.defaultNPC.lairBoilerplate;
 
 			for (const key in this.npcSettingsCheckboxes) {
-				this.npcSettingsCheckboxes[key].checked = window.app.activeNPC[key];
+				const checkbox = this.npcSettingsCheckboxes[key];
+				// Use nullish coalescing to handle undefined properties, default to true matching defaultNPC
+				if (checkbox) checkbox.checked = window.app.activeNPC[key] ?? true;
 			}
 
 			const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 			abilities.forEach(ability => {
-				document.getElementById(`npc-${ability}-saving-throw-prof`).checked = window.app.activeNPC[`${ability}SavingThrowProf`] || false;
-				document.getElementById(`npc-${ability}-saving-throw-adjust`).value = window.app.activeNPC[`${ability}SavingThrowAdjust`] || 0;
+				const profCheckbox = document.getElementById(`npc-${ability}-saving-throw-prof`);
+				const adjustInput = document.getElementById(`npc-${ability}-saving-throw-adjust`);
+				if (profCheckbox) profCheckbox.checked = window.app.activeNPC[`${ability}SavingThrowProf`] || false;
+				if (adjustInput) adjustInput.value = window.app.activeNPC[`${ability}SavingThrowAdjust`] || 0;
 			});
 			
 			window.app.skills.forEach(skill => {
-                document.getElementById(`skill-${skill.id}-prof`).checked = window.app.activeNPC[`skill_${skill.id}_prof`] || false;
-                document.getElementById(`skill-${skill.id}-exp`).checked = window.app.activeNPC[`skill_${skill.id}_exp`] || false;
-                document.getElementById(`skill-${skill.id}-adjust`).value = window.app.activeNPC[`skill_${skill.id}_adjust`] || 0;
+				const profCheckbox = document.getElementById(`skill-${skill.id}-prof`);
+				const expCheckbox = document.getElementById(`skill-${skill.id}-exp`);
+				const adjustInput = document.getElementById(`skill-${skill.id}-adjust`); 
+				if (profCheckbox) profCheckbox.checked = window.app.activeNPC[`skill_${skill.id}_prof`] || false;
+				if (expCheckbox) expCheckbox.checked = window.app.activeNPC[`skill_${skill.id}_exp`] || false;
+				if (adjustInput) adjustInput.value = window.app.activeNPC[`skill_${skill.id}_adjust`] || 0;
             });
 			
 			window.app.damageTypes.forEach(type => {
-				document.getElementById(`vuln-${type}`).checked = window.app.activeNPC[`vulnerability_${type}`] || false;
-				document.getElementById(`res-${type}`).checked = window.app.activeNPC[`resistance_${type}`] || false;
-				document.getElementById(`imm-${type}`).checked = window.app.activeNPC[`immunity_${type}`] || false;
+				const vulnCheckbox = document.getElementById(`vuln-${type}`);
+				const resCheckbox = document.getElementById(`res-${type}`);
+				const immCheckbox = document.getElementById(`imm-${type}`);
+				if (vulnCheckbox) vulnCheckbox.checked = window.app.activeNPC[`vulnerability_${type}`] || false;
+				if (resCheckbox) resCheckbox.checked = window.app.activeNPC[`resistance_${type}`] || false;
+				if (immCheckbox) immCheckbox.checked = window.app.activeNPC[`immunity_${type}`] || false;
 			});
 			
 			window.app.conditions.forEach(condition => {
-				document.getElementById(`ci-${condition}`).checked = window.app.activeNPC[`ci_${condition}`] || false;
+				const ciCheckbox = document.getElementById(`ci-${condition}`);
+				if (ciCheckbox) ciCheckbox.checked = window.app.activeNPC[`ci_${condition}`] || false;
 			});
 
 			const weaponResValue = window.app.activeNPC.weaponResistance || 'none';
@@ -597,7 +1039,8 @@ window.ui = {
 			if (weaponResRadio) {
 				weaponResRadio.checked = true;
 			} else { 
-				document.getElementById('wr-none').checked = true;
+				const wrNone = document.getElementById('wr-none');
+				if (wrNone) wrNone.checked = true;
 			}
 			
 			const weaponImmValue = window.app.activeNPC.weaponImmunity || 'none';
@@ -605,37 +1048,126 @@ window.ui = {
 			if (weaponImmRadio) {
 				weaponImmRadio.checked = true;
 			} else {
-				document.getElementById('wi-none').checked = true;
+				const wiNone = document.getElementById('wi-none');
+				if (wiNone) wiNone.checked = true;
 			}
 
-			const fgGroupDropdown = document.getElementById('fantasy-grounds-group');
-			fgGroupDropdown.innerHTML = '';
-			const bestiaryOption = document.createElement('option');
-			bestiaryOption.value = window.app.activeBestiary.projectName;
-			bestiaryOption.textContent = window.app.activeBestiary.projectName;
-			fgGroupDropdown.appendChild(bestiaryOption);
-			(window.app.activeBestiary.metadata.fg_groups || []).forEach(group => {
-				const groupOption = document.createElement('option');
-				groupOption.value = group;
-				groupOption.textContent = group;
-				fgGroupDropdown.appendChild(groupOption);
-			});
-			fgGroupDropdown.value = window.app.activeNPC.fg_group || window.app.activeBestiary.projectName;
+			const fgGroupDropdown = this.inputs.fg_group;
+			if (fgGroupDropdown && window.app.activeBestiary) {
+				fgGroupDropdown.innerHTML = '';
+				const bestiaryOption = document.createElement('option');
+				bestiaryOption.value = window.app.activeBestiary.projectName;
+				bestiaryOption.textContent = window.app.activeBestiary.projectName;
+				fgGroupDropdown.appendChild(bestiaryOption);
+				(window.app.activeBestiary.metadata.fg_groups || []).forEach(group => {
+					const groupOption = document.createElement('option');
+					groupOption.value = group;
+					groupOption.textContent = group;
+					fgGroupDropdown.appendChild(groupOption);
+				});
+				// Ensure the saved value exists in the dropdown, otherwise default
+				const currentGroup = window.app.activeNPC.fg_group || window.app.activeBestiary.projectName;
+				if ([...fgGroupDropdown.options].some(opt => opt.value === currentGroup)) {
+					fgGroupDropdown.value = currentGroup;
+				} else {
+					fgGroupDropdown.value = window.app.activeBestiary.projectName; // Default to bestiary name if saved group no longer exists
+					window.app.activeNPC.fg_group = window.app.activeBestiary.projectName; // Correct the data
+				}
+			}
 
-			this.experienceDisplay.textContent = window.app.activeNPC.experience || '';
-			this.proficiencyBonusDisplay.textContent = `+${window.app.activeNPC.proficiencyBonus}` || '+2';
+			if (this.experienceDisplay) this.experienceDisplay.textContent = window.app.activeNPC.experience || '';
+			if (this.proficiencyBonusDisplay) this.proficiencyBonusDisplay.textContent = `+${window.app.activeNPC.proficiencyBonus}` || '+2';
+			
 			this.updateTokenDisplay();
 			this.updateImageDisplay();
-			window.app.calculateAllStats();
-			this.updateStatDisplays();
-			window.viewport.updateViewport();
+			window.app.calculateAllStats(); 
+			this.updateStatDisplays(); 
+			window.viewport.updateViewport(); 
 			this.updateNpcSelector();
 		} finally {
 			window.app.isUpdatingForm = false;
 		}
 	},
-    updateStatDisplays: function() {
-		if (!window.app.activeNPC) return;
+    
+    // --- Spellcasting Visibility Function ---
+    updateSpellcastingVisibility: function(isClearing = false) {
+        // Use optional chaining for safer access, especially during clearing
+        const npc = window.app.activeNPC; 
+        
+        // --- Innate Spellcasting ---
+        if (this.innateSpellcastingHeader && this.innateSpellcastingFields && this.innateDivider) {
+             const hasInnate = isClearing ? false : (npc?.hasInnateSpellcasting ?? false);
+             const isPsionics = isClearing ? false : (npc?.innateIsPsionics ?? false);
+
+            // 1. Header Visibility/Color
+            this.innateSpellcastingHeader.classList.toggle('text-gray-400', !hasInnate);
+            this.innateSpellcastingHeader.classList.toggle('text-gray-800', hasInnate); 
+            
+            // 2. Header Text
+            this.innateSpellcastingHeader.textContent = (hasInnate && isPsionics) ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting';
+            
+            // 3. Fields Container Visibility (using hidden class and opacity)
+            this.innateSpellcastingFields.classList.toggle('hidden', !hasInnate);
+             // Ensure transition happens by changing opacity slightly after removing hidden if needed
+             requestAnimationFrame(() => {
+                this.innateSpellcastingFields.style.opacity = hasInnate ? 1 : 0;
+             });
+
+            // 4. Divider Visibility
+            this.innateDivider.classList.toggle('hidden', !hasInnate);
+            
+            // 5. Psionics checkbox state (always sync, visibility handled by parent container)
+             const psionicsCheckbox = this.inputs.innateIsPsionics;
+             if (psionicsCheckbox) {
+                 psionicsCheckbox.checked = isPsionics; 
+             }
+        }
+        
+        // --- Spellcasting ---
+        if (this.spellcastingHeader && this.spellcastingFields && this.spellcastingDivider) {
+            const hasSpellcasting = isClearing ? false : (npc?.hasSpellcasting ?? false);
+
+            // 1. Header Visibility/Color
+            this.spellcastingHeader.classList.toggle('text-gray-400', !hasSpellcasting);
+             this.spellcastingHeader.classList.toggle('text-gray-800', hasSpellcasting); // Match active color
+
+            // 2. Fields Container Visibility
+            this.spellcastingFields.classList.toggle('hidden', !hasSpellcasting);
+            requestAnimationFrame(() => {
+                this.spellcastingFields.style.opacity = hasSpellcasting ? 1 : 0; 
+            });
+            
+            // 3. Divider Visibility
+            this.spellcastingDivider.classList.toggle('hidden', !hasSpellcasting);
+
+            // 4. Radio buttons (keep visually synced) - ONLY if not clearing and npc exists
+            if (!isClearing && npc) { 
+                const spellPlacement = npc.spellcastingPlacement ?? window.app.defaultNPC.spellcastingPlacement; // Default if missing
+                if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = spellPlacement === 'traits';
+                if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = spellPlacement === 'actions';
+            } else { // Handle clearing
+                 if (this.inputs.spellcastingToTraits) this.inputs.spellcastingToTraits.checked = true; // Default to traits when clearing
+                 if (this.inputs.spellcastingToActions) this.inputs.spellcastingToActions.checked = false;
+            }
+        }
+    },
+    
+	updateStatDisplays: function() {
+		if (!window.app.activeNPC) {
+			// Clear displays if no NPC
+			const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+			abilities.forEach(ability => {
+				const bonusEl = document.getElementById(`npc-${ability}-bonus`);
+				if (bonusEl) bonusEl.textContent = '';
+				const totalEl = document.getElementById(`npc-${ability}-saving-throw-total`);
+				if (totalEl) totalEl.textContent = '';
+			});
+			this.updateSkillDisplays(); // Will also clear skill totals
+			const passiveEl = document.getElementById('npc-passive-perception');
+			if (passiveEl) passiveEl.textContent = '';
+			return;
+		};
+		
 		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 		const profBonus = window.app.activeNPC.proficiencyBonus || 2;
 
@@ -651,21 +1183,25 @@ window.ui = {
 			const adjust = window.app.activeNPC[`${ability}SavingThrowAdjust`] || 0;
 			const total = base + (isProficient ? profBonus : 0) + adjust;
 			const totalEl = document.getElementById(`npc-${ability}-saving-throw-total`);
-			totalEl.textContent = total >= 0 ? `+${total}` : total;
+			if (totalEl) totalEl.textContent = total >= 0 ? `+${total}` : total;
 		});
 		
 		this.updateSkillDisplays();
 		
-		document.getElementById('npc-passive-perception').textContent = window.app.activeNPC.passivePerception || 10;
+		const passivePerceptionEl = document.getElementById('npc-passive-perception');
+		if (passivePerceptionEl) passivePerceptionEl.textContent = window.app.activeNPC.passivePerception || 10;
 	},
 	
 	updateSkillDisplays: function() {
-        if (!window.app.activeNPC) return;
-        const profBonus = window.app.activeNPC.proficiencyBonus || 2;
+		const profBonus = window.app.activeNPC?.proficiencyBonus || 2; // Use optional chaining
 
         window.app.skills.forEach(skill => {
             const totalEl = document.getElementById(`skill-${skill.id}-total`);
             if (totalEl) {
+				if (!window.app.activeNPC) {
+					totalEl.textContent = ''; // Clear if no active NPC
+					return;
+				}
                 const baseAbilityBonus = window.app.activeNPC[`${skill.attribute}Bonus`] || 0;
                 const isProf = window.app.activeNPC[`skill_${skill.id}_prof`] || false;
                 const isExp = window.app.activeNPC[`skill_${skill.id}_exp`] || false;
@@ -677,6 +1213,7 @@ window.ui = {
         });
     },
     updateTokenDisplay: function() {
+		if (!this.tokenBox) return;
 		this.tokenBox.innerHTML = '';
 		if (window.app.activeNPC && window.app.activeNPC.token) {
 			const img = document.createElement('img');
@@ -691,6 +1228,7 @@ window.ui = {
 	},
 
 	updateImageDisplay: function() {
+		if (!this.imageBox) return;
 		this.imageBox.innerHTML = '';
 		if (window.app.activeNPC && window.app.activeNPC.image) {
 			const img = document.createElement('img');
@@ -706,12 +1244,17 @@ window.ui = {
 	
 	populateChallengeDropdown: function() {
 		const challengeSelect = this.inputs.challenge;
+		if (!challengeSelect) return;
+		// Clear existing options before repopulating
+		challengeSelect.innerHTML = ''; 
 		window.app.challengeOrder.forEach(cr => {
 			const option = document.createElement('option');
 			option.value = cr;
 			option.textContent = cr;
 			challengeSelect.appendChild(option);
 		});
+		// Set a default if needed, e.g., '0'
+        challengeSelect.value = '0';
 	},
 
 	setupCustomToggles: function() {
@@ -722,16 +1265,16 @@ window.ui = {
 			const customInput = document.getElementById(`npc-${field}-custom`);
 			if (toggle && select && customInput) {
 				toggle.addEventListener('change', () => {
-					if (toggle.checked) {
-						select.classList.add('hidden');
-						customInput.classList.remove('hidden');
-						customInput.value = select.value;
+					const isCustom = toggle.checked;
+					select.classList.toggle('hidden', isCustom);
+					customInput.classList.toggle('hidden', !isCustom);
+					if (isCustom) {
+						customInput.value = select.value; // Copy value on switch
 						customInput.focus();
 					} else {
-						select.classList.remove('hidden');
-						customInput.classList.add('hidden');
+						customInput.value = ''; // Clear custom on switch back
 					}
-					window.app.updateActiveNPCFromForm();
+					window.app.updateActiveNPCFromForm(); // Trigger update
 				});
 				customInput.addEventListener('input', window.app.updateActiveNPCFromForm);
 			}
@@ -741,8 +1284,10 @@ window.ui = {
 	setupSavingThrowListeners: function() {
 		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 		abilities.forEach(ability => {
-			document.getElementById(`npc-${ability}-saving-throw-prof`).addEventListener('input', window.app.updateActiveNPCFromForm);
-			document.getElementById(`npc-${ability}-saving-throw-adjust`).addEventListener('input', window.app.updateActiveNPCFromForm);
+			const profCheckbox = document.getElementById(`npc-${ability}-saving-throw-prof`);
+			const adjustInput = document.getElementById(`npc-${ability}-saving-throw-adjust`);
+			if (profCheckbox) profCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
+			if (adjustInput) adjustInput.addEventListener('input', window.app.updateActiveNPCFromForm);
 		});
 	},
 	
@@ -752,15 +1297,18 @@ window.ui = {
             const expCheckbox = row.querySelector('.skill-exp');
             const adjustInput = row.querySelector('.skill-adjust');
 
-            profCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
-            adjustInput.addEventListener('input', window.app.updateActiveNPCFromForm);
+			if (profCheckbox) profCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
+            if (adjustInput) adjustInput.addEventListener('input', window.app.updateActiveNPCFromForm);
 
-            expCheckbox.addEventListener('input', () => {
-                if (expCheckbox.checked) {
-                    profCheckbox.checked = true;
-                }
-                window.app.updateActiveNPCFromForm();
-            });
+            if (expCheckbox) {
+				expCheckbox.addEventListener('input', () => {
+					// Ensure prof is checked if exp is checked
+					if (expCheckbox.checked && profCheckbox && !profCheckbox.checked) {
+						profCheckbox.checked = true;
+					}
+					window.app.updateActiveNPCFromForm();
+				});
+			}
         });
     },
 	
@@ -770,21 +1318,25 @@ window.ui = {
 			const resCheckbox = document.getElementById(`res-${type}`);
 			const immCheckbox = document.getElementById(`imm-${type}`);
 
-			vulnCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
+			if (vulnCheckbox) vulnCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
 
-			resCheckbox.addEventListener('input', () => {
-				if (resCheckbox.checked) {
-					immCheckbox.checked = false;
-				}
-				window.app.updateActiveNPCFromForm();
-			});
+			if (resCheckbox) {
+				resCheckbox.addEventListener('input', () => {
+					if (resCheckbox.checked && immCheckbox) {
+						immCheckbox.checked = false;
+					}
+					window.app.updateActiveNPCFromForm();
+				});
+			}
 
-			immCheckbox.addEventListener('input', () => {
-				if (immCheckbox.checked) {
-					resCheckbox.checked = false;
-				}
-				window.app.updateActiveNPCFromForm();
-			});
+			if (immCheckbox) {
+				immCheckbox.addEventListener('input', () => {
+					if (immCheckbox.checked && resCheckbox) {
+						resCheckbox.checked = false;
+					}
+					window.app.updateActiveNPCFromForm();
+				});
+			}
 		});
 	},
 
@@ -799,77 +1351,91 @@ window.ui = {
 
 	setupConditionImmunityListeners: function() {
 		window.app.conditions.forEach(condition => {
-			document.getElementById(`ci-${condition}`).addEventListener('input', window.app.updateActiveNPCFromForm);
+			const checkbox = document.getElementById(`ci-${condition}`);
+			if (checkbox) checkbox.addEventListener('input', window.app.updateActiveNPCFromForm);
 		});
 	},
     setupLanguageListeners: function() {
 		this.languageListboxes.forEach(listbox => {
-			listbox.addEventListener('change', window.app.updateActiveNPCFromForm); 
+			if (listbox) listbox.addEventListener('change', window.app.updateActiveNPCFromForm);
 		});
-		document.getElementById('npc-has-telepathy').addEventListener('input', window.app.updateActiveNPCFromForm);
-		document.getElementById('npc-telepathy-range').addEventListener('input', window.app.updateActiveNPCFromForm);
-		document.getElementById('npc-special-language-option').addEventListener('input', window.app.updateActiveNPCFromForm);
+		const telepathyCheckbox = document.getElementById('npc-has-telepathy');
+		const telepathyRangeInput = document.getElementById('npc-telepathy-range');
+		const specialOptionSelect = document.getElementById('npc-special-language-option');
 		
-		this.manageLanguagesBtn.addEventListener('click', this.showManageLanguagesModal.bind(this));
-		this.addLanguageBtn.addEventListener('click', this.addNewLanguage.bind(this));
-		this.newLanguageNameInput.addEventListener('keyup', (e) => {
-			if (e.key === 'Enter') {
-				this.addNewLanguage();
-			}
-		});
+		if (telepathyCheckbox) telepathyCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
+		if (telepathyRangeInput) telepathyRangeInput.addEventListener('input', window.app.updateActiveNPCFromForm);
+		if (specialOptionSelect) specialOptionSelect.addEventListener('input', window.app.updateActiveNPCFromForm);
+		
+		if (this.manageLanguagesBtn) this.manageLanguagesBtn.addEventListener('click', this.showManageLanguagesModal.bind(this));
+		if (this.addLanguageBtn) this.addLanguageBtn.addEventListener('click', this.addNewLanguage.bind(this));
+		if (this.newLanguageNameInput) {
+			this.newLanguageNameInput.addEventListener('keyup', (e) => {
+				if (e.key === 'Enter') {
+					this.addNewLanguage();
+				}
+			});
+		}
 	},
 	setupTraitListeners: function() {
-        this.addTraitBtn.addEventListener('click', this.addOrUpdateNpcTrait.bind(this));
-        this.manageTraitsBtn.addEventListener('click', this.showManageTraitsModal.bind(this));
-        this.addManagedTraitBtn.addEventListener('click', this.addNewSavedTrait.bind(this));
+        if (this.addTraitBtn) this.addTraitBtn.addEventListener('click', this.addOrUpdateNpcTrait.bind(this));
+        if (this.manageTraitsBtn) this.manageTraitsBtn.addEventListener('click', this.showManageTraitsModal.bind(this));
+        if (this.addManagedTraitBtn) this.addManagedTraitBtn.addEventListener('click', this.addNewSavedTrait.bind(this));
 
-		this.sortTraitsAlphaCheckbox.addEventListener('input', () => {
-			if (window.app.activeNPC) {
-				window.app.activeNPC.sortTraitsAlpha = this.sortTraitsAlphaCheckbox.checked;
-				this.renderNpcTraits();
-				window.viewport.updateViewport();
-				window.app.saveActiveBestiaryToDB();
-			}
-		});
-        this.newTraitName.addEventListener('input', (e) => {
-            const traitName = e.target.value;
-            const savedTraits = window.app.activeBestiary?.metadata?.savedTraits || [];
-            const matchedTrait = savedTraits.find(t => t.name === traitName);
-            if (matchedTrait) {
-                this.newTraitDescription.value = matchedTrait.description;
-            }
-        });
+		if (this.sortTraitsAlphaCheckbox) {
+			this.sortTraitsAlphaCheckbox.addEventListener('input', () => {
+				if (window.app.activeNPC) {
+					window.app.activeNPC.sortTraitsAlpha = this.sortTraitsAlphaCheckbox.checked;
+					this.renderNpcTraits();
+					window.viewport.updateViewport();
+					window.app.saveActiveBestiaryToDB();
+				}
+			});
+		}
+        if (this.newTraitName) {
+			this.newTraitName.addEventListener('input', (e) => {
+				const traitName = e.target.value;
+				// Ensure activeBestiary and metadata exist before accessing savedTraits
+				const savedTraits = window.app.activeBestiary?.metadata?.savedTraits || [];
+				const matchedTrait = savedTraits.find(t => t?.name === traitName); // Optional chaining for safety
+				if (matchedTrait && this.newTraitDescription) {
+					this.newTraitDescription.value = matchedTrait.description || ''; // Use fallback
+				}
+			});
+		}
 
-        this.modalTokenButtons.addEventListener('click', (e) => {
-            const button = e.target.closest('button[data-token]');
-            if (!button) return;
-			e.preventDefault();
+        if (this.modalTokenButtons) {
+			this.modalTokenButtons.addEventListener('click', (e) => {
+				const button = e.target.closest('button[data-token]');
+				if (!button) return;
+				e.preventDefault();
 
-            const baseToken = button.dataset.token;
-            let finalToken;
+				const baseToken = button.dataset.token;
+				let finalToken;
 
-            if (e.shiftKey) {
-                finalToken = `{${baseToken.charAt(1).toUpperCase()}${baseToken.slice(2)}`;
-            } else {
-                finalToken = baseToken;
-            }
+				if (e.shiftKey) {
+					finalToken = `{${baseToken.charAt(1).toUpperCase()}${baseToken.slice(2)}`;
+				} else {
+					finalToken = baseToken;
+				}
 
-            const textarea = this.modalTraitDescription;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const text = textarea.value;
+				const textarea = this.modalTraitDescription;
+				if (!textarea) return; 
+				const start = textarea.selectionStart;
+				const end = textarea.selectionEnd;
+				const text = textarea.value;
 
-            textarea.value = text.substring(0, start) + finalToken + text.substring(end);
-            textarea.selectionStart = textarea.selectionEnd = start + finalToken.length;
-            textarea.focus();
-        });
+				textarea.value = text.substring(0, start) + finalToken + text.substring(end);
+				textarea.selectionStart = textarea.selectionEnd = start + finalToken.length;
+				textarea.focus();
+			});
+		}
     },
     setupActionListeners: function() {
-        this.clearEditBtn.addEventListener('click', window.app.clearInputs);
-        this.legendaryBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.legendaryBoilerplate));
-        this.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.lairBoilerplate));
-        // MODIFIED: Call the new handler function in main.js
-        this.inputs.commonDesc.addEventListener('dblclick', () => window.app.handleAttackHelperOpen());
+        if (this.clearEditBtn) this.clearEditBtn.addEventListener('click', window.app.clearInputs);
+        if (this.legendaryBoilerplate) this.legendaryBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.legendaryBoilerplate));
+        if (this.lairBoilerplate) this.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(this.lairBoilerplate));
+        if (this.inputs.commonDesc) this.inputs.commonDesc.addEventListener('dblclick', () => window.app.handleAttackHelperOpen());
         
         document.querySelectorAll('button[data-action-type]').forEach(button => {
             button.addEventListener('click', () => {
@@ -877,28 +1443,38 @@ window.ui = {
             });
         });
 
-        const attackHelperModal = document.getElementById('attack-helper-modal');
+        const attackHelperModal = document.getElementById('attack-helper-modal'); 
         if (attackHelperModal) {
-            attackHelperModal.querySelector('button.btn-primary').addEventListener('click', window.app.generateAttackString);
-            attackHelperModal.querySelector('button.hover\\:bg-gray-100[title*="Close"]').addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
-            attackHelperModal.querySelector('button[title*="Add another damage component"]').addEventListener('click', window.app.addDamageRow);
-             // NEW: Event listener for attack damage clear button
-            this.attackDamageDiceClearBtn.addEventListener('click', () => {
-                 this.inputs.attackDamageDice.value = '';
-            });
+            const primaryBtn = attackHelperModal.querySelector('button.btn-primary');
+            // *** REFINED SELECTOR *** Use :not(.btn-xs) to distinguish the main Cancel button
+            const cancelBtn = attackHelperModal.querySelector('button.btn-secondary:not(.btn-xs)'); 
+            const addDamageBtn = attackHelperModal.querySelector('button.btn-secondary.btn-xs'); 
+			if (primaryBtn) primaryBtn.addEventListener('click', window.app.generateAttackString);
+            if (cancelBtn) cancelBtn.addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
+            if (addDamageBtn) addDamageBtn.addEventListener('click', window.app.addDamageRow);
+            if (this.attackDamageDiceClearBtn) {
+				this.attackDamageDiceClearBtn.addEventListener('click', () => {
+					 if (this.inputs.attackDamageDice) this.inputs.attackDamageDice.value = '';
+				});
+			}
         }
 
         const boilerplateModal = document.getElementById('boilerplate-modal');
         if(boilerplateModal) {
-             boilerplateModal.querySelector('button.btn-primary').addEventListener('click', window.app.saveBoilerplate);
-             boilerplateModal.querySelector('button.hover\\:bg-gray-100').addEventListener('click', () => window.app.closeModal('boilerplate-modal'));
+             const primaryBtn = boilerplateModal.querySelector('button.btn-primary');
+             const cancelBtn = boilerplateModal.querySelector('button.btn-secondary'); 
+             if (primaryBtn) primaryBtn.addEventListener('click', window.app.saveBoilerplate);
+             if (cancelBtn) cancelBtn.addEventListener('click', () => window.app.closeModal('boilerplate-modal'));
         }
 
-        // Alert/Confirm button listeners are now set dynamically in showDialog
-
-        window.app.createDiceSelector(document.getElementById('primary-dice-selector'), document.getElementById('attack-damage-dice'));
+        const primaryDiceSelector = document.getElementById('primary-dice-selector');
+        const attackDamageDiceInput = document.getElementById('attack-damage-dice');
+        if (primaryDiceSelector && attackDamageDiceInput) {
+			window.app.createDiceSelector(primaryDiceSelector, attackDamageDiceInput);
+		}
     },
     setupDragAndDrop: function(box, validTypes, npcKey, updateFn) {
+		if (!box) return; 
 		["dragenter","dragover","dragleave","drop"].forEach(eventName => {
 			box.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); });
 		});
@@ -910,7 +1486,7 @@ window.ui = {
 		});
 		box.addEventListener("drop", e => {
 			if (!window.app.activeNPC) return;
-			const file = e.dataTransfer.files && e.dataTransfer.files[0];
+			const file = e.dataTransfer?.files?.[0]; // Use optional chaining
 			if (file && validTypes.includes(file.type)) {
 				const reader = new FileReader();
 				reader.onload = ev => {
@@ -919,43 +1495,72 @@ window.ui = {
 					window.app.saveActiveBestiaryToDB();
 				};
 				reader.readAsDataURL(file);
-			} else {
-				console.warn("Invalid file type dropped.");
+			} else if (file) { // Only warn if a file was dropped but type was invalid
+				console.warn("Invalid file type dropped:", file.type);
+				window.app.showAlert(`Invalid file type. Please drop one of: ${validTypes.join(', ')}`);
 			}
 		});
 	},
     showLoadBestiaryModal: async function() {
-		const bestiaries = await window.app.db.projects.toArray();
-		this.bestiaryListDiv.innerHTML = '';
+		if (!this.loadBestiaryModal || !this.bestiaryListDiv) return; 
+		
+		let bestiaries = [];
+		try {
+			bestiaries = await window.app.db.projects.toArray();
+		} catch (error) {
+			console.error("Failed to load bestiaries from database:", error);
+			window.app.showAlert("Error loading bestiary list. Check console.");
+			return; // Stop execution if DB fails
+		}
+
+		this.bestiaryListDiv.innerHTML = ''; // Clear previous list
+
 		if (bestiaries.length === 0) {
-			this.bestiaryListDiv.innerHTML = '<p class="text-gray-500">No bestiaries found.</p>';
+			this.bestiaryListDiv.innerHTML = '<p class="text-gray-500 text-center">No bestiaries found.</p>';
 		} else {
+			// Sort bestiaries alphabetically by name, case-insensitive
+			bestiaries.sort((a, b) => (a.projectName || '').localeCompare(b.projectName || '', undefined, { sensitivity: 'base' }));
+
 			bestiaries.forEach(proj => {
 				const projEl = document.createElement('div');
 				projEl.className = 'flex justify-between items-center py-1 px-2 border rounded-md hover:bg-gray-100';
 
 				const nameSpan = document.createElement('span');
-				nameSpan.textContent = proj.projectName;
-				nameSpan.className = 'cursor-pointer flex-grow';
+				nameSpan.textContent = proj.projectName || 'Unnamed Bestiary'; // Fallback name
+				nameSpan.className = 'cursor-pointer flex-grow mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap'; // Prevent overflow
+				nameSpan.title = proj.projectName || 'Unnamed Bestiary'; // Add title for full name on hover
 				nameSpan.onclick = () => {
 					window.app.loadBestiary(proj);
 					this.hideAllModals();
 				};
 
 				const deleteBtn = document.createElement('button');
-				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700"><use href="#icon-trash"></use></svg>`;
+				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700 flex-shrink-0"><use href="#icon-trash"></use></svg>`; // Added flex-shrink-0
 				deleteBtn.className = 'p-1';
-				deleteBtn.title = `Delete ${proj.projectName}`;
+				deleteBtn.title = `Delete ${proj.projectName || 'Unnamed Bestiary'}`;
 				deleteBtn.onclick = async (e) => {
 					e.stopPropagation();
-					await window.app.db.projects.delete(proj.id);
-					if(window.app.activeBestiary && window.app.activeBestiary.id === proj.id) {
-						window.app.activeBestiary = null;
-						window.app.activeNPC = null;
-						window.app.activeNPCIndex = -1;
-						this.updateUIForActiveBestiary();
-					}
-					this.showLoadBestiaryModal();
+					// Confirmation before deleting
+					window.app.showConfirm(
+						"Delete Bestiary?",
+						`Are you sure you want to permanently delete the bestiary "${proj.projectName || 'Unnamed Bestiary'}"? This cannot be undone.`,
+						async () => { // onConfirm action
+							try {
+								await window.app.db.projects.delete(proj.id);
+								// If the deleted bestiary was the active one, clear the app state
+								if(window.app.activeBestiary && window.app.activeBestiary.id === proj.id) {
+									window.app.activeBestiary = null;
+									window.app.activeNPC = null;
+									window.app.activeNPCIndex = -1;
+									this.updateUIForActiveBestiary(); // Update UI to reflect no active bestiary
+								}
+								this.showLoadBestiaryModal(); // Re-render the modal list
+							} catch (deleteError) {
+								console.error("Failed to delete bestiary:", deleteError);
+								window.app.showAlert("Error deleting bestiary. Check console.");
+							}
+						}
+					);
 				};
 				
 				projEl.appendChild(nameSpan);
@@ -967,27 +1572,34 @@ window.ui = {
 	},
 	
 	showManageGroupsModal: async function() {
-		if (!window.app.activeBestiary) return;
+		if (!window.app.activeBestiary || !this.manageGroupsModal || !this.groupListDiv) return;
+		
 		this.groupListDiv.innerHTML = '';
-
 		const groups = window.app.activeBestiary.metadata.fg_groups || [];
+		
 		if (groups.length === 0) {
 			this.groupListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom groups created.</p>';
 		} else {
+			// Sort groups alphabetically
+			groups.sort((a, b) => (a || '').localeCompare(b || '', undefined, { sensitivity: 'base' }));
+
 			groups.forEach(groupName => {
+				if (!groupName) return; // Skip empty names
 				const groupEl = document.createElement('div');
 				groupEl.className = 'flex justify-between items-center py-0.5 px-2 border rounded-md hover:bg-gray-100';
 				
 				const nameSpan = document.createElement('span');
 				nameSpan.textContent = groupName;
-				
+				nameSpan.className = 'mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap'; // Prevent overflow
+                nameSpan.title = groupName; // Show full name on hover
+
 				const deleteBtn = document.createElement('button');
-				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700"><use href="#icon-trash"></use></svg>`;
+				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700 flex-shrink-0"><use href="#icon-trash"></use></svg>`; // Added flex-shrink-0
 				deleteBtn.className = 'p-1 delete-group-btn';
 				deleteBtn.title = `Delete group: ${groupName}`;
 				deleteBtn.onclick = (e) => {
 					e.stopPropagation();
-					this.deleteGroup(groupName);
+					this.deleteGroup(groupName); // Call delete function
 				};
 
 				groupEl.appendChild(nameSpan);
@@ -999,55 +1611,69 @@ window.ui = {
 	},
 
 	showSettingsModal: function() {
-		if (!window.app.activeBestiary) return;
+		if (!window.app.activeBestiary || !this.settingsModal) return;
 
 		for (const key in this.bestiarySettingsCheckboxes) {
-			this.bestiarySettingsCheckboxes[key].checked = window.app.activeBestiary.metadata[key];
+			const checkbox = this.bestiarySettingsCheckboxes[key];
+			// Use ?? true to default to checked if metadata property is missing
+			if (checkbox) checkbox.checked = window.app.activeBestiary.metadata[key] ?? true; 
 		}
 
 		window.app.openModal('settings-modal');
 	},
 
 	deleteGroup: function(groupName) {
-		if (!window.app.activeBestiary || !window.app.activeBestiary.metadata.fg_groups) return;
+		if (!window.app.activeBestiary || !window.app.activeBestiary.metadata.fg_groups || !groupName) return;
 		
-		window.app.activeBestiary.metadata.fg_groups = window.app.activeBestiary.metadata.fg_groups.filter(g => g !== groupName);
-		
-		window.app.activeBestiary.npcs.forEach(npc => {
-			if (npc.fg_group === groupName) {
-				npc.fg_group = window.app.activeBestiary.projectName;
-			}
-		});
+		// Confirmation before deleting
+        window.app.showConfirm(
+            "Delete Group?",
+            `Are you sure you want to delete the group "${groupName}"? NPCs currently in this group will be moved to the default bestiary group.`,
+            () => { // onConfirm action
+                window.app.activeBestiary.metadata.fg_groups = window.app.activeBestiary.metadata.fg_groups.filter(g => g !== groupName);
+                
+                window.app.activeBestiary.npcs.forEach(npc => {
+                    if (npc.fg_group === groupName) {
+                        npc.fg_group = window.app.activeBestiary.projectName; // Reassign to default
+                    }
+                });
 
-		window.app.saveActiveBestiaryToDB();
-		this.showManageGroupsModal();
-		this.updateFormFromActiveNPC();
+                window.app.saveActiveBestiaryToDB();
+                this.showManageGroupsModal(); // Re-render group list
+                this.updateFormFromActiveNPC(); // Update main form dropdown if necessary
+            }
+        );
 	},
 
 	addNewGroup: function() {
+		if (!this.newGroupNameInput || !window.app.activeBestiary) return; 
 		const newName = this.newGroupNameInput.value.trim();
-		if (!newName) return;
+		if (!newName) {
+			window.app.showAlert("Group name cannot be empty.");
+			return;
+		}
 
 		if (!window.app.activeBestiary.metadata.fg_groups) {
 			window.app.activeBestiary.metadata.fg_groups = [];
 		}
 		
-		const isDuplicate = newName.toLowerCase() === window.app.activeBestiary.projectName.toLowerCase() || window.app.activeBestiary.metadata.fg_groups.some(g => g.toLowerCase() === newName.toLowerCase());
+		const isDuplicate = newName.toLowerCase() === window.app.activeBestiary.projectName.toLowerCase() || 
+							window.app.activeBestiary.metadata.fg_groups.some(g => g?.toLowerCase() === newName.toLowerCase()); // Added optional chaining
 
 		if (isDuplicate) {
-			alert(`A group named "${newName}" already exists.`);
+			window.app.showAlert(`A group named "${newName}" already exists (either as the default or a custom group).`);
 			return;
 		}
 
 		window.app.activeBestiary.metadata.fg_groups.push(newName);
 		window.app.saveActiveBestiaryToDB();
 		this.newGroupNameInput.value = '';
-		this.showManageGroupsModal();
-		this.updateFormFromActiveNPC();
+		this.showManageGroupsModal(); 
+		this.updateFormFromActiveNPC(); 
 	},
 	
 	showManageLanguagesModal: function() {
-		if (!window.app.activeBestiary) return;
+		if (!window.app.activeBestiary || !this.manageLanguagesModal || !this.languageListDiv) return; 
 		
 		this.languageListDiv.innerHTML = '';
 		const userLangs = window.app.activeBestiary.metadata.userDefinedLanguages || [];
@@ -1055,22 +1681,25 @@ window.ui = {
 		if (userLangs.length === 0) {
 			this.languageListDiv.innerHTML = '<p class="text-gray-500 text-center">No custom languages created.</p>';
 		} else {
-			userLangs.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+			userLangs.sort((a, b) => (a || '').localeCompare(b || '', undefined, { sensitivity: 'base' }));
 
 			userLangs.forEach(langName => {
+				if (!langName) return; // Skip empty names
 				const langEl = document.createElement('div');
 				langEl.className = 'flex justify-between items-center py-0.5 px-2 border rounded-md hover:bg-gray-100';
 				
 				const nameSpan = document.createElement('span');
 				nameSpan.textContent = langName;
-				
+				nameSpan.className = 'mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap'; // Prevent overflow
+                nameSpan.title = langName; // Show full name on hover
+
 				const deleteBtn = document.createElement('button');
-				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700"><use href="#icon-trash"></use></svg>`;
+				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700 flex-shrink-0"><use href="#icon-trash"></use></svg>`; // Added flex-shrink-0
 				deleteBtn.className = 'p-1 delete-language-btn';
 				deleteBtn.title = `Delete language: ${langName}`;
 				deleteBtn.onclick = (e) => {
 					e.stopPropagation();
-					this.deleteLanguage(langName);
+					this.deleteLanguage(langName); // Call delete function
 				};
 
 				langEl.appendChild(nameSpan);
@@ -1079,242 +1708,412 @@ window.ui = {
 			});
 		}
 		window.app.openModal('manage-languages-modal');
-		this.newLanguageNameInput.focus();
+		if (this.newLanguageNameInput) this.newLanguageNameInput.focus();
 	},
 	
 	addNewLanguage: function() {
-		if (!window.app.activeBestiary) return;
+		if (!window.app.activeBestiary || !this.newLanguageNameInput) return;
 		const newName = this.newLanguageNameInput.value.trim();
-		if (!newName) return;
+		if (!newName) {
+			window.app.showAlert("Language name cannot be empty.");
+			return;
+		}
 		
 		const lowerNewName = newName.toLowerCase();
-
 		const isPredefined = window.app.allPredefinedLanguages.includes(lowerNewName);
 		
-		const userLangs = window.app.activeBestiary.metadata.userDefinedLanguages || [];
-		const isUserDefined = userLangs.map(l => l.toLowerCase()).includes(lowerNewName);
+		// Ensure userDefinedLanguages exists
+		if (!window.app.activeBestiary.metadata.userDefinedLanguages) {
+			window.app.activeBestiary.metadata.userDefinedLanguages = [];
+		}
+		const userLangs = window.app.activeBestiary.metadata.userDefinedLanguages;
+		const isUserDefined = userLangs.some(l => l?.toLowerCase() === lowerNewName); // Added optional chaining
 
 		if (isPredefined || isUserDefined) {
-			alert(`A language named "${newName}" already exists (either predefined or user-defined).`);
+			window.app.showAlert(`A language named "${newName}" already exists (either predefined or user-defined).`);
 			return;
 		}
 
 		window.app.activeBestiary.metadata.userDefinedLanguages.push(newName);
 		window.app.saveActiveBestiaryToDB();
 		this.newLanguageNameInput.value = '';
-		this.showManageLanguagesModal();
-		this.updateFormFromActiveNPC();
-	},
-	
-	deleteLanguage: function(langName) {
-		if (!window.app.activeBestiary) return;
-		
-		window.app.activeBestiary.metadata.userDefinedLanguages = (window.app.activeBestiary.metadata.userDefinedLanguages || []).filter(l => l !== langName);
-		
-		window.app.activeBestiary.npcs.forEach(npc => {
-			if (npc.selectedLanguages) {
-				npc.selectedLanguages = npc.selectedLanguages.filter(l => l !== langName);
-			}
-		});
-
-		window.app.saveActiveBestiaryToDB();
 		this.showManageLanguagesModal(); 
 		this.updateFormFromActiveNPC(); 
 	},
+	
+	deleteLanguage: function(langName) {
+		if (!window.app.activeBestiary || !langName) return; 
+		
+        // Confirmation before deleting
+        window.app.showConfirm(
+            "Delete Language?",
+            `Are you sure you want to delete the custom language "${langName}"? NPCs who know this language will lose it.`,
+            () => { // onConfirm action
+                // Ensure userDefinedLanguages exists before filtering
+                if (window.app.activeBestiary.metadata.userDefinedLanguages) {
+                    window.app.activeBestiary.metadata.userDefinedLanguages = window.app.activeBestiary.metadata.userDefinedLanguages.filter(l => l !== langName);
+                }
+                
+                window.app.activeBestiary.npcs.forEach(npc => {
+                    if (npc.selectedLanguages) {
+                        npc.selectedLanguages = npc.selectedLanguages.filter(l => l !== langName);
+                    }
+                });
+
+                window.app.saveActiveBestiaryToDB();
+                this.showManageLanguagesModal(); 
+                this.updateFormFromActiveNPC(); 
+            }
+        );
+	},
 
 	addOrUpdateNpcTrait: function() {
-		if (!window.app.activeNPC) return;
+		if (!window.app.activeNPC || !this.newTraitName || !this.newTraitDescription) return;
 		const name = this.newTraitName.value.trim();
 		const description = this.newTraitDescription.value.trim();
-		if (!name || !description) return;
+		if (!name) { 
+			window.app.showAlert("Trait name cannot be empty.");
+			return; 
+		}
+		if (!description) { 
+			window.app.showAlert("Trait description cannot be empty.");
+			return; 
+		}
 
-		const existingTraitIndex = window.app.activeNPC.traits.findIndex(trait => trait.name.toLowerCase() === name.toLowerCase());
+		// Ensure traits array exists
+        if (!window.app.activeNPC.traits) {
+            window.app.activeNPC.traits = [];
+        }
+
+		const existingTraitIndex = window.app.activeNPC.traits.findIndex(trait => trait?.name?.toLowerCase() === name.toLowerCase()); // Added optional chaining
 
 		if (existingTraitIndex > -1) {
+			// Update existing trait
 			window.app.activeNPC.traits[existingTraitIndex].description = description;
 		} else {
+			// Add new trait
 			window.app.activeNPC.traits.push({ name, description });
 		}
 		
+		// Clear inputs after adding/updating
 		this.newTraitName.value = '';
 		this.newTraitDescription.value = '';
 		
-		this.renderNpcTraits();
+		this.renderNpcTraits(); // Re-render the list (which will sort if needed)
 		window.viewport.updateViewport();
 		window.app.saveActiveBestiaryToDB();
 	},
 
 	renderNpcTraits: function() {
-		this.npcTraitList.innerHTML = '';
-		if (!window.app.activeNPC || !window.app.activeNPC.traits) return;
+		if (!this.npcTraitList) return; 
+		this.npcTraitList.innerHTML = ''; // Clear current list
+		if (!window.app.activeNPC || !Array.isArray(window.app.activeNPC.traits)) return; // Ensure traits is an array
 
-		let draggedIndex = -1;
+		let draggedElement = null; // Track the element being dragged
+
 		const shouldSort = window.app.activeNPC.sortTraitsAlpha ?? true;
-		let traitsToRender = [...window.app.activeNPC.traits];
+		// Create a copy with original indices for stable sorting/deletion if not sorting alphabetically
+        let traitsToRender = window.app.activeNPC.traits.map((trait, index) => ({ ...trait, originalIndex: index }));
 
 		if (shouldSort) {
-			traitsToRender.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+			traitsToRender.sort((a, b) => (a?.name || '').localeCompare(b?.name || '', undefined, { sensitivity: 'base' }));
 		}
 
-		traitsToRender.forEach((trait) => {
-			const originalIndex = window.app.activeNPC.traits.indexOf(trait);
+		traitsToRender.forEach((traitData) => {
+			if (!traitData) return; // Skip if null/undefined
 
 			const traitEl = document.createElement('div');
-			traitEl.className = 'p-2 border rounded-md bg-gray-50 hover:bg-gray-100 flex justify-between items-start';
-			traitEl.dataset.index = originalIndex;
+			traitEl.className = 'p-2 border rounded-md bg-gray-50 hover:bg-gray-100 flex justify-between items-start group'; // Added group for hover effect on button
+			traitEl.dataset.originalIndex = traitData.originalIndex; // Always store original index
 
 			const contentEl = document.createElement('div');
-			const processedDescription = window.app.processTraitString(trait.description, window.app.activeNPC);
-			contentEl.innerHTML = `<strong class="text-sm">${trait.name}</strong><p class="text-xs text-gray-600">${processedDescription}</p>`;
+            contentEl.className = 'flex-grow mr-2 overflow-hidden'; // Prevent button overlap
+			const processedDescription = window.app.processTraitString(traitData.description || '', window.app.activeNPC);
+			// Truncate description preview if it's too long
+			const previewDesc = processedDescription.length > 150 ? processedDescription.substring(0, 150) + '...' : processedDescription;
+			contentEl.innerHTML = `<strong class="text-sm block overflow-hidden overflow-ellipsis whitespace-nowrap">${traitData.name || 'Unnamed Trait'}</strong><p class="text-xs text-gray-600">${previewDesc}</p>`;
+            contentEl.title = `${traitData.name || 'Unnamed Trait'}\n${traitData.description || ''}`; // Show full text on hover
 			
-			const deleteBtn = document.createElement('button');
+			const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'flex-shrink-0 flex items-center'; // Container for buttons
+
+            const deleteBtn = document.createElement('button');
 			deleteBtn.innerHTML = `&times;`;
-			deleteBtn.className = 'ml-2 text-red-500 hover:text-red-700 font-bold text-lg leading-none';
-			deleteBtn.title = `Delete ${trait.name}`;
+			// Make delete less prominent until hover
+            deleteBtn.className = 'ml-1 text-gray-400 hover:text-red-700 font-bold text-lg leading-none opacity-0 group-hover:opacity-100 transition-opacity'; 
+			deleteBtn.title = `Delete ${traitData.name || 'Unnamed Trait'}`;
 			
 			deleteBtn.onclick = (e) => {
-				e.stopPropagation();
-				window.app.activeNPC.traits.splice(originalIndex, 1);
-				this.renderNpcTraits();
-				window.viewport.updateViewport();
-				window.app.saveActiveBestiaryToDB();
+				e.stopPropagation(); // Prevent trait from being loaded into editor
+                window.app.showConfirm( // Add confirmation
+                    "Delete Trait?",
+                    `Are you sure you want to delete the trait "${traitData.name || 'Unnamed Trait'}" from this NPC?`,
+                    () => { // onConfirm
+                        const indexToDelete = parseInt(traitEl.dataset.originalIndex, 10);
+                        if (!isNaN(indexToDelete) && indexToDelete >= 0 && indexToDelete < window.app.activeNPC.traits.length) {
+                            window.app.activeNPC.traits.splice(indexToDelete, 1);
+                            this.renderNpcTraits(); // Re-render the list
+                            window.viewport.updateViewport();
+                            window.app.saveActiveBestiaryToDB();
+                        } else {
+                            console.error("Error finding trait index for deletion.");
+                            window.app.showAlert("Error deleting trait.");
+                        }
+                    }
+                );
 			};
 
-			traitEl.onclick = () => {
-				this.newTraitName.value = trait.name;
-				this.newTraitDescription.value = trait.description;
-			};
-			
-			if (shouldSort) {
-				traitEl.draggable = false;
-			} else {
-				traitEl.draggable = true;
-				traitEl.classList.add('cursor-pointer');
+            // Only make draggable and add drag handle if not sorting
+            if (!shouldSort) {
+                traitEl.draggable = true;
+                traitEl.classList.add('cursor-grab'); // Indicate draggability
+
+                const dragHandle = document.createElement('span');
+                dragHandle.innerHTML = '&#x2630;'; // Hamburger icon as handle
+                dragHandle.className = 'cursor-grab text-gray-400 mr-2 opacity-0 group-hover:opacity-100 transition-opacity';
+                dragHandle.title = "Drag to reorder";
+                
+                buttonContainer.insertBefore(dragHandle, deleteBtn); // Add handle before delete button
 
 				traitEl.addEventListener('dragstart', (e) => {
-					draggedIndex = originalIndex;
+					// Only allow dragging by the handle
+                    if (!dragHandle.contains(e.target)) {
+                         e.preventDefault();
+                         return;
+                    }
+                    draggedElement = traitEl; // Store the element being dragged
 					e.dataTransfer.effectAllowed = 'move';
-					setTimeout(() => traitEl.classList.add('opacity-50'), 0);
+                    e.dataTransfer.setData('text/plain', traitData.originalIndex); // Set data for drop target
+					setTimeout(() => traitEl.classList.add('opacity-50', 'bg-blue-100'), 0); // Visual feedback
 				});
 
 				traitEl.addEventListener('dragend', () => {
-					traitEl.classList.remove('opacity-50');
-					document.querySelectorAll('#npc-trait-list .drop-indicator-top, #npc-trait-list .drop-indicator-bottom').forEach(el => {
+					if (draggedElement) {
+						draggedElement.classList.remove('opacity-50', 'bg-blue-100');
+					}
+                    draggedElement = null;
+					// Clear all indicators on drag end
+                    document.querySelectorAll('#npc-trait-list .drop-indicator-top, #npc-trait-list .drop-indicator-bottom').forEach(el => {
 						el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
 					});
 				});
 
 				traitEl.addEventListener('dragover', (e) => {
-					e.preventDefault();
-					document.querySelectorAll('#npc-trait-list > div').forEach(el => {
+					e.preventDefault(); // Necessary to allow dropping
+                    if (!draggedElement || draggedElement === traitEl) return; // Don't indicate on self
+
+                    // Clear previous indicators
+                    document.querySelectorAll('#npc-trait-list > div').forEach(el => {
 						if (el !== traitEl) el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
 					});
-					const rect = traitEl.getBoundingClientRect();
-					if (e.clientY < rect.top + rect.height / 2) {
-						traitEl.classList.add('drop-indicator-top');
-						traitEl.classList.remove('drop-indicator-bottom');
-					} else {
-						traitEl.classList.add('drop-indicator-bottom');
-						traitEl.classList.remove('drop-indicator-top');
-					}
+
+					// Determine if dropping above or below
+                    const rect = traitEl.getBoundingClientRect();
+					const isAbove = e.clientY < rect.top + rect.height / 2;
+					
+                    traitEl.classList.toggle('drop-indicator-top', isAbove);
+                    traitEl.classList.toggle('drop-indicator-bottom', !isAbove);
+                    e.dataTransfer.dropEffect = "move";
 				});
+
+                traitEl.addEventListener('dragleave', (e) => {
+                    // Only remove indicator if leaving the element entirely, not just moving within it
+                    if (!traitEl.contains(e.relatedTarget)) {
+                        traitEl.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+                    }
+                });
 
 				traitEl.addEventListener('drop', (e) => {
 					e.preventDefault();
-					const droppedOnOriginalIndex = parseInt(e.currentTarget.dataset.index, 10);
-					if (draggedIndex === droppedOnOriginalIndex) return;
+                    if (!draggedElement || draggedElement === traitEl) return; // Can't drop on self
 
-					const dropAbove = e.currentTarget.classList.contains('drop-indicator-top');
-					document.querySelectorAll('#npc-trait-list > div').forEach(el => {
-						el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
-					});
+                    const draggedOriginalIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+					const droppedOnOriginalIndex = parseInt(traitEl.dataset.originalIndex, 10);
+                    
+                    // Find the actual current indices in the array based on originalIndex
+                    const currentDraggedIndex = window.app.activeNPC.traits.findIndex(t => t === window.app.activeNPC.traits[draggedOriginalIndex]);
+                     // Need to find the index of the item we dropped onto *after* splicing the dragged item
+                    let currentDroppedOnIndex = window.app.activeNPC.traits.findIndex(t => t === window.app.activeNPC.traits.find(item => item.name === traitData.name && item.description === traitData.description)); // Find by content might be more robust?
+                    // Fallback index logic if content finding fails
+                    if (currentDroppedOnIndex === -1) currentDroppedOnIndex = currentDraggedIndex < droppedOnOriginalIndex ? droppedOnOriginalIndex -1 : droppedOnOriginalIndex;
+
+
+                    if (currentDraggedIndex === -1 || currentDroppedOnIndex === -1) {
+                         console.error("Drag/Drop index error");
+                         traitEl.classList.remove('drop-indicator-top', 'drop-indicator-bottom'); // Clean up indicator
+                         return;
+                    }
+
+					const isDroppingAbove = traitEl.classList.contains('drop-indicator-top');
+                    traitEl.classList.remove('drop-indicator-top', 'drop-indicator-bottom'); // Clean up indicator
+
+					// Perform the move
+					const [movedItem] = window.app.activeNPC.traits.splice(currentDraggedIndex, 1);
+                    
+                     // Adjust insertion index based on original position and drop position
+                    let insertionIndex = currentDroppedOnIndex; // Start with the index of the target
+                    
+                    // If dropping below the target, increment the index
+                    if (!isDroppingAbove) {
+                        insertionIndex++;
+                    }
+                     // If moving an item downwards, the target's original index needs adjustment if it was after the moved item
+                    if(currentDraggedIndex < insertionIndex && !isDroppingAbove) {
+                         // We already removed the item, so indices shifted.
+                         // No adjustment might be needed here if currentDroppedOnIndex is correct AFTER splice
+                    } else if (currentDraggedIndex > insertionIndex && isDroppingAbove) {
+                         // Moving upwards, index is correct
+                    }
+
+
+					window.app.activeNPC.traits.splice(insertionIndex, 0, movedItem);
 					
-					const [draggedItem] = window.app.activeNPC.traits.splice(draggedIndex, 1);
-					let newTargetIndex = droppedOnOriginalIndex;
-					if (draggedIndex < droppedOnOriginalIndex) newTargetIndex--;
-					
-					const insertionPoint = dropAbove ? newTargetIndex : newTargetIndex + 1;
-					window.app.activeNPC.traits.splice(insertionPoint, 0, draggedItem);
-					
-					this.renderNpcTraits();
+					// Re-render the entire list to reflect the new order and update original indices
+					this.renderNpcTraits(); 
 					window.viewport.updateViewport();
 					window.app.saveActiveBestiaryToDB();
 				});
-			}
+			} else {
+                 traitEl.draggable = false; // Explicitly set non-draggable if sorting
+            }
+
+			// Click loads trait into editor
+			contentEl.addEventListener('click', () => { // Attach to contentEl to avoid button clicks triggering it
+				if (this.newTraitName) this.newTraitName.value = traitData.name || '';
+				if (this.newTraitDescription) this.newTraitDescription.value = traitData.description || '';
+			});
+			
 
 			traitEl.appendChild(contentEl);
-			traitEl.appendChild(deleteBtn);
+            traitEl.appendChild(buttonContainer); // Add button container
 			this.npcTraitList.appendChild(traitEl);
 		});
 
-        this.npcTraitList.addEventListener('dragleave', (e) => {
-            if (!this.npcTraitList.contains(e.relatedTarget)) {
-                document.querySelectorAll('#npc-trait-list > div').forEach(el => {
-                    el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
-                });
-            }
-        });
+        // Add a listener to the container to clear indicators if the mouse leaves the list area
+        if (this.npcTraitList) {
+            this.npcTraitList.addEventListener('dragleave', (e) => {
+                if (!this.npcTraitList.contains(e.relatedTarget)) {
+                    document.querySelectorAll('#npc-trait-list > div').forEach(el => {
+                        el.classList.remove('drop-indicator-top', 'drop-indicator-bottom');
+                    });
+                }
+            });
+        }
 	},
 
     renderActions: function() {
-        if (!window.app.activeNPC) {
-            // Clear all action lists if no NPC is active
-            Object.keys(window.app.defaultNPC.actions).forEach(type => {
-                const container = document.getElementById(`${type}-container`);
-                if(container) container.innerHTML = '';
-            });
-            return;
-        };
-
-        const { actions } = window.app.activeNPC;
-
-        for (const type in actions) {
+        const actionTypes = ['actions', 'bonus-actions', 'reactions', 'legendary-actions', 'lair-actions'];
+        
+        actionTypes.forEach(type => {
             const container = document.getElementById(`${type}-container`);
-            if (!container) continue;
+            if (!container) return; // Skip if container doesn't exist
 
-            container.innerHTML = '';
-            const items = [...actions[type]];
+            container.innerHTML = ''; // Clear current items
 
-            // Sort alphabetically, but keep "Multiattack" on top for the main "actions" type
-            let multiattack = null;
-            const otherItems = items.filter(item => {
-                if (type === 'actions' && item.name.toLowerCase() === 'multiattack') {
-                    multiattack = item;
-                    return false;
-                }
-                return true;
-            });
-            otherItems.sort((a, b) => a.name.localeCompare(b.name));
-            
-            const sortedItems = multiattack ? [multiattack, ...otherItems] : otherItems;
+            // Ensure NPC and actions[type] exist and is an array
+            const items = window.app.activeNPC?.actions?.[type];
+            if (!Array.isArray(items)) return; // Exit if no items for this type
 
-            sortedItems.forEach(item => {
-                const originalIndex = actions[type].indexOf(item);
+            // Create a copy with original indices for stable rendering/editing
+            const itemsWithIndices = items.map((item, index) => ({ ...item, originalIndex: index }));
+           
+            // Sort alphabetically for display, keeping Multiattack first for 'actions'
+            let sortedItems = [...itemsWithIndices];
+             if (type === 'actions') {
+                let multiattack = null;
+                const otherItems = sortedItems.filter(item => {
+                    if (item && item.name && item.name.toLowerCase() === 'multiattack') {
+                        multiattack = item;
+                        return false;
+                    }
+                    return true;
+                });
+                otherItems.sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
+                sortedItems = multiattack ? [multiattack, ...otherItems] : otherItems;
+            } else {
+                 sortedItems.sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
+            }
+
+
+            sortedItems.forEach(itemData => {
+                 if (!itemData) return; // Skip if item is somehow null/undefined
+
                 const listItem = document.createElement("li");
-                listItem.className = "action-list-item p-3 rounded-lg border border-gray-300";
+                listItem.className = "action-list-item p-3 rounded-lg border border-gray-300 group"; // Added group
                 listItem.dataset.actionType = type;
-                listItem.dataset.actionIndex = originalIndex;
+                // Store the ORIGINAL index from the data array for editing/deletion
+                listItem.dataset.actionIndex = itemData.originalIndex; 
                 listItem.setAttribute("onclick", "window.app.editAction(this)");
                 listItem.setAttribute("title", "Click to load this action back into the editor above.");
-                listItem.innerHTML = `<p class="font-bold text-sm"><em class="action-name">${item.name}</em>. <span class="font-normal text-xs action-desc">${item.desc}</span></p>`;
+                
+                // Truncate description preview
+                const descPreview = (itemData.desc || '').length > 100 ? (itemData.desc || '').substring(0, 100) + '...' : (itemData.desc || '');
+
+                listItem.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <p class="flex-grow text-sm mr-2 overflow-hidden"> 
+                            <em class="font-bold action-name not-italic">${itemData.name || 'Unnamed Action'}</em>. 
+                            <span class="font-normal text-xs action-desc">${descPreview}</span>
+                        </p>
+                        <button onclick="ui.deleteAction(this, event)" class="flex-shrink-0 text-gray-400 hover:text-red-700 font-bold text-lg leading-none opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Action">&times;</button>
+                    </div>`;
                 container.appendChild(listItem);
             });
+        });
+    },
+
+    // New function to handle action deletion
+    deleteAction: function(buttonElement, event) {
+        event.stopPropagation(); // Prevent the click from bubbling up to the li (which triggers edit)
+        
+        const listItem = buttonElement.closest('li.action-list-item');
+        if (!listItem || !window.app.activeNPC) return;
+
+        const type = listItem.dataset.actionType;
+        const indexToDelete = parseInt(listItem.dataset.actionIndex, 10);
+        const actionName = listItem.querySelector('.action-name')?.textContent || 'this action';
+
+        if (type && !isNaN(indexToDelete) && window.app.activeNPC.actions && Array.isArray(window.app.activeNPC.actions[type])) {
+            window.app.showConfirm(
+                "Delete Action?",
+                `Are you sure you want to delete "${actionName}"?`,
+                () => { // onConfirm
+                    if (indexToDelete >= 0 && indexToDelete < window.app.activeNPC.actions[type].length) {
+                         window.app.activeNPC.actions[type].splice(indexToDelete, 1);
+                         this.renderActions(); // Re-render the lists
+                         window.viewport.updateViewport(); // Update the preview
+                         window.app.saveActiveBestiaryToDB(); // Save changes
+                         window.app.clearInputs(); // Clear editor if the deleted action was being edited
+                    } else {
+                        console.error("Invalid index for action deletion:", indexToDelete);
+                        window.app.showAlert("Error deleting action: Invalid index.");
+                    }
+                }
+            );
+        } else {
+             console.error("Could not delete action, invalid data:", { type, indexToDelete });
+             window.app.showAlert("Error deleting action: Could not find action data.");
         }
     },
 	
 	populateSavedTraitsDatalist: function() {
+		if (!this.savedTraitList) return;
 		this.savedTraitList.innerHTML = '';
-		if (!window.app.activeBestiary || !window.app.activeBestiary.metadata.savedTraits) return;
+		// Ensure activeBestiary and metadata exist
+		const savedTraits = window.app.activeBestiary?.metadata?.savedTraits;
+		if (!Array.isArray(savedTraits)) return;
 
-		window.app.activeBestiary.metadata.savedTraits.forEach(trait => {
-			const option = document.createElement('option');
-			option.value = trait.name;
-			this.savedTraitList.appendChild(option);
+		savedTraits.forEach(trait => {
+			if (trait?.name) { // Check if trait and name exist
+				const option = document.createElement('option');
+				option.value = trait.name;
+				this.savedTraitList.appendChild(option);
+			}
 		});
 	},
 
 	showManageTraitsModal: function() {
-		if (!window.app.activeBestiary) return;
+		if (!window.app.activeBestiary || !this.manageTraitsModal || !this.managedTraitListDiv) return;
 
 		this.managedTraitListDiv.innerHTML = '';
 		const savedTraits = window.app.activeBestiary.metadata.savedTraits || [];
@@ -1322,20 +2121,23 @@ window.ui = {
 		if (savedTraits.length === 0) {
 			this.managedTraitListDiv.innerHTML = '<p class="text-gray-500 text-center">No saved traits.</p>';
 		} else {
-			savedTraits.sort((a,b) => a.name.localeCompare(b.name)).forEach(trait => {
+			savedTraits.sort((a,b) => (a?.name || '').localeCompare(b?.name || '')).forEach(trait => {
+				if (!trait?.name) return; // Skip traits without names
 				const traitEl = document.createElement('div');
 				traitEl.className = 'flex justify-between items-center py-0.5 px-2 border rounded-md hover:bg-gray-100';
 				
 				const nameSpan = document.createElement('span');
 				nameSpan.textContent = trait.name;
+				nameSpan.className = 'mr-2 overflow-hidden overflow-ellipsis whitespace-nowrap';
+                nameSpan.title = trait.name;
 				
 				const deleteBtn = document.createElement('button');
-				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700"><use href="#icon-trash"></use></svg>`;
+				deleteBtn.innerHTML = `<svg class="h-5 w-5 text-red-500 hover:text-red-700 flex-shrink-0"><use href="#icon-trash"></use></svg>`;
 				deleteBtn.className = 'p-1';
 				deleteBtn.title = `Delete trait: ${trait.name}`;
 				deleteBtn.onclick = (e) => {
 					e.stopPropagation();
-					this.deleteSavedTrait(trait.name);
+					this.deleteSavedTrait(trait.name); // Call delete function
 				};
 
 				traitEl.appendChild(nameSpan);
@@ -1344,17 +2146,30 @@ window.ui = {
 			});
 		}
 		window.app.openModal('manage-traits-modal');
-		this.modalTraitName.focus();
+		if (this.modalTraitName) this.modalTraitName.focus();
 	},
 
 	addNewSavedTrait: function() {
+		if (!this.modalTraitName || !this.modalTraitDescription || !window.app.activeBestiary) return;
 		const name = this.modalTraitName.value.trim();
 		const description = this.modalTraitDescription.value.trim();
-		if (!name || !description) return;
+		if (!name) { 
+			window.app.showAlert("Saved trait name cannot be empty.");
+			return; 
+		}
+		if (!description) { 
+			window.app.showAlert("Saved trait description cannot be empty.");
+			return; 
+		}
 
+        // Ensure savedTraits exists
+        if (!window.app.activeBestiary.metadata.savedTraits) {
+            window.app.activeBestiary.metadata.savedTraits = [];
+        }
 		const savedTraits = window.app.activeBestiary.metadata.savedTraits;
-		if (savedTraits.some(t => t.name.toLowerCase() === name.toLowerCase())) {
-			alert(`A saved trait named "${name}" already exists.`);
+
+		if (savedTraits.some(t => t?.name?.toLowerCase() === name.toLowerCase())) {
+			window.app.showAlert(`A saved trait named "${name}" already exists.`);
 			return;
 		}
 
@@ -1362,42 +2177,58 @@ window.ui = {
 		this.modalTraitName.value = '';
 		this.modalTraitDescription.value = '';
 
-		this.showManageTraitsModal();
-		this.populateSavedTraitsDatalist();
+		this.showManageTraitsModal(); 
+		this.populateSavedTraitsDatalist(); 
 		window.app.saveActiveBestiaryToDB();
 	},
 
 	deleteSavedTrait: function(traitName) {
-		const metadata = window.app.activeBestiary.metadata;
-		metadata.savedTraits = metadata.savedTraits.filter(t => t.name !== traitName);
+		if (!window.app.activeBestiary || !window.app.activeBestiary.metadata.savedTraits || !traitName) return; 
 		
-		this.showManageTraitsModal();
-		this.populateSavedTraitsDatalist();
-		window.app.saveActiveBestiaryToDB();
+        window.app.showConfirm( // Add confirmation
+            "Delete Saved Trait?",
+            `Are you sure you want to permanently delete the saved trait "${traitName}"? This cannot be undone.`,
+            () => { // onConfirm
+                const metadata = window.app.activeBestiary.metadata;
+                metadata.savedTraits = metadata.savedTraits.filter(t => t?.name !== traitName);
+                
+                this.showManageTraitsModal(); 
+                this.populateSavedTraitsDatalist(); 
+                window.app.saveActiveBestiaryToDB();
+            }
+        );
 	},
 
 	parseHpStringToModal: function() {
+		if (!this.inputs.hitPoints || !this.hpDiceString) return; 
 		const hpString = this.inputs.hitPoints.value || "";
-		const match = hpString.match(/\((.*?)\)/);
+		// Regex to find content within parentheses OR just a number if no parentheses
+		const match = hpString.match(/\((.*?)\)|^\s*(\d+)\s*$/); 
 
-		if (match && match[1]) {
-			this.hpDiceString.value = match[1].trim();
+		if (match) {
+            // Use group 1 if parentheses found, otherwise use group 2 (the number itself)
+			this.hpDiceString.value = (match[1] || match[2] || '').trim(); 
 		} else {
-			this.hpDiceString.value = '';
+			this.hpDiceString.value = ''; // Clear if format is unexpected
 		}
 	},
     populateDamageTypes: function(elementId) {
         const select = document.getElementById(elementId);
         if (select) {
-            select.innerHTML = ''; // Clear existing options first
+            // Store current value if exists
+            const currentValue = select.value;
+            select.innerHTML = '';
             window.app.damageTypes.forEach(type => {
                 const option = document.createElement('option');
                 option.value = type.toLowerCase();
                 option.textContent = type.charAt(0).toUpperCase() + type.slice(1);
                 select.appendChild(option);
             });
-            if (elementId === 'attack-damage-type') {
-                select.value = 'slashing'; // Default to slashing for the primary
+            // Try to restore previous value or default
+            if (currentValue && [...select.options].some(opt => opt.value === currentValue)) {
+                 select.value = currentValue;
+            } else if (elementId === 'attack-damage-type') {
+                select.value = 'slashing';
             }
         }
     },

@@ -613,7 +613,7 @@ table.spell td {
 }
 
 
-/* --- Add to end of style.css --- */
+/* --- Import Modal Styles --- */
 #import-viewport {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
@@ -624,4 +624,32 @@ table.spell td {
 #import-text-area {
     font-family: monospace;
     font-size: 10pt;
+}
+
+/* --- Header Icon Button Hover Styles --- */
+#bestiary-buttons button svg,
+#npc-buttons button svg {
+    transition: color 0.15s ease-in-out; /* Smooth color transition */
+}
+
+/* Bestiary buttons hover: Darker Green */
+#bestiary-buttons button:hover svg {
+    color: #558B2F; /* Darker green */
+}
+
+/* NPC buttons hover: Bright Green */
+#npc-buttons button:hover svg {
+    color: #87CC24; /* Green title color */
+}
+
+/* Remove Flash effect */
+/* #bestiary-buttons button::after,
+#npc-buttons button::after { ... } 
+#bestiary-buttons button:hover::after,
+#npc-buttons button:hover::after { ... } 
+*/
+
+/* Ensure disabled NPC buttons don't show hover effects */
+#npc-buttons button:disabled:hover svg {
+    color: white; /* Or original color */
 }
