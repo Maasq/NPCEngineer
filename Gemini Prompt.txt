@@ -1,10 +1,10 @@
-Study these 8 files. Together they comprise a web app called NPC Engineer. Don't make any changes at this time.
+Study these 9 files. Together they comprise a web app called NPC Engineer. Don't make any changes at this time.
 
-Any time we make an edit, increment the version number - currently it is 0.12.16. Report the new version number to me as part of your response. If we edit the HTML file in any way, also update the version number and date to the appropriate metadata.
+Any time we make an edit, increment the version number - currently it is 0.13.01. Report the new version number to me as part of your response. If we edit the HTML file in any way, also update the version number and date to the appropriate metadata.
 
 Each indentation level should equal 3 spaces, not 4.
 
-Any time we apply a feature, make all the edits to each file at once and when you have to give me new files, give me them one at a time and wait for me to say 'ready' before writing the next one. As all the HTML changes will be within the 'Spellcasting and Psionics' card, it is preferable if you just give me the HTML for this card and I can paste it myself.
+Any time we apply a feature, make all the edits to each file at once and when you have to give me new files, give me them one at a time and wait for me to say 'ready' before writing the next one. The HTML file is large, so try to feed me small chunks at a time to update myself.
 
 Let me know that you fully understand the app and these instructions.
 
