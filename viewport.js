@@ -165,7 +165,8 @@ function updateViewport() {
 	if (traits && traits.length > 0) {
 		traits.forEach(trait => {
 			if (!trait) return;
-			const processedDescription = window.app.processTraitString(trait.description || '', activeNPC);
+			// *** FIXED: Use trait.desc instead of trait.description ***
+			const processedDescription = window.app.processTraitString(trait.desc || '', activeNPC);
 			const traitHtml = `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${trait.name || 'Unnamed Trait'}.</b></i> ${processedDescription}</div>`;
 			combinedTraitsList.push({ name: trait.name || 'Unnamed Trait', html: traitHtml });
 		});

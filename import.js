@@ -189,66 +189,81 @@ window.importer = {
          }
          // --- Traits ---
          else if (currentSection === 'traits') {
+            // *** UPDATED Trait Parsing Logic ***
             const traitMatch = line.match(/^([\w\s-]+(?:\s*\([^)]+\))?)\.\s*(.*)/); // Name. Desc...
+
             if (traitMatch) {
-               // Start of a new trait
-               currentItem = { name: traitMatch[1].trim(), desc: traitMatch[2].trim() }; // Use 'desc'
+               // Start of a new trait (matched Name.)
+               currentItem = { name: traitMatch[1].trim(), desc: traitMatch[2].trim() };
                this.importNPC.traits.push(currentItem);
             } else if (currentItem) {
-               // Continuation of the previous trait's description
-               currentItem.desc += " " + line; // Use 'desc'
+               // Continuation of the PREVIOUS trait's description (didn't match Name.)
+               currentItem.desc += " " + line;
+            } else if (line) {
+               // Orphan line, but potentially the START of a new trait without a period?
+               // Treat the whole line as the name for now. Subsequent lines will append.
+               console.warn("Assuming line is a trait name (missing period?):", line);
+               currentItem = { name: line.trim(), desc: "" }; // Start with empty desc
+               this.importNPC.traits.push(currentItem);
             } else {
-               // Orphan line in traits section
-               console.warn("Could not parse trait line (orphan line?):", line);
+                // Truly orphan or empty line, ignore.
+                console.warn("Could not parse trait line (orphan/empty?):", line);
             }
          }
          // --- Actions ---
          else if (currentSection === 'actions') {
-             const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
-             const actionMatch = line.match(/^([\w\s-]+(?:\s*\([^)]+\))?)\.\s*(.*)/); // Name. Desc...
+            const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
+            const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
+            const actionMatch = line.match(/^([\w\s-]+(?:\s*\([^)]+\))?)\.\s*(.*)/); // Original Name. Desc... pattern
 
-             if (spellcastingHeaderMatch) {
-                 // Start of Action Spellcasting block
-                 this.importNPC.hasSpellcasting = true;
-                 this.importNPC.spellcastingPlacement = 'actions';
-                 let boilerplate = spellcastingHeaderMatch[1];
-                 const castingInfoMatch = boilerplate.match(/using (\w+) .* \(spell save DC (\d+)\)/i);
-                 if (castingInfoMatch) {
-                     this.importNPC.actionCastingAbility = castingInfoMatch[1].toLowerCase();
-                     this.importNPC.actionCastingDC = parseInt(castingInfoMatch[2], 10);
-                 }
-                 // Parse spell lists on subsequent lines
-                 let spellListIndex = 0;
-                 while (spellListIndex < 4) { // Max 4 frequency lines
-                     currentLineIndex++;
-                     let spellLine = getLine(currentLineIndex);
-                     // Check if the line looks like a frequency: list pair
-                     const spellListMatch = spellLine ? spellLine.match(/^(.*?):\s*(.*)/) : null;
-                     if (spellListMatch && (spellListMatch[1].toLowerCase() === 'at will' || spellListMatch[1].match(/^\d+\/day/i))) {
-                         if (this.importNPC.actionCastingSpells[spellListIndex]) {
-                            this.importNPC.actionCastingSpells[spellListIndex].freq = spellListMatch[1].trim();
-                            this.importNPC.actionCastingSpells[spellListIndex].list = spellListMatch[2].replace(/,\s*/g, ', ').trim(); // Standardize comma spacing
-                         }
-                         spellListIndex++;
-                     } else {
-                         currentLineIndex--; // Backtrack if it's not a spell list line
-                         break; // Stop parsing spell lists
-                     }
-                 }
-                 currentItem = null; // Reset item parsing after spellcasting block
-                 continue; // Continue to next line after processing spell lists (already incremented in loop)
-             }
-             else if (actionMatch) {
-                // Start of a new regular action
-                currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() }; // Use 'desc'
-                this.importNPC.actions.actions.push(currentItem);
-             } else if (currentItem) {
-                // Continuation of the previous action's description
-                currentItem.desc += " " + line; // Use 'desc'
-             } else {
-                 // Orphan line in actions section
-                console.warn("Could not parse action line (orphan line?):", line);
-             }
+            if (spellcastingHeaderMatch) {
+                // Start of Action Spellcasting block
+                this.importNPC.hasSpellcasting = true;
+                this.importNPC.spellcastingPlacement = 'actions';
+                let boilerplate = spellcastingHeaderMatch[1];
+                const castingInfoMatch = boilerplate.match(/using (\w+) .* \(spell save DC (\d+)\)/i);
+                if (castingInfoMatch) {
+                    this.importNPC.actionCastingAbility = castingInfoMatch[1].toLowerCase();
+                    this.importNPC.actionCastingDC = parseInt(castingInfoMatch[2], 10);
+                }
+                // Parse spell lists on subsequent lines
+                let spellListIndex = 0;
+                while (spellListIndex < 4) { // Max 4 frequency lines
+                    currentLineIndex++;
+                    let spellLine = getLine(currentLineIndex);
+                    // Check if the line looks like a frequency: list pair
+                    const spellListMatch = spellLine ? spellLine.match(/^(.*?):\s*(.*)/) : null;
+                    if (spellListMatch && (spellListMatch[1].toLowerCase() === 'at will' || spellListMatch[1].match(/^\d+\/day/i))) {
+                        if (this.importNPC.actionCastingSpells[spellListIndex]) {
+                           this.importNPC.actionCastingSpells[spellListIndex].freq = spellListMatch[1].trim();
+                           this.importNPC.actionCastingSpells[spellListIndex].list = spellListMatch[2].replace(/,\s*/g, ', ').trim(); // Standardize comma spacing
+                        }
+                        spellListIndex++;
+                    } else {
+                        currentLineIndex--; // Backtrack if it's not a spell list line
+                        break; // Stop parsing spell lists
+                    }
+                }
+                currentItem = null; // Reset item parsing after spellcasting block
+                // Don't increment currentLineIndex here, the loop will do it
+                continue; // Process next line
+            }
+            else if (standardAttackMatch) {
+               // It looks like a standard attack string. Store the full details in desc.
+               currentItem = { name: standardAttackMatch[1].trim(), desc: line }; // Store FULL line in desc
+               this.importNPC.actions.actions.push(currentItem);
+            }
+            else if (actionMatch) {
+               // It follows the "Name. Description." format (and isn't a standard attack line)
+               currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
+               this.importNPC.actions.actions.push(currentItem);
+            } else if (currentItem) {
+               // Continuation of the previous action's description (could be standard attack or regular action)
+               currentItem.desc += " " + line;
+            } else {
+                // Orphan line in actions section
+               console.warn("Could not parse action line (orphan line?):", line);
+            }
          }
          // --- Legendary Actions ---
          else if (currentSection === 'legendary') {
@@ -291,7 +306,7 @@ window.importer = {
       this.updateImportViewport();
    },
 
-   // --- Parsing Helper Functions --- (No changes below this line needed for this fix)
+   // --- Parsing Helper Functions ---
 
    parseSpeed(line) {
       this.importNPC.speedBase = 0;

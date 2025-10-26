@@ -346,6 +346,14 @@ document.addEventListener("DOMContentLoaded", () => {
          if (healedNpc.hasTelepathy === undefined) healedNpc.hasTelepathy = defaultNPC.hasTelepathy;
          if (healedNpc.telepathyRange === undefined) healedNpc.telepathyRange = defaultNPC.telepathyRange;
          if (!Array.isArray(healedNpc.traits)) healedNpc.traits = [];
+         // *** ADDED: Trait key migration ***
+         healedNpc.traits.forEach(trait => {
+            if (trait && trait.hasOwnProperty('description') && !trait.hasOwnProperty('desc')) {
+               trait.desc = trait.description;
+               delete trait.description;
+            }
+         });
+         // *** End of Trait key migration ***
          if (healedNpc.sortTraitsAlpha === undefined) healedNpc.sortTraitsAlpha = defaultNPC.sortTraitsAlpha;
          if (typeof healedNpc.actions !== 'object' || healedNpc.actions === null) {
             healedNpc.actions = JSON.parse(JSON.stringify(defaultNPC.actions));
@@ -353,6 +361,18 @@ document.addEventListener("DOMContentLoaded", () => {
             for (const key in defaultNPC.actions) {
                if (!Array.isArray(healedNpc.actions[key])) healedNpc.actions[key] = [];
             }
+            // *** ADDED: Action key migration (ensure consistency) ***
+            Object.values(healedNpc.actions).forEach(actionList => {
+               if(Array.isArray(actionList)) {
+                  actionList.forEach(action => {
+                     if (action && action.hasOwnProperty('description') && !action.hasOwnProperty('desc')) {
+                        action.desc = action.description;
+                        delete action.description;
+                     }
+                  });
+               }
+            });
+            // *** End of Action key migration ***
          }
          if (healedNpc.legendaryBoilerplate === undefined) healedNpc.legendaryBoilerplate = defaultNPC.legendaryBoilerplate;
          if (healedNpc.lairBoilerplate === undefined) healedNpc.lairBoilerplate = defaultNPC.lairBoilerplate;
@@ -712,7 +732,6 @@ document.addEventListener("DOMContentLoaded", () => {
                window.app.activeBestiary.npcs.splice(indexToDelete, 1); // Use window.app reference
                sortAndSwitchToNpc(null);
                saveActiveBestiaryToDB();
-               // *** REVERTED: Removed window.ui.updateUIForActiveBestiary(); ***
             } else {
                console.error("Could not find the NPC to delete after confirmation.");
                window.app.showAlert("Error: Could not delete the NPC."); // Use helper
