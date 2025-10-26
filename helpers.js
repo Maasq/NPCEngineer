@@ -955,30 +955,73 @@ function showConfirm(title, message, onConfirm) {
 }
 
 
-function showDialog(title, message, showCancel = false) {
+// --- Updated showDialog Function ---
+async function showDialog(title, message, showCancel = false) { // Make the function async
    if (!window.ui.alertModal || !window.ui.alertTitle || !window.ui.alertMessageText || !window.ui.alertOkBtn || !window.ui.alertCancelBtn) {
       console.error("Alert modal elements not found!");
       alert(message); // Fallback to browser alert
+      if (typeof window.app.confirmCallback === 'function') {
+         try {
+            // Await if the callback is async (important for DB operations)
+            await window.app.confirmCallback();
+         } catch (err) {
+            console.error("Error executing confirm callback from fallback alert:", err);
+         } finally {
+            window.app.confirmCallback = null; // Clear callback
+         }
+      }
       return;
    }
 
    window.ui.alertTitle.textContent = title;
    window.ui.alertMessageText.textContent = message;
 
-   window.ui.alertOkBtn.onclick = () => {
-      closeModal('alert-modal'); // closeModal now handles clearing confirmCallback
-      if (window.app.confirmCallback) {
-         window.app.confirmCallback(); // Call if it exists
-         window.app.confirmCallback = null; // Clear afterwards
+   // Store the callback temporarily to prevent race conditions if showDialog is called again quickly
+   const currentCallback = window.app.confirmCallback;
+   window.app.confirmCallback = null; // Clear global immediately
+
+   // --- Refined OK Button Handler ---
+   window.ui.alertOkBtn.onclick = async () => {
+      // Disable buttons immediately to prevent double-clicks
+      window.ui.alertOkBtn.disabled = true;
+      if (window.ui.alertCancelBtn) window.ui.alertCancelBtn.disabled = true;
+
+      let shouldCloseModal = true;
+      if (typeof currentCallback === 'function') {
+         try {
+            // Await the callback if it's async (like DB operations)
+            await currentCallback();
+            console.log("Confirm callback executed successfully."); // Log success
+         } catch (err) {
+            shouldCloseModal = false; // Keep modal open to show error
+            console.error("Error executing confirm callback:", err);
+            // Optionally, update modal text to show error, or show a separate alert
+            window.ui.alertTitle.textContent = "Error";
+            window.ui.alertMessageText.textContent = `An error occurred: ${err.message || err}. Please check the console.`;
+            // Re-enable only OK button if needed, or keep both disabled
+            window.ui.alertOkBtn.disabled = false;
+            // Or change OK button text/action to just "Close"
+            window.ui.alertOkBtn.textContent = "Close";
+            window.ui.alertOkBtn.onclick = () => closeModal('alert-modal');
+            if (window.ui.alertCancelBtn) window.ui.alertCancelBtn.classList.add('hidden'); // Hide cancel on error
+            return; // Stop further execution for this click
+         }
+      }
+
+      if (shouldCloseModal) {
+          // Reset button state and close modal *after* callback completes successfully
+          window.ui.alertOkBtn.disabled = false;
+          if (window.ui.alertCancelBtn) window.ui.alertCancelBtn.disabled = false;
+          window.ui.alertOkBtn.textContent = "OK"; // Reset text if changed
+          closeModal('alert-modal');
       }
    };
-
 
    if (showCancel) {
       window.ui.alertCancelBtn.classList.remove('hidden');
       window.ui.alertCancelBtn.onclick = () => {
-         closeModal('alert-modal'); // closeModal now handles clearing confirmCallback
-         window.app.confirmCallback = null; // Also clear here just in case
+         // Callback is already cleared, just close the modal
+         closeModal('alert-modal');
       };
    } else {
       window.ui.alertCancelBtn.classList.add('hidden');
@@ -988,3 +1031,4 @@ function showDialog(title, message, showCancel = false) {
    openModal('alert-modal');
    setTimeout(() => window.ui.alertOkBtn.focus(), 50); // Focus OK button
 }
+// --- End Updated showDialog Function ---

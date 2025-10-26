@@ -42,6 +42,10 @@ function _updateMenuState() {
          item.classList.add('disabled');
       }
    });
+   // Enable DB export/import regardless of active bestiary
+   if(window.ui.menuExportDb) window.ui.menuExportDb.classList.remove('disabled');
+   if(window.ui.menuImportDb) window.ui.menuImportDb.classList.remove('disabled');
+
 
    if (window.ui.footerImportTextBtn) {
       window.ui.footerImportTextBtn.disabled = !hasActiveBestiary;
@@ -925,6 +929,9 @@ async function _showLoadBestiaryModal() {
    } else {
       bestiaries.sort((a, b) => (a.projectName || '').localeCompare(b.projectName || '', undefined, { sensitivity: 'base' }));
 
+      // Keep 'this' context for callbacks
+      const currentUIScope = this;
+
       bestiaries.forEach(proj => {
          const projEl = document.createElement('div');
          projEl.className = 'flex justify-between items-center py-1 px-2 border rounded-md hover:bg-gray-100';
@@ -935,7 +942,7 @@ async function _showLoadBestiaryModal() {
          nameSpan.title = proj.projectName || 'Unnamed Bestiary';
          nameSpan.onclick = () => {
             window.app.loadBestiary(proj);
-            this.hideAllModals(); // Use 'this'
+            currentUIScope.hideAllModals(); // Use captured 'this'
          };
 
          const deleteBtn = document.createElement('button');
@@ -944,22 +951,27 @@ async function _showLoadBestiaryModal() {
          deleteBtn.title = `Delete ${proj.projectName || 'Unnamed Bestiary'}`;
          deleteBtn.onclick = async (e) => {
             e.stopPropagation();
+            console.log(`Delete button clicked for: ${proj.projectName}`); // LOG 1
             window.app.showConfirm(
                "Delete Bestiary?",
                `Are you sure you want to permanently delete the bestiary "${proj.projectName || 'Unnamed Bestiary'}"? This cannot be undone.`,
                async () => {
+                  console.log(`Confirmed deletion for: ${proj.projectName}`); // LOG 2
                   try {
                      await window.app.db.projects.delete(proj.id);
+                     console.log(`Successfully deleted ${proj.projectName} (ID: ${proj.id}) from DB.`); // LOG 3
                      if(window.app.activeBestiary && window.app.activeBestiary.id === proj.id) {
+                        console.log("Deleted bestiary was active, resetting app state."); // LOG 4
                         window.app.activeBestiary = null;
                         window.app.activeNPC = null;
                         window.app.activeNPCIndex = -1;
                         window.app.changesMadeSinceExport = false; // Reset flag when deleting active
-                        this.updateUIForActiveBestiary(); // Use 'this'
+                        currentUIScope.updateUIForActiveBestiary(); // Use captured 'this'
                      }
-                     this.showLoadBestiaryModal(); // Use 'this'
+                     console.log("Refreshing bestiary list modal."); // LOG 5
+                     currentUIScope.showLoadBestiaryModal(); // Use captured 'this' to refresh the modal list
                   } catch (deleteError) {
-                     console.error("Failed to delete bestiary:", deleteError);
+                     console.error("Failed to delete bestiary:", deleteError); // LOG Error
                      window.app.showAlert("Error deleting bestiary. Check console.");
                   }
                }
@@ -1188,9 +1200,9 @@ function _addOrUpdateNpcTrait() {
    const existingTraitIndex = window.app.activeNPC.traits.findIndex(trait => trait?.name?.toLowerCase() === name.toLowerCase());
 
    if (existingTraitIndex > -1) {
-      window.app.activeNPC.traits[existingTraitIndex].description = description;
+      window.app.activeNPC.traits[existingTraitIndex].desc = description; // Use 'desc'
    } else {
-      window.app.activeNPC.traits.push({ name, description });
+      window.app.activeNPC.traits.push({ name, desc: description }); // Use 'desc'
    }
 
    window.ui.newTraitName.value = '';
@@ -1224,10 +1236,10 @@ function _renderNpcTraits() {
 
       const contentEl = document.createElement('div');
       contentEl.className = 'flex-grow mr-2 overflow-hidden';
-      const processedDescription = window.app.processTraitString(traitData.description || '', window.app.activeNPC);
+      const processedDescription = window.app.processTraitString(traitData.desc || '', window.app.activeNPC); // Use 'desc'
       const previewDesc = processedDescription.length > 150 ? processedDescription.substring(0, 150) + '...' : processedDescription;
       contentEl.innerHTML = `<strong class="text-sm block overflow-hidden overflow-ellipsis whitespace-nowrap">${traitData.name || 'Unnamed Trait'}</strong><p class="text-xs text-gray-600">${previewDesc}</p>`;
-      contentEl.title = `${traitData.name || 'Unnamed Trait'}\n${traitData.description || ''}`;
+      contentEl.title = `${traitData.name || 'Unnamed Trait'}\n${traitData.desc || ''}`; // Use 'desc'
 
       const buttonContainer = document.createElement('div');
       buttonContainer.className = 'flex-shrink-0 flex items-center';
@@ -1318,9 +1330,10 @@ function _renderNpcTraits() {
             const draggedOriginalIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
             const droppedOnOriginalIndex = parseInt(traitEl.dataset.originalIndex, 10);
 
-            // Find CURRENT indices based on original indices, as array might have changed
-            const currentDraggedIndex = window.app.activeNPC.traits.findIndex((t, idx) => idx === draggedOriginalIndex); // Simple mapping if order hasn't changed drastically
-            let currentDroppedOnIndex = window.app.activeNPC.traits.findIndex((t, idx) => idx === droppedOnOriginalIndex); // Simple mapping
+            // Find CURRENT indices based on original indices
+            const currentDraggedIndex = window.app.activeNPC.traits.findIndex(trait => trait === window.app.activeNPC.traits[draggedOriginalIndex]);
+            let currentDroppedOnIndex = window.app.activeNPC.traits.findIndex(trait => trait === window.app.activeNPC.traits[droppedOnOriginalIndex]);
+
 
             if (currentDraggedIndex === -1 || currentDroppedOnIndex === -1) {
                 console.error("Drag/Drop index error - couldn't find current indices from original indices.");
@@ -1355,7 +1368,7 @@ function _renderNpcTraits() {
 
       contentEl.addEventListener('click', () => {
          if (window.ui.newTraitName) window.ui.newTraitName.value = traitData.name || '';
-         if (window.ui.newTraitDescription) window.ui.newTraitDescription.value = traitData.description || '';
+         if (window.ui.newTraitDescription) window.ui.newTraitDescription.value = traitData.desc || ''; // Use 'desc'
       });
 
 
@@ -1449,23 +1462,24 @@ function _deleteAction(buttonElement, event) {
    const actionName = listItem.querySelector('.action-name')?.textContent || 'this action';
 
    if (type && !isNaN(indexToDelete) && window.app.activeNPC.actions && Array.isArray(window.app.activeNPC.actions[type])) {
-      // Use the original index for deletion confirmation
+      // Find the item with the matching original index in the current array
+      const currentItemIndex = window.app.activeNPC.actions[type].findIndex(item => item.originalIndex === indexToDelete);
+
       window.app.showConfirm(
          "Delete Action?",
          `Are you sure you want to delete "${actionName}"?`,
          () => {
-            // Ensure the index is still valid before splicing
-            if (indexToDelete >= 0 && indexToDelete < window.app.activeNPC.actions[type].length) {
-                // Delete using the correct original index
-                window.app.activeNPC.actions[type].splice(indexToDelete, 1);
-                this.renderActions(); // Re-render the list
-                window.viewport.updateViewport(); // Update preview
-                window.app.saveActiveBestiaryToDB(); // Save changes
-                window.app.clearInputs(); // Clear editor fields
-            } else {
-               console.error("Invalid index for action deletion:", indexToDelete);
-               window.app.showAlert("Error deleting action: Invalid index.");
-            }
+             // Use the *current* index found above for splicing
+             if (currentItemIndex !== -1) {
+                 window.app.activeNPC.actions[type].splice(currentItemIndex, 1);
+                 this.renderActions(); // Re-render the list
+                 window.viewport.updateViewport(); // Update preview
+                 window.app.saveActiveBestiaryToDB(); // Save changes
+                 window.app.clearInputs(); // Clear editor fields
+             } else {
+                 console.error("Could not find the current index for action deletion:", indexToDelete);
+                 window.app.showAlert("Error deleting action: Could not find action to delete.");
+             }
          }
       );
    } else {
@@ -1550,7 +1564,7 @@ function _addNewSavedTrait() {
       return;
    }
 
-   savedTraits.push({ name, description });
+   savedTraits.push({ name, description }); // Store with 'description' key
    window.ui.modalTraitName.value = '';
    window.ui.modalTraitDescription.value = '';
 
@@ -1614,9 +1628,6 @@ function _populateDamageTypes(elementId) {
 // --- Assign functions to window.ui object ---
 // Make sure this runs AFTER ui-elements.js has defined window.ui
 if (window.ui) {
-   // window.ui.updateInnateCalculatedFields = _updateInnateCalculatedFields; // Logic moved to main.js
-   // window.ui.updateTraitCalculatedFields = _updateTraitCalculatedFields; // Logic moved to main.js
-   // window.ui.updateActionCalculatedFields = _updateActionCalculatedFields; // Logic moved to main.js
    window.ui.showNewBestiaryModal = _showNewBestiaryModal;
    window.ui.hideAllModals = _hideAllModals;
    window.ui.updateMenuState = _updateMenuState;

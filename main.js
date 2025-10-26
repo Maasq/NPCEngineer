@@ -234,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Keep references to helpers defined elsewhere
       calculateAbilityBonus: window.app.calculateAbilityBonus,
       calculateProficiencyBonus: window.app.calculateProficiencyBonus,
+      calculateSpellcastingDCBonus: window.app.calculateSpellcastingDCBonus,
       calculateSpeedString: window.app.calculateSpeedString,
       calculateSensesString: window.app.calculateSensesString,
       calculateDamageModifiersString: window.app.calculateDamageModifiersString,
@@ -241,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
       calculateLanguagesString: window.app.calculateLanguagesString,
       calculateAllStats: window.app.calculateAllStats,
       calculateAllSkills: window.app.calculateAllSkills,
-      calculateSpellcastingDCBonus: window.app.calculateSpellcastingDCBonus,
       addOrUpdateAction: window.app.addOrUpdateAction,
       editAction: window.app.editAction,
       clearInputs: window.app.clearInputs,
@@ -712,6 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
                window.app.activeBestiary.npcs.splice(indexToDelete, 1); // Use window.app reference
                sortAndSwitchToNpc(null);
                saveActiveBestiaryToDB();
+               // *** REVERTED: Removed window.ui.updateUIForActiveBestiary(); ***
             } else {
                console.error("Could not find the NPC to delete after confirmation.");
                window.app.showAlert("Error: Could not delete the NPC."); // Use helper
@@ -799,103 +800,304 @@ document.addEventListener("DOMContentLoaded", () => {
    function updateActiveNPCFromForm() {
       if (window.app.isUpdatingForm || !window.app.activeNPC) return; // Use window.app references
 
+      // --- Cache potentially changing values for comparison/calculation ---
       const oldProfBonus = window.app.activeNPC.proficiencyBonus;
-      const oldAbilities = { /*...*/ };
-      // ... (rest of the variable caching)
+      const oldAbilities = {
+         strength: window.app.activeNPC.strength,
+         dexterity: window.app.activeNPC.dexterity,
+         constitution: window.app.activeNPC.constitution,
+         intelligence: window.app.activeNPC.intelligence,
+         wisdom: window.app.activeNPC.wisdom,
+         charisma: window.app.activeNPC.charisma,
+         innateAbility: window.app.activeNPC.innateAbility,
+         traitCastingAbility: window.app.activeNPC.traitCastingAbility,
+         actionCastingAbility: window.app.activeNPC.actionCastingAbility
+      };
+      const oldTraitCasterLevel = window.app.activeNPC.traitCastingLevel;
+
 
       // --- Name Validation ---
       const newName = window.ui.inputs.name.value.trim();
-      if (newName && newName.toLowerCase() !== (window.app.activeNPC.name || "").toLowerCase()) { // Use window.app reference
-         const isDuplicate = window.app.activeBestiary.npcs.some((npc, index) => // Use window.app reference
-            index !== window.app.activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase() // Use window.app reference
-         );
-         if (isDuplicate) {
-            window.app.showAlert(`An NPC named "${newName}" already exists...`); // Use helper
-            window.ui.inputs.name.value = window.app.activeNPC.name; // Use window.app reference
-            return;
-         }
-         window.app.activeNPC.name = newName; // Use window.app reference
-      } // ... (rest of name handling)
+      if (!newName) {
+          // If name is cleared, keep the old name temporarily to avoid errors
+          // but visually show the input is empty until blur/save
+          window.ui.inputs.name.value = ''; // Keep input visually empty
+      } else if (newName.toLowerCase() !== (window.app.activeNPC.name || "").toLowerCase()) {
+          const isDuplicate = window.app.activeBestiary.npcs.some((npc, index) =>
+              index !== window.app.activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
+          );
+          if (isDuplicate) {
+              window.app.showAlert(`An NPC named "${newName}" already exists. Please choose a unique name.`);
+              window.ui.inputs.name.value = window.app.activeNPC.name; // Revert input value
+              return; // Stop update if duplicate name attempt
+          }
+          window.app.activeNPC.name = newName;
+      } else if (window.app.activeNPC.name !== newName) {
+         // Handle case where only capitalization changed
+         window.app.activeNPC.name = newName;
+      }
+
 
       // --- Update Standard Properties ---
       for (const key in window.ui.inputs) {
-          // ... (loop logic remains mostly the same, just ensure defaults reference defaultNPC)
-          // Example change for number parsing:
-          if (element.type === "number") {
-             const parsedValue = parseInt(element.value, 10);
-             const defaultValue = defaultNPC[key] !== undefined ? defaultNPC[key] : 0; // Use local defaultNPC
-             window.app.activeNPC[key] = isNaN(parsedValue) ? defaultValue : parsedValue; // Assign to window.app.activeNPC
-          } // ... (similar adjustments needed throughout the loop)
-          // ...
+         const element = window.ui.inputs[key];
+         if (!element || key === 'name') continue; // Skip name, handled above
+         if (key === 'description') {
+            // Trix editor content update handled separately if needed
+            const trixEditor = document.querySelector("trix-editor");
+            if (trixEditor && trixEditor.editor) {
+               window.app.activeNPC[key] = trixEditor.editor.getDocument().toString().trim() === "" ? "" : trixEditor.innerHTML;
+            }
+            continue;
+         }
+         if (key.startsWith('common') || key === 'attackDamageDice') continue; // Skip action editor fields
+         if (element.type === 'radio') { // Handle radio groups
+            if(element.checked) {
+               // Special handling for spellcasting placement
+               if (element.name === 'spellcasting-placement') {
+                  window.app.activeNPC.spellcastingPlacement = element.value;
+               }
+               // Add other radio groups here if needed
+            }
+            continue; // Move to next input after processing radio
+         }
+
+         const defaultValue = defaultNPC[key]; // Use local defaultNPC
+
+         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') {
+            // Spellcasting fields handled specifically later
+         } else if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') {
+             // Trait spell lists/slots handled later
+         } else if (element.type === "checkbox") {
+            window.app.activeNPC[key] = element.checked;
+         } else if (element.tagName === 'SELECT' && element.multiple) {
+            // Skip language listboxes, handled separately
+         } else if (element.tagName === 'SELECT') {
+            const customToggle = document.getElementById(`toggle-custom-${key}`);
+            if (customToggle?.checked) {
+               const customInput = document.getElementById(`npc-${key}-custom`);
+               window.app.activeNPC[key] = customInput ? customInput.value.trim() : (defaultValue !== undefined ? defaultValue : "");
+            } else {
+               window.app.activeNPC[key] = element.value !== "" ? element.value : (defaultValue !== undefined ? defaultValue : "");
+            }
+         } else if (element.type === "number") {
+            const parsedValue = parseInt(element.value, 10);
+            window.app.activeNPC[key] = isNaN(parsedValue) ? (defaultValue !== undefined ? defaultValue : 0) : parsedValue;
+         } else { // Text inputs
+            window.app.activeNPC[key] = element.value.trim() !== "" ? element.value : (defaultValue !== undefined ? defaultValue : "");
+         }
       }
 
+
       // --- Update Proficiency Bonus ---
-      const newProfBonus = window.app.calculateProficiencyBonus(window.app.activeNPC.challenge); // Use helper
-      // ... (rest of prof bonus logic)
+      const newProfBonus = window.app.calculateProficiencyBonus(window.app.activeNPC.challenge);
+      let profBonusChanged = false;
+      if (newProfBonus !== oldProfBonus) {
+         window.app.activeNPC.proficiencyBonus = newProfBonus;
+         profBonusChanged = true;
+      }
 
       // --- Recalculate Ability Bonuses ---
+      let abilityScoresChanged = false;
+      const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
       abilities.forEach(ability => {
-         const newBonus = window.app.calculateAbilityBonus(window.app.activeNPC[ability]); // Use helper
-         // ... (rest of ability bonus logic)
+         if(window.app.activeNPC[ability] !== oldAbilities[ability]) {
+            abilityScoresChanged = true;
+         }
+         const newBonus = window.app.calculateAbilityBonus(window.app.activeNPC[ability]);
+         if (newBonus !== window.app.activeNPC[`${ability}Bonus`]) {
+            window.app.activeNPC[`${ability}Bonus`] = newBonus;
+            // No need to set abilityScoresChanged here, direct score change covers it
+         }
       });
 
       // --- Innate Spellcasting fields ---
-      // Update Innate DC
-      const { dc: newInnateCalculatedDC } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.innateAbility, newProfBonus, window.app.activeNPC); // Use helper
-      // ... (rest of innate spellcasting logic)
+      window.app.activeNPC.hasInnateSpellcasting = window.ui.inputs.hasInnateSpellcasting?.checked ?? false;
+      window.app.activeNPC.innateIsPsionics = window.ui.inputs.innateIsPsionics?.checked ?? false;
+      window.app.activeNPC.innateAbility = window.ui.inputs.innateAbility?.value ?? defaultNPC.innateAbility;
+      window.app.activeNPC.innateComponents = window.ui.inputs.innateComponents?.value ?? defaultNPC.innateComponents;
+      const innateAbilityChanged = window.app.activeNPC.innateAbility !== oldAbilities.innateAbility;
+      const innateDCInputVal = parseInt(window.ui.inputs.innateDC?.value, 10);
+      const { dc: newInnateCalculatedDC } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.innateAbility, newProfBonus, window.app.activeNPC);
+      // Save input value if it's NOT the calculated default, otherwise clear it to allow auto-calc
+      window.app.activeNPC.innateDC = (!isNaN(innateDCInputVal) && innateDCInputVal !== newInnateCalculatedDC) ? innateDCInputVal : undefined;
+      // Populate spell list array
+      window.app.activeNPC.innateSpells = [];
+      for (let i = 0; i < 4; i++) {
+         const freq = window.ui.inputs[`innate-freq-${i}`]?.value ?? '';
+         const list = window.ui.inputs[`innate-list-${i}`]?.value ?? '';
+         window.app.activeNPC.innateSpells.push({ freq, list });
+      }
 
       // --- Spellcasting fields ---
-      // ... (rest of general spellcasting logic)
+      window.app.activeNPC.hasSpellcasting = window.ui.inputs.hasSpellcasting?.checked ?? false;
+      // spellcastingPlacement already updated via radio button listener
 
       // --- Trait-based Spellcasting fields ---
-      const { dc: newTraitCalculatedDC, bonus: newTraitCalculatedBonus } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.traitCastingAbility, newProfBonus, window.app.activeNPC); // Use helper
-      // ... (rest of trait spellcasting logic)
+      window.app.activeNPC.traitCastingLevel = window.ui.inputs.traitCastingLevel?.value ?? defaultNPC.traitCastingLevel;
+      window.app.activeNPC.traitCastingAbility = window.ui.inputs.traitCastingAbility?.value ?? defaultNPC.traitCastingAbility;
+      window.app.activeNPC.traitCastingClass = window.ui.inputs.traitCastingClass?.value ?? defaultNPC.traitCastingClass;
+      window.app.activeNPC.traitCastingFlavor = window.ui.inputs.traitCastingFlavor?.value ?? defaultNPC.traitCastingFlavor;
+      window.app.activeNPC.traitCastingMarked = window.ui.inputs.traitCastingMarked?.value ?? defaultNPC.traitCastingMarked;
+      const traitAbilityChanged = window.app.activeNPC.traitCastingAbility !== oldAbilities.traitCastingAbility;
+      const traitLevelChanged = window.app.activeNPC.traitCastingLevel !== oldTraitCasterLevel;
+      const traitDCInputVal = parseInt(window.ui.inputs.traitCastingDC?.value, 10);
+      const traitBonusInputVal = parseInt(window.ui.inputs.traitCastingBonus?.value, 10);
+      const { dc: newTraitCalculatedDC, bonus: newTraitCalculatedBonus } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.traitCastingAbility, newProfBonus, window.app.activeNPC);
+      // Save input values if they differ from calculated, otherwise clear
+      window.app.activeNPC.traitCastingDC = (!isNaN(traitDCInputVal) && traitDCInputVal !== newTraitCalculatedDC) ? traitDCInputVal : undefined;
+      window.app.activeNPC.traitCastingBonus = (!isNaN(traitBonusInputVal) && traitBonusInputVal !== newTraitCalculatedBonus) ? traitBonusInputVal : undefined;
+      // Populate spell list/slot arrays
+      window.app.activeNPC.traitCastingList = [];
+      window.app.activeNPC.traitCastingSlots = [];
+      for (let i = 0; i <= 9; i++) {
+         const list = window.ui.inputs[`traitCastingList-${i}`]?.value ?? '';
+         window.app.activeNPC.traitCastingList.push(list);
+         if (i > 0) { // Slots 1-9
+            const slots = window.ui.inputs[`traitCastingSlots-${i}`]?.value ?? '0';
+            window.app.activeNPC.traitCastingSlots.push(slots);
+         }
+      }
 
       // --- Action-based Spellcasting fields ---
-      const { dc: newActionCalculatedDC } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.actionCastingAbility, newProfBonus, window.app.activeNPC); // Use helper
-      // ... (rest of action spellcasting logic)
+      window.app.activeNPC.actionCastingAbility = window.ui.inputs.actionCastingAbility?.value ?? defaultNPC.actionCastingAbility;
+      window.app.activeNPC.actionCastingComponents = window.ui.inputs.actionCastingComponents?.value ?? defaultNPC.actionCastingComponents;
+      const actionAbilityChanged = window.app.activeNPC.actionCastingAbility !== oldAbilities.actionCastingAbility;
+      const actionDCInputVal = parseInt(window.ui.inputs.actionCastingDC?.value, 10);
+      const { dc: newActionCalculatedDC } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.actionCastingAbility, newProfBonus, window.app.activeNPC);
+      // Save input value if different from calculated
+      window.app.activeNPC.actionCastingDC = (!isNaN(actionDCInputVal) && actionDCInputVal !== newActionCalculatedDC) ? actionDCInputVal : undefined;
+      // Populate spell list array
+      window.app.activeNPC.actionCastingSpells = [];
+      for (let i = 0; i < 4; i++) {
+         const freq = window.ui.inputs[`action-casting-freq-${i}`]?.value ?? '';
+         const list = window.ui.inputs[`action-casting-list-${i}`]?.value ?? '';
+         window.app.activeNPC.actionCastingSpells.push({ freq, list });
+      }
+
 
       // --- Languages ---
-      // ... (language logic remains mostly the same)
+      let languagesModifiedBySpecialOption = false;
+      const specialOption = parseInt(document.getElementById('npc-special-language-option')?.value || '0', 10);
+      window.app.activeNPC.specialLanguageOption = specialOption;
+
+      if (specialOption === 1 || specialOption === 2 || specialOption === 3 || specialOption === 5 || specialOption === 6) {
+          // If a special option overrides selection, clear the selected languages array
+          if (window.app.activeNPC.selectedLanguages?.length > 0) {
+              window.app.activeNPC.selectedLanguages = [];
+              languagesModifiedBySpecialOption = true; // Flag that we changed languages due to the dropdown
+          }
+      } else {
+          // Otherwise, read selected languages from listboxes
+          const selectedLanguages = new Set();
+          window.ui.languageListboxes.forEach(listbox => {
+              if (listbox) {
+                  Array.from(listbox.selectedOptions).forEach(option => {
+                      selectedLanguages.add(option.value);
+                  });
+              }
+          });
+          // Update only if the set of languages actually changed
+          const currentSelected = new Set(window.app.activeNPC.selectedLanguages || []);
+          if (selectedLanguages.size !== currentSelected.size || [...selectedLanguages].some(lang => !currentSelected.has(lang))) {
+              window.app.activeNPC.selectedLanguages = Array.from(selectedLanguages);
+          }
+      }
+      window.app.activeNPC.hasTelepathy = document.getElementById('npc-has-telepathy')?.checked || false;
+      window.app.activeNPC.telepathyRange = parseInt(document.getElementById('npc-telepathy-range')?.value || '0', 10);
+
 
       // --- Viewport Options ---
-      // ... (viewport logic remains mostly the same)
+      for (const key in window.ui.npcSettingsCheckboxes) {
+         window.app.activeNPC[key] = window.ui.npcSettingsCheckboxes[key]?.checked ?? true;
+      }
 
-      // --- Saves & Skills ---
-      // ... (saves/skills logic remains mostly the same)
+
+      // --- Saves & Skills (Proficiency/Expertise/Adjustment) ---
+      abilities.forEach(ability => {
+         window.app.activeNPC[`${ability}SavingThrowProf`] = document.getElementById(`npc-${ability}-saving-throw-prof`)?.checked || false;
+         const adjustVal = parseInt(document.getElementById(`npc-${ability}-saving-throw-adjust`)?.value || '0', 10);
+         window.app.activeNPC[`${ability}SavingThrowAdjust`] = isNaN(adjustVal) ? 0 : adjustVal;
+      });
+      window.app.skills.forEach(skill => {
+         window.app.activeNPC[`skill_${skill.id}_prof`] = document.getElementById(`skill-${skill.id}-prof`)?.checked || false;
+         window.app.activeNPC[`skill_${skill.id}_exp`] = document.getElementById(`skill-${skill.id}-exp`)?.checked || false;
+         const adjustVal = parseInt(document.getElementById(`skill-${skill.id}-adjust`)?.value || '0', 10);
+         window.app.activeNPC[`skill_${skill.id}_adjust`] = isNaN(adjustVal) ? 0 : adjustVal;
+      });
 
       // --- Resistances/Immunities ---
-      // ... (resistance/immunity logic remains mostly the same)
+      window.app.damageTypes.forEach(type => {
+         window.app.activeNPC[`vulnerability_${type}`] = document.getElementById(`vuln-${type}`)?.checked || false;
+         window.app.activeNPC[`resistance_${type}`] = document.getElementById(`res-${type}`)?.checked || false;
+         window.app.activeNPC[`immunity_${type}`] = document.getElementById(`imm-${type}`)?.checked || false;
+      });
+      window.app.conditions.forEach(condition => {
+         window.app.activeNPC[`ci_${condition}`] = document.getElementById(`ci-${condition}`)?.checked || false;
+      });
+      const weaponResRadio = document.querySelector('input[name="weapon-resistance"]:checked');
+      window.app.activeNPC.weaponResistance = weaponResRadio ? weaponResRadio.value : 'none';
+      const weaponImmRadio = document.querySelector('input[name="weapon-immunity"]:checked');
+      window.app.activeNPC.weaponImmunity = weaponImmRadio ? weaponImmRadio.value : 'none';
+
 
       // --- Recalculate derived stats ---
-      window.app.calculateAllStats(); // Use helper
+      window.app.calculateAllStats(); // Recalculates bonuses, saves str, skills str, passive P, speed str
+
+
+      // --- Recalculate spellcasting DC/Bonus if needed ---
+      const needsInnateRecalc = profBonusChanged || innateAbilityChanged;
+      const needsTraitRecalc = profBonusChanged || traitAbilityChanged || traitLevelChanged;
+      const needsActionRecalc = profBonusChanged || actionAbilityChanged;
+
+      // Update stored calculated values *only if* the user hasn't overridden them
+      if (needsInnateRecalc && window.app.activeNPC.innateDC === undefined) {
+         window.ui.inputs.innateDC.value = newInnateCalculatedDC; // Update display directly
+      }
+      if (needsTraitRecalc) {
+         if (window.app.activeNPC.traitCastingDC === undefined) {
+            window.ui.inputs.traitCastingDC.value = newTraitCalculatedDC;
+         }
+         if (window.app.activeNPC.traitCastingBonus === undefined) {
+            window.ui.inputs.traitCastingBonus.value = newTraitCalculatedBonus;
+         }
+      }
+      if (needsActionRecalc && window.app.activeNPC.actionCastingDC === undefined) {
+         window.ui.inputs.actionCastingDC.value = newActionCalculatedDC;
+      }
+
 
       // --- Final UI Updates ---
-      window.ui.updateStatDisplays();
-      window.ui.updateSkillDisplays();
-      window.viewport.updateViewport();
+      window.ui.updateStatDisplays(); // Update bonuses, save totals
+      window.ui.updateSkillDisplays(); // Update skill totals
+      window.viewport.updateViewport(); // Update stat block preview
 
       // Update name in selector dropdown if it changed
       if(window.ui.npcSelector && window.ui.npcSelector.selectedIndex >= 0) {
          const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
-         if(currentOption && currentOption.textContent !== window.app.activeNPC.name) { // Use window.app reference
-            currentOption.textContent = window.app.activeNPC.name; // Use window.app reference
+         if(currentOption && currentOption.textContent !== window.app.activeNPC.name) {
+            currentOption.textContent = window.app.activeNPC.name;
          }
       }
 
-      // If special language option forced a change...
+      // If special language option forced a change, refresh the form's language section
       if (languagesModifiedBySpecialOption) {
-          const wasUpdating = window.app.isUpdatingForm; // Use window.app reference
-          window.app.isUpdatingForm = false; // Use window.app reference
-          window.ui.updateFormFromActiveNPC();
-          window.app.isUpdatingForm = wasUpdating; // Use window.app reference
+          const wasUpdating = window.app.isUpdatingForm;
+          window.app.isUpdatingForm = true; // Prevent loop
+          window.ui.populateLanguageListbox('language-list-standard', window.app.standardLanguages, []);
+          window.ui.populateLanguageListbox('language-list-exotic', window.app.exoticLanguages, []);
+          window.ui.populateLanguageListbox('language-list-monstrous1', window.app.monstrousLanguages1, []);
+          window.ui.populateLanguageListbox('language-list-monstrous2', window.app.monstrousLanguages2, []);
+          window.ui.populateLanguageListbox('language-list-user', window.app.activeBestiary?.metadata?.userDefinedLanguages || [], []);
+          window.app.isUpdatingForm = wasUpdating;
       }
 
-      window.ui.updateSpellcastingVisibility();
+      window.ui.updateSpellcastingVisibility(); // Update visibility based on checkbox states
 
       // --- Save ---
       saveActiveBestiaryToDB(); // This now sets changesMadeSinceExport = true
    }
+
 
    // --- Settings Persistence ---
    async function loadSettings() {
