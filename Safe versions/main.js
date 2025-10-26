@@ -98,6 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		innateIsPsionics: false,
 		innateAbility: 'charisma', // Default ability
 		innateDC: 10, // Placeholder, calculated later
+		// innateBonus: 2, // REMOVED
 		innateComponents: 'requiring no material components', // Default value
 		innateSpells: [ // Array to hold frequency/list pairs (Reduced to 4 rows)
 			{ freq: "At will", list: "" },
@@ -108,19 +109,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		// --- REGULAR SPELLCASTING PROPERTIES ---
 		hasSpellcasting: false,
 		spellcastingPlacement: 'traits', // 'traits' or 'actions'
-		// --- TRAIT-BASED SPELLCASTING PROPERTIES ---
-		traitCastingLevel: '1', // Default to 1st level
-		traitCastingAbility: 'intelligence', // Default ability
-		traitCastingDC: 10, // Placeholder
-		traitCastingBonus: 2, // Placeholder
-		traitCastingClass: '', // Default to None
-		traitCastingFlavor: '', // Default empty
-		traitCastingSlots: ['0','0','0','0','0','0','0','0','0'], // Slots for levels 1-9
-		traitCastingList: ['','','','','','','','','',''], // Lists for levels 0-9
-		traitCastingMarked: '', // Marked spells description
-		// --- ACTION-BASED SPELLCASTING PROPERTIES ---
+		// --- ACTION-BASED SPELLCASTING PROPERTIES (NEW) ---
 		actionCastingAbility: 'intelligence', // Default different from innate
 		actionCastingDC: 10, // Placeholder
+		// actionCastingBonus: 2, // REMOVED
 		actionCastingComponents: '', // Default to empty
 		actionCastingSpells: [ // Same structure as innate
 			{ freq: "At will", list: "" },
@@ -378,6 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (healedNpc.innateIsPsionics === undefined) healedNpc.innateIsPsionics = app.defaultNPC.innateIsPsionics;
 			if (healedNpc.innateAbility === undefined) healedNpc.innateAbility = app.defaultNPC.innateAbility;
 			if (healedNpc.innateDC === undefined) healedNpc.innateDC = undefined; // Let it be calculated on load if missing
+			// if (healedNpc.innateBonus === undefined) healedNpc.innateBonus = undefined; // REMOVED
 			if (healedNpc.innateComponents === undefined) healedNpc.innateComponents = app.defaultNPC.innateComponents;
 			// Heal spell array structure (ensure 4 slots, copy defaults if needed)
 			const defaultInnateSpellsLength = app.defaultNPC.innateSpells.length;
@@ -402,24 +395,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (healedNpc.hasSpellcasting === undefined) healedNpc.hasSpellcasting = app.defaultNPC.hasSpellcasting;
 			if (healedNpc.spellcastingPlacement === undefined) healedNpc.spellcastingPlacement = app.defaultNPC.spellcastingPlacement;
 
-			// --- TRAIT-BASED SPELLCASTING HEALING ---
-			if (healedNpc.traitCastingLevel === undefined) healedNpc.traitCastingLevel = app.defaultNPC.traitCastingLevel;
-			if (healedNpc.traitCastingAbility === undefined) healedNpc.traitCastingAbility = app.defaultNPC.traitCastingAbility;
-			if (healedNpc.traitCastingDC === undefined) healedNpc.traitCastingDC = undefined; // Let it calculate
-			if (healedNpc.traitCastingBonus === undefined) healedNpc.traitCastingBonus = undefined; // Let it calculate
-			if (healedNpc.traitCastingClass === undefined) healedNpc.traitCastingClass = app.defaultNPC.traitCastingClass;
-			if (healedNpc.traitCastingFlavor === undefined) healedNpc.traitCastingFlavor = app.defaultNPC.traitCastingFlavor;
-			if (!Array.isArray(healedNpc.traitCastingSlots) || healedNpc.traitCastingSlots.length !== 9) {
-				healedNpc.traitCastingSlots = [...app.defaultNPC.traitCastingSlots];
-			}
-			if (!Array.isArray(healedNpc.traitCastingList) || healedNpc.traitCastingList.length !== 10) {
-				healedNpc.traitCastingList = [...app.defaultNPC.traitCastingList];
-			}
-			if (healedNpc.traitCastingMarked === undefined) healedNpc.traitCastingMarked = app.defaultNPC.traitCastingMarked;
-
-			// --- ACTION-BASED SPELLCASTING HEALING ---
+			// --- ACTION-BASED SPELLCASTING HEALING (NEW) ---
 			if (healedNpc.actionCastingAbility === undefined) healedNpc.actionCastingAbility = app.defaultNPC.actionCastingAbility;
 			if (healedNpc.actionCastingDC === undefined) healedNpc.actionCastingDC = undefined; // Let it calculate
+			// if (healedNpc.actionCastingBonus === undefined) healedNpc.actionCastingBonus = undefined; // REMOVED
 			if (healedNpc.actionCastingComponents === undefined) healedNpc.actionCastingComponents = app.defaultNPC.actionCastingComponents;
 			// Heal the actionCastingSpells array structure
 			const defaultActionSpellsLength = app.defaultNPC.actionCastingSpells.length;
@@ -649,12 +628,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Default FG group to the bestiary name
 		newNpc.fg_group = app.activeBestiary.projectName;
 
-		// Calculate initial DC/Bonus based on default stats (will be recalculated on form update)
+		// Calculate initial DC based on default stats (will be recalculated on form update)
+		// Bonus is no longer stored on the NPC object itself
 		const { dc: innateDC } = calculateSpellcastingDCBonus(newNpc.innateAbility, newNpc.proficiencyBonus, newNpc);
 		newNpc.innateDC = innateDC;
-		const { dc: traitDC, bonus: traitBonus } = calculateSpellcastingDCBonus(newNpc.traitCastingAbility, newNpc.proficiencyBonus, newNpc);
-		newNpc.traitCastingDC = traitDC;
-		newNpc.traitCastingBonus = traitBonus;
 		const { dc: actionDC } = calculateSpellcastingDCBonus(newNpc.actionCastingAbility, newNpc.proficiencyBonus, newNpc);
 		newNpc.actionCastingDC = actionDC;
 
@@ -866,7 +843,6 @@ document.addEventListener("DOMContentLoaded", () => {
 			intelligence: app.activeNPC.intelligence, wisdom: app.activeNPC.wisdom, charisma: app.activeNPC.charisma
 		};
 		const oldInnateAbility = app.activeNPC.innateAbility;
-		const oldTraitAbility = app.activeNPC.traitCastingAbility; // NEW
 		const oldActionAbility = app.activeNPC.actionCastingAbility;
 
 
@@ -895,10 +871,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		for (const key in window.ui.inputs) {
 			// Skip name (handled above), action/attack/radio inputs, and specific spellcasting inputs handled later
 			if (key === 'name' || key.startsWith('common') || key === 'attackDamageDice' || window.ui.inputs[key]?.type === 'radio') continue;
-			if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-')) continue; // Skip detailed spell fields for now
+			if (key.startsWith('innate-') || key.startsWith('action-casting-')) continue; // Skip detailed spell fields for now
 			if (key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') continue; // Skip main checkboxes for now
-			// Skip specific trait spell list inputs (handled in loop below)
-			if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') continue;
 
 			if (key === 'description') {
 				app.activeNPC[key] = window.ui.inputs.description.value; // Get value from hidden input linked to Trix
@@ -955,20 +929,31 @@ document.addEventListener("DOMContentLoaded", () => {
 		if(window.ui.inputs.innateAbility) app.activeNPC.innateAbility = window.ui.inputs.innateAbility.value;
 		const innateAbilityChanged = app.activeNPC.innateAbility !== oldInnateAbility;
 
-		// Update Innate DC
+		// Update DC: Use calculated if prof/ability changed AND user hasn't manually overridden
+		// Calculate DC based on OLD stats to check against current input
+		const { dc: currentInnateDC } = calculateSpellcastingDCBonus(oldInnateAbility, oldProfBonus, { ...app.activeNPC, ...oldAbilities });
+		// Calculate DC based on NEW stats
 		const { dc: newInnateCalculatedDC } = calculateSpellcastingDCBonus(app.activeNPC.innateAbility, newProfBonus, app.activeNPC);
+
 		const innateDCInput = window.ui.inputs.innateDC;
 		const manualInnateDC = innateDCInput ? parseInt(innateDCInput.value, 10) : NaN;
-		// If stats changed, force update UI and model to new calculated value
+
 		if (profBonusChanged || abilitiesChanged || innateAbilityChanged) {
-			app.activeNPC.innateDC = newInnateCalculatedDC;
-			if (innateDCInput) innateDCInput.value = newInnateCalculatedDC;
-		} else { // Otherwise, save manual input (or calculated if invalid) to model
+			// If the user's input matched the *old* calculation, update it automatically
+			if (!isNaN(manualInnateDC) && manualInnateDC === currentInnateDC) {
+				app.activeNPC.innateDC = newInnateCalculatedDC;
+				if (innateDCInput) innateDCInput.value = newInnateCalculatedDC; // Update input field
+			} else {
+				app.activeNPC.innateDC = isNaN(manualInnateDC) ? newInnateCalculatedDC : manualInnateDC; // Keep manual override or use new calc if invalid
+			}
+		} else {
+			// If stats didn't change, just save whatever is in the input field (or calc if invalid)
 			app.activeNPC.innateDC = isNaN(manualInnateDC) ? newInnateCalculatedDC : manualInnateDC;
 		}
+		// Bonus calculation and saving removed
 
 		if(window.ui.inputs.innateComponents) app.activeNPC.innateComponents = window.ui.inputs.innateComponents.value;
-		// Update innate spell lists
+		// Update spell lists
 		for (let i = 0; i < 4; i++) {
 			const freqInput = window.ui.inputs[`innate-freq-${i}`];
 			const listInput = window.ui.inputs[`innate-list-${i}`];
@@ -983,65 +968,31 @@ document.addEventListener("DOMContentLoaded", () => {
 		const spellPlacementRadio = document.querySelector('input[name="spellcasting-placement"]:checked');
 		app.activeNPC.spellcastingPlacement = spellPlacementRadio ? spellPlacementRadio.value : app.defaultNPC.spellcastingPlacement;
 
-		// --- Trait-based Spellcasting fields ---
-		if(window.ui.inputs.traitCastingLevel) app.activeNPC.traitCastingLevel = window.ui.inputs.traitCastingLevel.value;
-		if(window.ui.inputs.traitCastingAbility) app.activeNPC.traitCastingAbility = window.ui.inputs.traitCastingAbility.value;
-		const traitAbilityChanged = app.activeNPC.traitCastingAbility !== oldTraitAbility;
-
-		// Update Trait DC & Bonus
-		const { dc: newTraitCalculatedDC, bonus: newTraitCalculatedBonus } = calculateSpellcastingDCBonus(app.activeNPC.traitCastingAbility, newProfBonus, app.activeNPC);
-		const traitDCInput = window.ui.inputs.traitCastingDC;
-		const traitBonusInput = window.ui.inputs.traitCastingBonus;
-		const manualTraitDC = traitDCInput ? parseInt(traitDCInput.value, 10) : NaN;
-		const manualTraitBonus = traitBonusInput ? parseInt(traitBonusInput.value, 10) : NaN;
-
-		// If stats changed, force update UI and model to new calculated values
-		if (profBonusChanged || abilitiesChanged || traitAbilityChanged) {
-			app.activeNPC.traitCastingDC = newTraitCalculatedDC;
-			app.activeNPC.traitCastingBonus = newTraitCalculatedBonus;
-			if (traitDCInput) traitDCInput.value = newTraitCalculatedDC;
-			if (traitBonusInput) traitBonusInput.value = newTraitCalculatedBonus;
-		} else { // Otherwise, save manual input (or calculated if invalid) to model
-			app.activeNPC.traitCastingDC = isNaN(manualTraitDC) ? newTraitCalculatedDC : manualTraitDC;
-			app.activeNPC.traitCastingBonus = isNaN(manualTraitBonus) ? newTraitCalculatedBonus : manualTraitBonus;
-		}
-
-		if(window.ui.inputs.traitCastingClass) app.activeNPC.traitCastingClass = window.ui.inputs.traitCastingClass.value;
-		if(window.ui.inputs.traitCastingFlavor) app.activeNPC.traitCastingFlavor = window.ui.inputs.traitCastingFlavor.value;
-		// Update Trait spell slots and lists
-		for (let i = 0; i <= 9; i++) { // Loop 0-9 for lists, 1-9 for slots
-			const listInput = window.ui.inputs[`traitCastingList-${i}`];
-			if (listInput && app.activeNPC.traitCastingList) {
-				app.activeNPC.traitCastingList[i] = listInput.value.trim();
-			}
-			if (i > 0) { // Slots are 1-9
-				const slotsInput = window.ui.inputs[`traitCastingSlots-${i}`];
-				if (slotsInput && app.activeNPC.traitCastingSlots) {
-					app.activeNPC.traitCastingSlots[i-1] = slotsInput.value; // Store slot value (0-9)
-				}
-			}
-		}
-		if(window.ui.inputs.traitCastingMarked) app.activeNPC.traitCastingMarked = window.ui.inputs.traitCastingMarked.value;
-
-
 		// --- Action-based Spellcasting fields ---
 		if(window.ui.inputs.actionCastingAbility) app.activeNPC.actionCastingAbility = window.ui.inputs.actionCastingAbility.value;
 		const actionAbilityChanged = app.activeNPC.actionCastingAbility !== oldActionAbility;
 
-		// Update Action DC
+		// Update DC similarly to Innate
+		const { dc: currentActionDC } = calculateSpellcastingDCBonus(oldActionAbility, oldProfBonus, { ...app.activeNPC, ...oldAbilities });
 		const { dc: newActionCalculatedDC } = calculateSpellcastingDCBonus(app.activeNPC.actionCastingAbility, newProfBonus, app.activeNPC);
+
 		const actionDCInput = window.ui.inputs.actionCastingDC;
 		const manualActionDC = actionDCInput ? parseInt(actionDCInput.value, 10) : NaN;
-		// If stats changed, force update UI and model to new calculated value
+
 		if (profBonusChanged || abilitiesChanged || actionAbilityChanged) {
-			app.activeNPC.actionCastingDC = newActionCalculatedDC;
-			if(actionDCInput) actionDCInput.value = newActionCalculatedDC;
-		} else { // Otherwise, save manual input (or calculated if invalid) to model
+			if (!isNaN(manualActionDC) && manualActionDC === currentActionDC) {
+				app.activeNPC.actionCastingDC = newActionCalculatedDC;
+				if(actionDCInput) actionDCInput.value = newActionCalculatedDC;
+			} else {
+				app.activeNPC.actionCastingDC = isNaN(manualActionDC) ? newActionCalculatedDC : manualActionDC;
+			}
+		} else {
 			app.activeNPC.actionCastingDC = isNaN(manualActionDC) ? newActionCalculatedDC : manualActionDC;
 		}
+		// Bonus calculation and saving removed
 
 		if (window.ui.inputs.actionCastingComponents) app.activeNPC.actionCastingComponents = window.ui.inputs.actionCastingComponents.value;
-		// Update action spell lists
+		// Update spell lists
 		for (let i = 0; i < 4; i++) {
 			const freqInput = window.ui.inputs[`action-casting-freq-${i}`];
 			const listInput = window.ui.inputs[`action-casting-list-${i}`];
@@ -1197,7 +1148,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const dc = 8 + safeProfBonus + abilityBonus;
 		const bonus = safeProfBonus + abilityBonus;
-		return { dc, bonus }; // Return both DC and bonus
+		return { dc, bonus }; // Still return bonus, even if not stored on NPC
 	}
 
 

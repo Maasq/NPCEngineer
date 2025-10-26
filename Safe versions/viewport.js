@@ -20,9 +20,6 @@ function updateViewport() {
 		hasInnateSpellcasting, innateIsPsionics, innateAbility, innateDC, innateComponents, innateSpells,
 		// Regular Spellcasting properties
 		hasSpellcasting, spellcastingPlacement,
-		// Trait Spellcasting properties
-		traitCastingLevel, traitCastingAbility, traitCastingDC, traitCastingBonus, traitCastingClass, traitCastingFlavor,
-		traitCastingSlots, traitCastingList, traitCastingMarked,
 		// Action Spellcasting properties
 		actionCastingAbility, actionCastingDC, actionCastingComponents, actionCastingSpells
 	} = activeNPC;
@@ -32,7 +29,7 @@ function updateViewport() {
 	const senses = window.app.calculateSensesString(activeNPC);
 	const languages = window.app.calculateLanguagesString(activeNPC);
 
-	const NPCName = name || "[Creature Name]"; // Added fallback for boilerplate processing
+	const NPCName = name || "";
 	const NPCac = armorClass || "";
 	const NPChp = hitPoints || "";
 	const NPCDescriptionHTML = window.app.processTraitString(description, activeNPC) || "";
@@ -66,20 +63,14 @@ function updateViewport() {
 	// --- Helper function to italicize spell names ---
 	function formatSpellList(listString) {
 		if (!listString) return "";
-		// Match spells that might have asterisks for marking
-		const spellRegex = /([\w\s'-]+)(\*?)/g;
-		let match;
-		let result = [];
-		while ((match = spellRegex.exec(listString)) !== null) {
-			const spellName = match[1].trim().toLowerCase();
-			const asterisk = match[2]; // Capture the asterisk if present
-			if (spellName) {
-				result.push(`<i>${spellName}</i>${asterisk}`);
-			}
-		}
-		return result.join(', ');
+		return listString
+			.toLowerCase() // Convert whole list to lower case first
+			.split(',') // Split by comma
+			.map(spell => spell.trim()) // Remove leading/trailing whitespace
+			.filter(spell => spell.length > 0) // Remove empty entries resulting from extra commas
+			.map(spell => `<i>${spell}</i>`) // Wrap each spell name in italics
+			.join(', '); // Re-join with a comma and space (no longer italicized)
 	}
-
 
 	// --- Build Trait/Spellcasting Sections (as individual items for sorting) ---
 	let combinedTraitsList = [];
@@ -88,9 +79,8 @@ function updateViewport() {
 	if (hasInnateSpellcasting) {
 		const innateTitle = innateIsPsionics ? 'Innate Spellcasting (Psionics)' : 'Innate Spellcasting';
 		const abilityName = (innateAbility || 'charisma').charAt(0).toUpperCase() + (innateAbility || 'charisma').slice(1);
-		// Recalculate bonus for display as it's not stored
-		const { bonus: innateBonusForDisplay } = window.app.calculateSpellcastingDCBonus(innateAbility, activeNPC.proficiencyBonus, activeNPC);
-		const bonusString = (innateBonusForDisplay ?? 0) >= 0 ? `+${innateBonusForDisplay ?? 0}` : (innateBonusForDisplay ?? 0);
+		const { bonus: innateBonus } = window.app.calculateSpellcastingDCBonus(innateAbility, activeNPC.proficiencyBonus, activeNPC); // Calculate bonus dynamically
+		const bonusString = (innateBonus ?? 0) >= 0 ? `+${innateBonus ?? 0}` : (innateBonus ?? 0);
 		const dcValue = innateDC ?? 10;
 
 		let boilerplate = `The ${NPCName}'s innate spellcasting ability is ${abilityName} (spell save DC ${dcValue}, ${bonusString} to hit with spell attacks). `;
@@ -108,58 +98,18 @@ function updateViewport() {
 		const innateTraitHtml = `
 			<div class="npctop" style="padding-bottom: 0.5em; color: black;">
 				<i><b>${innateTitle}.</b></i> ${boilerplate}
-				${spellListHtml || '<div style="color: black; padding-bottom: 0.25em;">None</div>'}
+				${spellListHtml}
 			</div>
 		`;
 		combinedTraitsList.push({ name: innateTitle, html: innateTraitHtml });
 	}
 
-	// Build Trait-based Spellcasting Block (NEW IMPLEMENTATION)
+	// Build Trait-based Spellcasting Block (Placeholder)
 	if (hasSpellcasting && spellcastingPlacement === 'traits') {
 		const traitSpellcastingTitle = 'Spellcasting';
-		const levels = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th', '19th', '20th'];
-		const levelText = levels[(parseInt(traitCastingLevel, 10) || 1) - 1] || '1st';
-		const abilityName = (traitCastingAbility || 'intelligence').charAt(0).toUpperCase() + (traitCastingAbility || 'intelligence').slice(1);
-		const dcValue = traitCastingDC ?? 10;
-		const bonusValue = traitCastingBonus ?? 2;
-		const bonusString = bonusValue >= 0 ? `+${bonusValue}` : bonusValue;
-		const className = traitCastingClass ? ` ${traitCastingClass}` : ''; // Add space if class exists
-
-		let boilerplate = traitCastingFlavor || `The ${NPCName} is a ${levelText}-level spellcaster. Its spellcasting ability is ${abilityName} (spell save DC ${dcValue}, ${bonusString} to hit with spell attacks).`;
-		boilerplate += ` The ${NPCName} has the following${className} spells prepared:`;
-
-		let spellListHtml = '';
-		const safeTraitList = Array.isArray(traitCastingList) ? traitCastingList : [];
-		const safeTraitSlots = Array.isArray(traitCastingSlots) ? traitCastingSlots : [];
-
-		// Cantrips (Level 0)
-		if (safeTraitList[0]) {
-			spellListHtml += `<div style="color: black; padding-bottom: 0.25em;">Cantrips (at will): ${formatSpellList(safeTraitList[0])}</div>`;
-		}
-
-		// Levels 1-9
-		for (let i = 1; i <= 9; i++) {
-			const spells = safeTraitList[i];
-			const slots = parseInt(safeTraitSlots[i-1], 10) || 0; // Slots array is 0-indexed for levels 1-9
-			if (spells && slots > 0) {
-				const levelSuffix = i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th';
-				const slotText = `${slots} slot${slots > 1 ? 's' : ''}`;
-				spellListHtml += `<div style="color: black; padding-bottom: 0.25em;">${i}${levelSuffix} level (${slotText}): ${formatSpellList(spells)}</div>`;
-			}
-		}
-
-		const markedSpellsHtml = traitCastingMarked ? `<div style="color: black; padding-bottom: 0.25em; padding-top: 0.25em;">${traitCastingMarked}</div>` : '';
-
-		const traitSpellcastingHtml = `
-			<div class="npctop" style="padding-bottom: 0.5em; color: black;">
-				<i><b>${traitSpellcastingTitle}.</b></i> ${boilerplate}
-				${spellListHtml || '<div style="color: black; padding-bottom: 0.25em;">None</div>'}
-				${markedSpellsHtml}
-			</div>
-		`;
+		const traitSpellcastingHtml = `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${traitSpellcastingTitle}.</b></i> [Trait-based spell list, levels, and slots will be displayed here.]</div>`;
 		combinedTraitsList.push({ name: traitSpellcastingTitle, html: traitSpellcastingHtml });
 	}
-
 
 	// Add Regular Traits
 	if (traits && traits.length > 0) {
@@ -186,9 +136,8 @@ function updateViewport() {
 		const actionTitle = 'Spellcasting'; // This remains the title for the action entry
 		const abilityName = (actionCastingAbility || 'intelligence').toLowerCase();
 		const dcValue = actionCastingDC ?? 10;
-		const componentsText = actionCastingComponents ? ` ${actionCastingComponents}` : ''; // Add leading space if present
 
-		let boilerplate = `The ${NPCName} casts one of the following spells, using ${abilityName} as the spellcasting ability (spell save DC ${dcValue})${componentsText}:`;
+		let boilerplate = `The ${NPCName} casts one of the following spells, using ${abilityName} as the spellcasting ability (spell save DC ${dcValue}):`;
 
 		const spellListHtml = (Array.isArray(actionCastingSpells) ? actionCastingSpells : [])
 			.filter(spell => spell?.freq && spell?.list)
@@ -201,7 +150,7 @@ function updateViewport() {
 		const actionSpellcastingHtml = `
 			<div class="npctop" style="padding-bottom: 0.5em; color: black;">
 				<i><b>${actionTitle}.</b></i> ${boilerplate}
-				${spellListHtml || '<div style="color: black; padding-bottom: 0.25em; padding-left: 1em;">None</div>'}
+				${spellListHtml}
 			</div>
 		`;
 		actionSpellcastingBlockItem = { name: actionTitle, desc: boilerplate + (spellListHtml ? '...' : ''), html: actionSpellcastingHtml }; // Use dummy desc for sorting
