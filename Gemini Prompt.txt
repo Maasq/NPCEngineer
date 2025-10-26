@@ -1,0 +1,30 @@
+Study these 8 files. Together they comprise a web app called NPC Engineer. Don't make any changes at this time.
+
+Any time we make an edit, increment the version number - currently it is 0.12.02. Report the new version number to me as part of your response. If we edit the HTML file in any way, also update the version number and date to the appropriate metadata.
+
+Use tabs to indent rather than spaces. Each tab should equal 3 spaces.
+
+Any time we apply a feature, make all the edits to each file at once and when you have to give me new files, give me them one at a time and wait for me to say 'ready' before writing the next one. As all the HTML changes will be within the 'Spellcasting and Psionics' card, it is preferable if you just give me the HTML for this card and I can paste it myself.
+
+Let me know that you fully understand the app and these instructions.
+
+
+Can you (using the Innate Spellcasting part as a guide) formulate the Spellcasting section? Base this on the original 2014 version of Spellcasting that would be found in the Monster Manual.
+
+The two radio buttons should change the HTML visible:
+
+'Use Spellcasting' is like a master switch.
+
+'Use in traits' would make this chunk of HTML I am asking for visible.
+
+'Use in Actions' would show nothing yet - that's a tomorrow task.
+
+Do you foresee any issues, or have any questions?
+
+I would like to remove 'Spell Hit bonus' from both Innate Spellcasting and the Actions version of Spellcasting. This shouldn't affect the viewport as I don't think this value is referenced in the boilerplate. If it is, remove reference to it.
+
+This should mean we can fit Spellcasting Ability, Spell Save DC and Component Text on the same line, saving space. The spellcasting ability dropdown can be far narrower, just wide enough to fit the longest attribute name. Spell save DC can be a little narrower (2 digit number only) and the rest of the space given over to component text.
+
+What files need updated? Are there any questions?
+
+Give me the HTML file first, and wait for my 'ready' between writing any other files.

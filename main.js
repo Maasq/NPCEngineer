@@ -1,6 +1,6 @@
 // main.js
 document.addEventListener("DOMContentLoaded", () => {
-	
+
 	// --- DATABASE SETUP ---
 	const db = new Dexie('npcEngineerDB');
 	db.version(1).stores({
@@ -18,44 +18,44 @@ document.addEventListener("DOMContentLoaded", () => {
 	const monstrousLanguages2 = [ "Modron", "Otyugh", "Sahuagin", "Slaad", "Sphinx", "Terran", "Thri-kreen", "Tlincalli", "Troglodyte", "Umber hulk", "Vegepygmy", "Yeti" ];
 	// Combine all predefined languages for validation checks
 	const allPredefinedLanguages = [
-		...standardLanguages, ...exoticLanguages, 
+		...standardLanguages, ...exoticLanguages,
 		...monstrousLanguages1, ...monstrousLanguages2
 	].map(lang => lang.toLowerCase());
 
 	const conditions = [
-		'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened', 'grappled', 
-		'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 
+		'blinded', 'charmed', 'deafened', 'exhaustion', 'frightened', 'grappled',
+		'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned',
 		'prone', 'restrained', 'stunned', 'unconscious'
 	];
 	const skills = [
-        { id: 'acrobatics', name: 'Acrobatics', attribute: 'dexterity' },
-        { id: 'animal_handling', name: 'Animal Handling', attribute: 'wisdom' },
-        { id: 'arcana', name: 'Arcana', attribute: 'intelligence' },
-        { id: 'athletics', name: 'Athletics', attribute: 'strength' },
-        { id: 'deception', name: 'Deception', attribute: 'charisma' },
-        { id: 'history', name: 'History', attribute: 'intelligence' },
-        { id: 'insight', name: 'Insight', attribute: 'wisdom' },
-        { id: 'intimidation', name: 'Intimidation', attribute: 'charisma' },
-        { id: 'investigation', name: 'Investigation', attribute: 'intelligence' },
-        { id: 'medicine', name: 'Medicine', attribute: 'wisdom' },
-        { id: 'nature', name: 'Nature', attribute: 'intelligence' },
-        { id: 'perception', name: 'Perception', attribute: 'wisdom' },
-        { id: 'performance', name: 'Performance', attribute: 'charisma' },
-        { id: 'persuasion', name: 'Persuasion', attribute: 'charisma' },
-        { id: 'religion', name: 'Religion', attribute: 'intelligence' },
-        { id: 'sleight_of_hand', name: 'Sleight of Hand', attribute: 'dexterity' },
-        { id: 'stealth', name: 'Stealth', attribute: 'dexterity' },
-        { id: 'survival', name: 'Survival', attribute: 'wisdom' }
-    ];
-	
+		{ id: 'acrobatics', name: 'Acrobatics', attribute: 'dexterity' },
+		{ id: 'animal_handling', name: 'Animal Handling', attribute: 'wisdom' },
+		{ id: 'arcana', name: 'Arcana', attribute: 'intelligence' },
+		{ id: 'athletics', name: 'Athletics', attribute: 'strength' },
+		{ id: 'deception', name: 'Deception', attribute: 'charisma' },
+		{ id: 'history', name: 'History', attribute: 'intelligence' },
+		{ id: 'insight', name: 'Insight', attribute: 'wisdom' },
+		{ id: 'intimidation', name: 'Intimidation', attribute: 'charisma' },
+		{ id: 'investigation', name: 'Investigation', attribute: 'intelligence' },
+		{ id: 'medicine', name: 'Medicine', attribute: 'wisdom' },
+		{ id: 'nature', name: 'Nature', attribute: 'intelligence' },
+		{ id: 'perception', name: 'Perception', attribute: 'wisdom' },
+		{ id: 'performance', name: 'Performance', attribute: 'charisma' },
+		{ id: 'persuasion', name: 'Persuasion', attribute: 'charisma' },
+		{ id: 'religion', name: 'Religion', attribute: 'intelligence' },
+		{ id: 'sleight_of_hand', name: 'Sleight of Hand', attribute: 'dexterity' },
+		{ id: 'stealth', name: 'Stealth', attribute: 'dexterity' },
+		{ id: 'survival', name: 'Survival', attribute: 'wisdom' }
+	];
+
 	let activeBestiary = null;
 	let activeNPC = null;
 	let activeNPCIndex = -1;
 	let isUpdatingForm = false;
 	let currentlyEditingAction = null;
-    let boilerplateTarget = null;
-    let confirmCallback = null; // Store callback for confirmation dialog
-	
+	let boilerplateTarget = null;
+	let confirmCallback = null; // Store callback for confirmation dialog
+
 	const baseDefaultNPC = {
 		name: "", size: "", type: "", species: "", alignment: "",
 		armorClass: "", hitPoints: "", challenge: "0", experience: "10", proficiencyBonus: 2,
@@ -80,36 +80,48 @@ document.addEventListener("DOMContentLoaded", () => {
 		traits: [],
 		sortTraitsAlpha: true,
 		actions: {
-            actions: [],
-            'bonus-actions': [],
-            reactions: [],
-            'legendary-actions': [],
-            'lair-actions': []
-        },
-        legendaryBoilerplate: "The [Creature Name] can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The [Creature Name] regains spent legendary actions at the start of its turn.",
-        lairBoilerplate: "On initiative count 20 (losing initiative ties), the [Creature Name] takes a lair action to cause one of the following effects; the [Creature Name] can't use the same effect two rounds in a row:",
+			actions: [],
+			'bonus-actions': [],
+			reactions: [],
+			'legendary-actions': [],
+			'lair-actions': []
+		},
+		legendaryBoilerplate: "The [Creature Name] can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The [Creature Name] regains spent legendary actions at the start of its turn.",
+		lairBoilerplate: "On initiative count 20 (losing initiative ties), the [Creature Name] takes a lair action to cause one of the following effects; the [Creature Name] can't use the same effect two rounds in a row:",
 		selectedLanguages: [],
 		specialLanguageOption: 0,
 		hasTelepathy: false,
 		telepathyRange: 0,
-		
-		// --- SPELLCASTING PROPERTIES ---
+
+		// --- INNATE SPELLCASTING PROPERTIES ---
 		hasInnateSpellcasting: false,
 		innateIsPsionics: false,
 		innateAbility: 'charisma', // Default ability
 		innateDC: 10, // Placeholder, calculated later
-		innateBonus: 2, // Placeholder, calculated later
-		innateComponents: 'requiring no material components.', // CHANGED
+		// innateBonus: 2, // REMOVED
+		innateComponents: 'requiring no material components', // Default value
 		innateSpells: [ // Array to hold frequency/list pairs (Reduced to 4 rows)
 			{ freq: "At will", list: "" },
 			{ freq: "3/day each", list: "" },
 			{ freq: "1/day each", list: "" },
-			{ freq: "", list: "" } 
+			{ freq: "", list: "" }
 		],
+		// --- REGULAR SPELLCASTING PROPERTIES ---
 		hasSpellcasting: false,
 		spellcastingPlacement: 'traits', // 'traits' or 'actions'
+		// --- ACTION-BASED SPELLCASTING PROPERTIES (NEW) ---
+		actionCastingAbility: 'intelligence', // Default different from innate
+		actionCastingDC: 10, // Placeholder
+		// actionCastingBonus: 2, // REMOVED
+		actionCastingComponents: '', // Default to empty
+		actionCastingSpells: [ // Same structure as innate
+			{ freq: "At will", list: "" },
+			{ freq: "3/day each", list: "" },
+			{ freq: "1/day each", list: "" },
+			{ freq: "", list: "" }
+		],
 	};
-	
+
 	// Dynamically create the full defaultNPC object with resistance and skill properties
 	const defaultNPC = { ...baseDefaultNPC };
 	damageTypes.forEach(type => {
@@ -121,10 +133,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		defaultNPC[`ci_${condition}`] = false;
 	});
 	skills.forEach(skill => {
-        defaultNPC[`skill_${skill.id}_prof`] = false;
-        defaultNPC[`skill_${skill.id}_exp`] = false;
-        defaultNPC[`skill_${skill.id}_adjust`] = 0;
-    });
+		defaultNPC[`skill_${skill.id}_prof`] = false;
+		defaultNPC[`skill_${skill.id}_exp`] = false;
+		defaultNPC[`skill_${skill.id}_adjust`] = 0;
+	});
 
 
 	const crToXpMap = {
@@ -139,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const challengeOrder = ['0','1/8','1/4','1/2','1','2','3','4','5','6','7','8','9','10',
 												'11','12','13','14','15','16','17','18','19','20','21','22','23',
 												'24','25','26','27','28','29','30'];
-	
+
 	const pronounSets = {
 		male: ['he', 'him', 'his', 'himself'],
 		female: ['she', 'her', 'her', 'herself'],
@@ -147,75 +159,75 @@ document.addEventListener("DOMContentLoaded", () => {
 		creature: ['it', 'it', 'its', 'itself']
 	};
 
-    // Make variables and functions available to other scripts
-    window.app = {
-        db,
-        damageTypes,
-        standardLanguages,
-        exoticLanguages,
-        monstrousLanguages1,
-        monstrousLanguages2,
-        allPredefinedLanguages,
-        conditions,
-        skills,
-        activeBestiary,
-        activeNPC,
-        activeNPCIndex,
-        isUpdatingForm,
-        defaultNPC,
-        crToXpMap,
-        challengeOrder,
-        pronounSets,
+	// Make variables and functions available to other scripts
+	window.app = {
+		db,
+		damageTypes,
+		standardLanguages,
+		exoticLanguages,
+		monstrousLanguages1,
+		monstrousLanguages2,
+		allPredefinedLanguages,
+		conditions,
+		skills,
+		activeBestiary,
+		activeNPC,
+		activeNPCIndex,
+		isUpdatingForm,
+		defaultNPC,
+		crToXpMap,
+		challengeOrder,
+		pronounSets,
 		processTraitString,
-        findUniqueNpcName,
-        createNewBestiary,
-        loadBestiary,
-        exportBestiary,
-        importBestiary,
-        createNewNpc,
-        duplicateCurrentNpc,
-        deleteCurrentNpc,
-        importNpc,
-        exportNpc,
-        exportBestiaryToFG, 
-        updateActiveNPCFromForm,
-        healBestiary,
-        sortAndSwitchToNpc,
-        switchActiveNPC,
-        saveActiveBestiaryToDB,
-        calculateAbilityBonus,
-        calculateProficiencyBonus,
-        calculateSpeedString,
-        calculateSensesString,
-        calculateDamageModifiersString,
-        calculateConditionImmunitiesString,
-        calculateLanguagesString,
-        calculateAllStats,
-        calculateAllSkills,
-        calculateInnateDCBonus, // NEW function
-        // Action functions
-        addOrUpdateAction,
-        editAction,
-        clearInputs,
-        openModal,
-        closeModal,
-        showAlert,
-        showConfirm, // New for confirmation
-        handleAttackHelperOpen, // New logic handler
-        parseAttackString, // New parser
-        populateAttackHelper, // New pre-filler
-        editBoilerplate,
-        saveBoilerplate,
-        addDamageRow,
-        generateAttackString,
-        createDiceSelector,
+		findUniqueNpcName,
+		createNewBestiary,
+		loadBestiary,
+		exportBestiary,
+		importBestiary,
+		createNewNpc,
+		duplicateCurrentNpc,
+		deleteCurrentNpc,
+		importNpc,
+		exportNpc,
+		exportBestiaryToFG,
+		updateActiveNPCFromForm,
+		healBestiary,
+		sortAndSwitchToNpc,
+		switchActiveNPC,
+		saveActiveBestiaryToDB,
+		calculateAbilityBonus,
+		calculateProficiencyBonus,
+		calculateSpeedString,
+		calculateSensesString,
+		calculateDamageModifiersString,
+		calculateConditionImmunitiesString,
+		calculateLanguagesString,
+		calculateAllStats,
+		calculateAllSkills,
+		calculateSpellcastingDCBonus, // Generic function
+		// Action functions
+		addOrUpdateAction,
+		editAction,
+		clearInputs,
+		openModal,
+		closeModal,
+		showAlert,
+		showConfirm,
+		handleAttackHelperOpen,
+		parseAttackString,
+		populateAttackHelper,
+		editBoilerplate,
+		saveBoilerplate,
+		addDamageRow,
+		generateAttackString,
+		createDiceSelector,
 		updateDiceString,
 		updateBonus
-    };
+	};
 
 
 	// --- FUNCTIONS ---
-	
+
 	function processTraitString(text, npc) {
 		if (!text || !npc) return text;
 
@@ -235,37 +247,22 @@ document.addEventListener("DOMContentLoaded", () => {
 				case 'name':
 					let outputName;
 					if (isProperName) {
-						// Use first word of the name, always capitalized
 						outputName = capitalize(name.split(' ')[0] || name);
 					} else if (isUnique) {
-						// Use full name, always capitalized
 						outputName = capitalize(name);
 					} else {
-						// Use "the {name}"
 						outputName = `the ${name.toLowerCase()}`;
 					}
-
-					// Handle token capitalization like {Name}
-					if (isCapitalizedToken) {
-						return capitalize(outputName);
-					}
-					return outputName;
-
-				case 'he':
-					return isCapitalizedToken ? capitalize(pronouns[0]) : pronouns[0];
-				case 'him':
-					return isCapitalizedToken ? capitalize(pronouns[1]) : pronouns[1];
-				case 'his':
-					return isCapitalizedToken ? capitalize(pronouns[2]) : pronouns[2];
-				case 'himself':
-					return isCapitalizedToken ? capitalize(pronouns[3]) : pronouns[3];
-
-				default:
-					return match; // Return the original token if not found
+					return isCapitalizedToken ? capitalize(outputName) : outputName;
+				case 'he': return isCapitalizedToken ? capitalize(pronouns[0]) : pronouns[0];
+				case 'him': return isCapitalizedToken ? capitalize(pronouns[1]) : pronouns[1];
+				case 'his': return isCapitalizedToken ? capitalize(pronouns[2]) : pronouns[2];
+				case 'himself': return isCapitalizedToken ? capitalize(pronouns[3]) : pronouns[3];
+				default: return match;
 			}
 		});
 	}
-	
+
 	function findUniqueNpcName(baseName) {
 		if (!app.activeBestiary) return baseName;
 		let newName = baseName;
@@ -279,144 +276,158 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// --- Bestiary Management ---
 
-    async function createNewBestiary() {
-    	const bestiaryName = window.ui.newBestiaryNameInput.value.trim();
-    	if (!bestiaryName) {
-    		showAlert("Bestiary name cannot be empty."); // Use showAlert
-    		return;
-    	}
-    	const existingBestiary = await app.db.projects.where('projectName').equalsIgnoreCase(bestiaryName).first();
-    	if (existingBestiary) {
-    		showAlert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`); // Use showAlert
-    		return;
-    	}
-    	
-    	const newBestiary = {
-    		projectName: bestiaryName, // This remains projectName for DB compatibility
-    		metadata: { 
-    			createdAt: new Date(),
-    			addDescription: true,
-    			addTitle: true,
-    			addImageLink: true,
-    			useDropCap: true,
-    			fg_groups: [],
-    			userDefinedLanguages: [],
-    			savedTraits: []
-    		},
-    		npcs: [{ ...app.defaultNPC, name: "New NPC", fg_group: bestiaryName }]
-    	};
+	async function createNewBestiary() {
+		const bestiaryName = window.ui.newBestiaryNameInput.value.trim();
+		if (!bestiaryName) {
+			showAlert("Bestiary name cannot be empty.");
+			return;
+		}
+		const existingBestiary = await app.db.projects.where('projectName').equalsIgnoreCase(bestiaryName).first();
+		if (existingBestiary) {
+			showAlert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`);
+			return;
+		}
 
-    	try {
-    		const newId = await app.db.projects.add(newBestiary);
-    		newBestiary.id = newId;
-    		loadBestiary(newBestiary);
-    		window.ui.hideAllModals();
-    		window.ui.newBestiaryNameInput.value = "";
-    	} catch (error) {
-    		console.error("Failed to create bestiary:", error);
-    		showAlert("Error: Could not create bestiary. Check console for details."); // Use showAlert
-    	}
-    }
-	
+		const newBestiary = {
+			projectName: bestiaryName,
+			metadata: {
+				createdAt: new Date(),
+				addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
+				fg_groups: [], userDefinedLanguages: [], savedTraits: []
+			},
+			npcs: [{ ...app.defaultNPC, name: "New NPC", fg_group: bestiaryName }]
+		};
+
+		try {
+			const newId = await app.db.projects.add(newBestiary);
+			newBestiary.id = newId;
+			loadBestiary(newBestiary);
+			window.ui.hideAllModals();
+			window.ui.newBestiaryNameInput.value = "";
+		} catch (error) {
+			console.error("Failed to create bestiary:", error);
+			showAlert("Error: Could not create bestiary. Check console for details.");
+		}
+	}
+
 	function healBestiary(bestiary) {
-		if (typeof bestiary.metadata !== 'object' || bestiary.metadata === null) {
-			bestiary.metadata = {};
-		}
-		if (!Array.isArray(bestiary.metadata.userDefinedLanguages)) {
-			bestiary.metadata.userDefinedLanguages = [];
-		}
-		if (!Array.isArray(bestiary.metadata.savedTraits)) {
-			bestiary.metadata.savedTraits = [];
-		}
-		
-		const propsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
-		propsToConvert.forEach(prop => {
-			if (typeof bestiary.metadata[prop] === 'number') {
-				bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
-			} else if (bestiary.metadata[prop] === undefined) {
-				bestiary.metadata[prop] = true;
-			}
+		// --- Metadata Healing ---
+		if (typeof bestiary.metadata !== 'object' || bestiary.metadata === null) bestiary.metadata = {};
+		if (!Array.isArray(bestiary.metadata.userDefinedLanguages)) bestiary.metadata.userDefinedLanguages = [];
+		if (!Array.isArray(bestiary.metadata.savedTraits)) bestiary.metadata.savedTraits = [];
+		if (!Array.isArray(bestiary.metadata.fg_groups)) bestiary.metadata.fg_groups = []; // Ensure fg_groups exists
+
+		const metadataPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
+		metadataPropsToConvert.forEach(prop => {
+			if (typeof bestiary.metadata[prop] === 'number') bestiary.metadata[prop] = bestiary.metadata[prop] === 1; // Convert 1/0 to true/false
+			else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true; // Default to true if missing
 		});
 
-		if (!Array.isArray(bestiary.npcs)) {
-			bestiary.npcs = [];
-		}
+		// --- NPC Healing ---
+		if (!Array.isArray(bestiary.npcs)) bestiary.npcs = [];
 
 		let unnamedCounter = 1;
-		bestiary.npcs = bestiary.npcs.map(npc => {
+		bestiary.npcs = bestiary.npcs.map((npc, index) => { // Added index for unique name check
 			if (typeof npc !== 'object' || npc === null) {
+				console.warn("Found corrupt NPC data, replacing with default.");
 				return { ...app.defaultNPC, name: findUniqueNpcName("Recovered Corrupt NPC") };
 			}
-			
+
+			// Start with defaults, then overlay npc data
 			const healedNpc = { ...app.defaultNPC, ...npc };
 
-			propsToConvert.forEach(prop => {
-				if (typeof healedNpc[prop] === 'number') {
-					healedNpc[prop] = healedNpc[prop] === 1;
-				} else if (healedNpc[prop] === undefined) {
-					healedNpc[prop] = bestiary.metadata[prop];
-				}
+			// Heal NPC-specific viewport settings (boolean conversion & defaults)
+			const npcPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
+			npcPropsToConvert.forEach(prop => {
+				if (typeof healedNpc[prop] === 'number') healedNpc[prop] = healedNpc[prop] === 1;
+				// If missing on NPC, inherit from bestiary metadata default
+				else if (healedNpc[prop] === undefined) healedNpc[prop] = bestiary.metadata[prop];
 			});
-			
-			if (!Array.isArray(healedNpc.selectedLanguages)) healedNpc.selectedLanguages = [];
-			if (healedNpc.specialLanguageOption === undefined) healedNpc.specialLanguageOption = 0;
-			if (healedNpc.hasTelepathy === undefined) healedNpc.hasTelepathy = false;
-			if (healedNpc.telepathyRange === undefined) healedNpc.telepathyRange = 0;
-			
-			if (!Array.isArray(healedNpc.traits)) healedNpc.traits = [];
-			if (healedNpc.sortTraitsAlpha === undefined) healedNpc.sortTraitsAlpha = true;
 
-			// Heal actions
+			// Ensure arrays and required properties exist with defaults
+			if (!Array.isArray(healedNpc.selectedLanguages)) healedNpc.selectedLanguages = [];
+			if (healedNpc.specialLanguageOption === undefined) healedNpc.specialLanguageOption = app.defaultNPC.specialLanguageOption;
+			if (healedNpc.hasTelepathy === undefined) healedNpc.hasTelepathy = app.defaultNPC.hasTelepathy;
+			if (healedNpc.telepathyRange === undefined) healedNpc.telepathyRange = app.defaultNPC.telepathyRange;
+
+			if (!Array.isArray(healedNpc.traits)) healedNpc.traits = [];
+			if (healedNpc.sortTraitsAlpha === undefined) healedNpc.sortTraitsAlpha = app.defaultNPC.sortTraitsAlpha;
+
+			// Heal Actions structure
 			if (typeof healedNpc.actions !== 'object' || healedNpc.actions === null) {
-                healedNpc.actions = JSON.parse(JSON.stringify(app.defaultNPC.actions));
-            } else {
-                for (const key in app.defaultNPC.actions) {
-                    if (!Array.isArray(healedNpc.actions[key])) {
-                        healedNpc.actions[key] = [];
-                    }
-                }
-            }
+				healedNpc.actions = JSON.parse(JSON.stringify(app.defaultNPC.actions)); // Deep copy default structure
+			} else {
+				// Ensure all action type arrays exist
+				for (const key in app.defaultNPC.actions) {
+					if (!Array.isArray(healedNpc.actions[key])) healedNpc.actions[key] = [];
+				}
+			}
 			if (healedNpc.legendaryBoilerplate === undefined) healedNpc.legendaryBoilerplate = app.defaultNPC.legendaryBoilerplate;
 			if (healedNpc.lairBoilerplate === undefined) healedNpc.lairBoilerplate = app.defaultNPC.lairBoilerplate;
-			
-			// --- SPELLCASTING HEALING ---
+
+			// --- INNATE SPELLCASTING HEALING ---
 			if (healedNpc.hasInnateSpellcasting === undefined) healedNpc.hasInnateSpellcasting = app.defaultNPC.hasInnateSpellcasting;
 			if (healedNpc.innateIsPsionics === undefined) healedNpc.innateIsPsionics = app.defaultNPC.innateIsPsionics;
 			if (healedNpc.innateAbility === undefined) healedNpc.innateAbility = app.defaultNPC.innateAbility;
-			if (healedNpc.innateDC === undefined) healedNpc.innateDC = app.defaultNPC.innateDC;
-			if (healedNpc.innateBonus === undefined) healedNpc.innateBonus = app.defaultNPC.innateBonus;
+			if (healedNpc.innateDC === undefined) healedNpc.innateDC = undefined; // Let it be calculated on load if missing
+			// if (healedNpc.innateBonus === undefined) healedNpc.innateBonus = undefined; // REMOVED
 			if (healedNpc.innateComponents === undefined) healedNpc.innateComponents = app.defaultNPC.innateComponents;
-			// Heal the innateSpells array structure (Adjusted for 4 rows)
+			// Heal spell array structure (ensure 4 slots, copy defaults if needed)
 			const defaultInnateSpellsLength = app.defaultNPC.innateSpells.length;
 			if (!Array.isArray(healedNpc.innateSpells)) {
 				healedNpc.innateSpells = JSON.parse(JSON.stringify(app.defaultNPC.innateSpells));
 			} else {
-                 // Ensure it has at least the default number of slots, adding missing ones
-                 while(healedNpc.innateSpells.length < defaultInnateSpellsLength) {
-                     healedNpc.innateSpells.push({ freq: "", list: ""});
-                 }
-                 // Trim excess slots if the default changed
-                 if (healedNpc.innateSpells.length > defaultInnateSpellsLength) {
-                     healedNpc.innateSpells = healedNpc.innateSpells.slice(0, defaultInnateSpellsLength);
-                 }
-                 // Heal individual slots
-                 healedNpc.innateSpells = healedNpc.innateSpells.map((spellSlot, index) => {
-					const defaultSlot = app.defaultNPC.innateSpells[index] || { freq: "", list: "" };
+				// Add missing slots
+				while(healedNpc.innateSpells.length < defaultInnateSpellsLength) healedNpc.innateSpells.push({ freq: "", list: ""});
+				// Remove extra slots
+				if (healedNpc.innateSpells.length > defaultInnateSpellsLength) healedNpc.innateSpells = healedNpc.innateSpells.slice(0, defaultInnateSpellsLength);
+				// Ensure each slot has freq/list, using defaults if missing
+				healedNpc.innateSpells = healedNpc.innateSpells.map((spellSlot, slotIndex) => { // Changed variable name
+					const defaultSlot = app.defaultNPC.innateSpells[slotIndex] || { freq: "", list: "" };
 					return {
 						freq: spellSlot?.freq ?? defaultSlot.freq,
 						list: spellSlot?.list ?? defaultSlot.list
 					};
 				});
-            }
+			}
 
+			// --- REGULAR SPELLCASTING HEALING ---
 			if (healedNpc.hasSpellcasting === undefined) healedNpc.hasSpellcasting = app.defaultNPC.hasSpellcasting;
 			if (healedNpc.spellcastingPlacement === undefined) healedNpc.spellcastingPlacement = app.defaultNPC.spellcastingPlacement;
 
+			// --- ACTION-BASED SPELLCASTING HEALING (NEW) ---
+			if (healedNpc.actionCastingAbility === undefined) healedNpc.actionCastingAbility = app.defaultNPC.actionCastingAbility;
+			if (healedNpc.actionCastingDC === undefined) healedNpc.actionCastingDC = undefined; // Let it calculate
+			// if (healedNpc.actionCastingBonus === undefined) healedNpc.actionCastingBonus = undefined; // REMOVED
+			if (healedNpc.actionCastingComponents === undefined) healedNpc.actionCastingComponents = app.defaultNPC.actionCastingComponents;
+			// Heal the actionCastingSpells array structure
+			const defaultActionSpellsLength = app.defaultNPC.actionCastingSpells.length;
+			if (!Array.isArray(healedNpc.actionCastingSpells)) {
+				healedNpc.actionCastingSpells = JSON.parse(JSON.stringify(app.defaultNPC.actionCastingSpells));
+			} else {
+				while(healedNpc.actionCastingSpells.length < defaultActionSpellsLength) healedNpc.actionCastingSpells.push({ freq: "", list: ""});
+				if (healedNpc.actionCastingSpells.length > defaultActionSpellsLength) healedNpc.actionCastingSpells = healedNpc.actionCastingSpells.slice(0, defaultActionSpellsLength);
+				healedNpc.actionCastingSpells = healedNpc.actionCastingSpells.map((spellSlot, slotIndex) => { // Changed variable name
+					const defaultSlot = app.defaultNPC.actionCastingSpells[slotIndex] || { freq: "", list: "" };
+					return {
+						freq: spellSlot?.freq ?? defaultSlot.freq,
+						list: spellSlot?.list ?? defaultSlot.list
+					};
+				});
+			}
 
+			// Heal FG Group (default to bestiary name if missing or invalid)
+			const allValidGroups = [bestiary.projectName, ...(bestiary.metadata.fg_groups || [])];
+			if (!healedNpc.fg_group || !allValidGroups.includes(healedNpc.fg_group)) {
+				healedNpc.fg_group = bestiary.projectName;
+			}
+
+			// Assign unique name if needed
 			if (!healedNpc.name || healedNpc.name.trim() === "") {
 				let uniqueName = `Unnamed NPC`;
 				if (unnamedCounter > 1) uniqueName += ` ${unnamedCounter}`;
-				while (bestiary.npcs.some(n => n.name === uniqueName)) {
+				// Check against the *original* list before this map potentially renames others
+				while (bestiary.npcs.some((n, i) => i !== index && n.name === uniqueName)) { // Use original index 'index'
 					unnamedCounter++;
 					uniqueName = `Unnamed NPC ${unnamedCounter}`;
 				}
@@ -424,70 +435,106 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 			return healedNpc;
 		});
-		
+
+		// Ensure at least one NPC exists
 		if (bestiary.npcs.length === 0) {
+			console.warn("Bestiary had no valid NPCs, adding a default one.");
 			bestiary.npcs.push({ ...app.defaultNPC, name: "New NPC", fg_group: bestiary.projectName });
 		}
 
 		return bestiary;
 	}
 
+
 	function loadBestiary(bestiary) {
 		try {
-			const healedBestiary = healBestiary(JSON.parse(JSON.stringify(bestiary)));
-			
+			// Deep clone before healing to avoid modifying the original object reference
+			const clonedBestiary = JSON.parse(JSON.stringify(bestiary));
+			const healedBestiary = healBestiary(clonedBestiary);
 			app.activeBestiary = healedBestiary;
-			sortAndSwitchToNpc(null);
-			window.ui.updateUIForActiveBestiary();
+			sortAndSwitchToNpc(null); // Sort and select the first NPC
+			window.ui.updateUIForActiveBestiary(); // Update the entire UI based on the loaded bestiary
 		} catch (error) {
 			console.error("Critical error loading bestiary:", error);
-			showAlert("There was a critical error trying to load this bestiary. It may be corrupt. Check the console for details."); // Use showAlert
+			showAlert("There was a critical error trying to load this bestiary. It may be corrupt. Check the console for details.");
+			// Reset state if loading fails
 			app.activeBestiary = null;
 			app.activeNPC = null;
 			app.activeNPCIndex = -1;
-			window.ui.updateUIForActiveBestiary();
+			window.ui.updateUIForActiveBestiary(); // Update UI to reflect no bestiary loaded
 		}
 	}
-	
+
 	function switchActiveNPC(index) {
 		if (app.activeBestiary && index >= 0 && index < app.activeBestiary.npcs.length) {
 			app.activeNPCIndex = index;
 			app.activeNPC = app.activeBestiary.npcs[index];
-			window.ui.updateFormFromActiveNPC();
+			window.ui.updateFormFromActiveNPC(); // Load selected NPC data into the form
 		} else if (app.activeBestiary && app.activeBestiary.npcs.length > 0) {
+			// Fallback to the first NPC if index is invalid but NPCs exist
 			app.activeNPCIndex = 0;
 			app.activeNPC = app.activeBestiary.npcs[0];
 			window.ui.updateFormFromActiveNPC();
+		} else {
+			// No NPC available
+			app.activeNPC = null;
+			app.activeNPCIndex = -1;
+			window.ui.updateFormFromActiveNPC(); // Clear the form
 		}
 	}
+
 
 	async function saveActiveBestiaryToDB() {
 		if (app.activeBestiary && app.activeBestiary.id) {
 			try {
+				// Create a deep copy to avoid potential mutation issues during async save
 				const bestiaryToSave = JSON.parse(JSON.stringify(app.activeBestiary));
 				await app.db.projects.put(bestiaryToSave);
+				// console.log("Bestiary saved:", bestiaryToSave.projectName); // Optional: for debugging
 			} catch (error) {
 				console.error("Failed to save bestiary to DB:", error);
+				// Optionally inform the user
+				// showAlert("Error saving bestiary. Changes might not persist.");
 			}
+		} else {
+			console.warn("Attempted to save but no active bestiary or bestiary ID is missing.");
 		}
 	}
-	
+
 	function sortAndSwitchToNpc(targetNpc) {
 		if (!app.activeBestiary) return;
 
+		// Sort the NPCs alphabetically by name (case-insensitive)
 		app.activeBestiary.npcs.sort((a, b) => {
 			return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: 'base' });
 		});
 
-		const newIndex = targetNpc ? app.activeBestiary.npcs.findIndex(npc => npc === targetNpc) : 0;
+		// Find the new index of the target NPC after sorting, or default to 0
+		const newIndex = targetNpc
+			? app.activeBestiary.npcs.findIndex(npc => npc === targetNpc) // Find by object reference
+			: 0; // Default to first NPC if no target
+
+		// Switch to the determined index (handles case where targetNpc wasn't found -> selects 0)
 		switchActiveNPC(newIndex >= 0 ? newIndex : 0);
+		// No need to update the selector here, switchActiveNPC calls updateForm which calls updateNpcSelector
 	}
 
 
 	async function exportBestiary() {
-		if (!app.activeBestiary) return;
-		
-		const bestiaryJson = JSON.stringify(app.activeBestiary, null, 2);
+		if (!app.activeBestiary) {
+			showAlert("No active bestiary to export.");
+			return;
+		}
+
+		// Ensure data is up-to-date before exporting
+		if (app.activeNPC) {
+			updateActiveNPCFromForm(); // Grab latest form data if an NPC is selected
+		}
+
+		// Use a deep copy for safety
+		const bestiaryToExport = JSON.parse(JSON.stringify(app.activeBestiary));
+		const bestiaryJson = JSON.stringify(bestiaryToExport, null, 2); // Pretty print JSON
+
 		try {
 			const handle = await window.showSaveFilePicker({
 				suggestedName: `Bestiary-${app.activeBestiary.projectName}.json`,
@@ -496,8 +543,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			const writable = await handle.createWritable();
 			await writable.write(bestiaryJson);
 			await writable.close();
+			// Optional: Confirmation message
+			// showAlert(`Bestiary "${app.activeBestiary.projectName}" exported successfully.`);
 		} catch (err) {
-			if (err.name !== "AbortError") console.error("Error exporting bestiary:", err);
+			// Ignore AbortError, log others
+			if (err.name !== "AbortError") {
+				console.error("Error exporting bestiary:", err);
+				showAlert("Failed to export bestiary. See console for details.");
+			}
 		}
 	}
 
@@ -508,102 +561,245 @@ document.addEventListener("DOMContentLoaded", () => {
 			});
 			const file = await handle.getFile();
 			const content = await file.text();
-			let importedBestiary = JSON.parse(content);
-			
-			delete importedBestiary.id; 
-
-			const existing = await app.db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
-			if (existing) {
-				showAlert(`A bestiary named "${importedBestiary.projectName}" already exists.`); // Use showAlert
+			let importedBestiary;
+			try {
+				importedBestiary = JSON.parse(content);
+			} catch (parseError) {
+				console.error("Error parsing JSON file:", parseError);
+				showAlert("Failed to import: The selected file is not valid JSON.");
 				return;
 			}
 
-			importedBestiary = healBestiary(importedBestiary);
+			// Basic validation
+			if (!importedBestiary || typeof importedBestiary.projectName !== 'string') {
+				showAlert("Failed to import: Invalid bestiary format.");
+				return;
+			}
 
-			const newId = await app.db.projects.add(importedBestiary);
-			importedBestiary.id = newId;
-			
-			loadBestiary(importedBestiary);
-			showAlert(`Bestiary "${importedBestiary.projectName}" imported successfully!`); // Use showAlert
+			// Remove ID if present to ensure it's treated as a new entry
+			delete importedBestiary.id;
+
+			// Check for existing bestiary with the same name (case-insensitive)
+			const existing = await app.db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
+			if (existing) {
+				showAlert(`A bestiary named "${importedBestiary.projectName}" already exists. Please rename the existing one or the file being imported.`);
+				return;
+			}
+
+			// Heal the imported data to ensure compatibility
+			const healedBestiary = healBestiary(importedBestiary);
+
+			// Add to database
+			const newId = await app.db.projects.add(healedBestiary);
+			healedBestiary.id = newId; // Assign the new ID
+
+			// Load the newly imported bestiary
+			loadBestiary(healedBestiary);
+			showAlert(`Bestiary "${healedBestiary.projectName}" imported successfully!`);
 		} catch (err) {
+			// Ignore user cancellation (AbortError)
 			if (err.name !== "AbortError") {
 				console.error("Error importing bestiary:", err);
-				showAlert("Failed to import bestiary."); // Use showAlert
+				showAlert("Failed to import bestiary. See console for details.");
 			}
 		}
 	}
-	
+
+
 	// --- NPC Management ---
 	function createNewNpc() {
-		if (!app.activeBestiary) return;
+		if (!app.activeBestiary) {
+			showAlert("Please load or create a bestiary first.");
+			return;
+		}
+
+		// Create a deep copy of the default NPC template
 		const newNpc = JSON.parse(JSON.stringify(app.defaultNPC));
-		
+
+		// Find a unique name, defaulting to "New NPC"
 		newNpc.name = findUniqueNpcName("New NPC");
+
+		// Inherit default viewport settings from the bestiary metadata
 		newNpc.useDropCap = app.activeBestiary.metadata.useDropCap;
 		newNpc.addDescription = app.activeBestiary.metadata.addDescription;
 		newNpc.addTitle = app.activeBestiary.metadata.addTitle;
 		newNpc.addImageLink = app.activeBestiary.metadata.addImageLink;
+
+		// Default FG group to the bestiary name
 		newNpc.fg_group = app.activeBestiary.projectName;
 
-		// Calculate initial DC/Bonus for the new NPC
-		const { dc, bonus } = calculateInnateDCBonus(newNpc.innateAbility, newNpc.proficiencyBonus, newNpc);
-		newNpc.innateDC = dc;
-		newNpc.innateBonus = bonus;
-		
+		// Calculate initial DC based on default stats (will be recalculated on form update)
+		// Bonus is no longer stored on the NPC object itself
+		const { dc: innateDC } = calculateSpellcastingDCBonus(newNpc.innateAbility, newNpc.proficiencyBonus, newNpc);
+		newNpc.innateDC = innateDC;
+		const { dc: actionDC } = calculateSpellcastingDCBonus(newNpc.actionCastingAbility, newNpc.proficiencyBonus, newNpc);
+		newNpc.actionCastingDC = actionDC;
+
+		// Add the new NPC to the list
 		app.activeBestiary.npcs.push(newNpc);
+
+		// Sort the list and switch focus to the new NPC
 		sortAndSwitchToNpc(newNpc);
+
+		// Save the updated bestiary
 		saveActiveBestiaryToDB();
+
+		// Focus the name input for immediate editing
 		window.ui.inputs.name.focus();
 	}
+
 
 	function duplicateCurrentNpc() {
-		if (!app.activeBestiary || !app.activeNPC) return;
+		if (!app.activeBestiary || !app.activeNPC) {
+			showAlert("Please select an NPC to duplicate.");
+			return;
+		}
 
+		// Ensure current NPC data is captured from the form
+		updateActiveNPCFromForm();
+
+		// Create a deep copy of the currently active NPC
 		const newNpc = JSON.parse(JSON.stringify(app.activeNPC));
+
+		// Find a unique name based on the original name
 		newNpc.name = findUniqueNpcName(`${app.activeNPC.name} (Copy)`);
 
+		// Add the duplicated NPC to the list
 		app.activeBestiary.npcs.push(newNpc);
+
+		// Sort the list and switch focus to the duplicated NPC
 		sortAndSwitchToNpc(newNpc);
+
+		// Save the updated bestiary
 		saveActiveBestiaryToDB();
+
+		// Focus the name input for potential renaming
 		window.ui.inputs.name.focus();
 	}
-	
+
+
 	function deleteCurrentNpc() {
-		if (!app.activeBestiary || app.activeBestiary.npcs.length <= 1) return;
+		if (!app.activeBestiary) {
+			showAlert("No active bestiary.");
+			return;
+		}
+		if (!app.activeNPC) {
+			showAlert("No NPC selected to delete.");
+			return;
+		}
+		if (app.activeBestiary.npcs.length <= 1) {
+			showAlert("Cannot delete the last NPC in the bestiary.");
+			return;
+		}
 
 		const npcToDelete = app.activeNPC;
-		app.activeBestiary.npcs = app.activeBestiary.npcs.filter(npc => npc !== npcToDelete);
-		
-		sortAndSwitchToNpc(null);
-		saveActiveBestiaryToDB();
+		const npcNameToDelete = npcToDelete.name || "Unnamed NPC";
+
+		// Show confirmation dialog
+		showConfirm(
+			"Delete NPC?",
+			`Are you sure you want to permanently delete "${npcNameToDelete}"? This cannot be undone.`,
+			() => {
+				// Find the index *again* in case something changed
+				const indexToDelete = app.activeBestiary.npcs.findIndex(npc => npc === npcToDelete);
+
+				if (indexToDelete !== -1) {
+					// Remove the NPC from the array
+					app.activeBestiary.npcs.splice(indexToDelete, 1);
+
+					// Sort the remaining NPCs and switch to the first one (or none if empty, though prevented above)
+					sortAndSwitchToNpc(null);
+
+					// Save the changes to the database
+					saveActiveBestiaryToDB();
+				} else {
+					console.error("Could not find the NPC to delete after confirmation.");
+					showAlert("Error: Could not delete the NPC.");
+				}
+			}
+		);
 	}
 
+
 	async function importNpc() {
-		if (!app.activeBestiary) return;
-		
+		if (!app.activeBestiary) {
+			showAlert("Please load or create a bestiary first to import an NPC into.");
+			return;
+		}
+
 		try {
 			const [handle] = await window.showOpenFilePicker({
 				types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
 			});
 			const file = await handle.getFile();
 			const content = await file.text();
-			const loadedNPC = JSON.parse(content);
-			
+			let loadedNPC;
+			try {
+				loadedNPC = JSON.parse(content);
+			} catch (parseError) {
+				console.error("Error parsing NPC JSON file:", parseError);
+				showAlert("Failed to import: The selected file is not valid JSON.");
+				return;
+			}
+
+			// Basic validation (optional, but good practice)
+			if (typeof loadedNPC !== 'object' || loadedNPC === null) {
+				showAlert("Failed to import: Invalid NPC data format.");
+				return;
+			}
+
+			// Create a new NPC object starting with defaults, then overlay loaded data
 			const newNpc = { ...app.defaultNPC, ...loadedNPC };
-			
+
+			// Ensure the name is unique within the current bestiary
+			newNpc.name = findUniqueNpcName(newNpc.name || "Imported NPC");
+
+			// Optionally, force FG group to current bestiary? Or keep imported one?
+			// For now, let's keep the imported one if it exists, otherwise default.
+			if (!newNpc.fg_group) {
+				newNpc.fg_group = app.activeBestiary.projectName;
+			}
+			// Ensure boolean viewport settings inherit from bestiary if missing
+			const propsToInherit = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
+			propsToInherit.forEach(prop => {
+				if (newNpc[prop] === undefined) newNpc[prop] = app.activeBestiary.metadata[prop];
+			});
+
+
+			// Add the imported NPC to the list
 			app.activeBestiary.npcs.push(newNpc);
+
+			// Sort the list and switch focus to the imported NPC
 			sortAndSwitchToNpc(newNpc);
+
+			// Save the updated bestiary
 			saveActiveBestiaryToDB();
-			
+
+			showAlert(`NPC "${newNpc.name}" imported successfully.`);
+
 		} catch (err) {
-			if (err.name !== "AbortError") console.error("Error importing NPC:", err);
+			// Ignore user cancellation (AbortError)
+			if (err.name !== "AbortError") {
+				console.error("Error importing NPC:", err);
+				showAlert("Failed to import NPC. See console for details.");
+			}
 		}
 	}
 
-	async function exportNpc() {
-		if (!app.activeNPC) return;
 
-		const npcJson = JSON.stringify(app.activeNPC, null, 2);
+	async function exportNpc() {
+		if (!app.activeNPC) {
+			showAlert("No NPC selected to export.");
+			return;
+		}
+
+		// Ensure current form data is saved to the activeNPC object
+		updateActiveNPCFromForm();
+
+		// Create a deep copy for safety
+		const npcToExport = JSON.parse(JSON.stringify(app.activeNPC));
+		const npcJson = JSON.stringify(npcToExport, null, 2); // Pretty print
+
 		try {
 			const handle = await window.showSaveFilePicker({
 				suggestedName: `${app.activeNPC.name || "unnamed-npc"}.json`,
@@ -612,143 +808,155 @@ document.addEventListener("DOMContentLoaded", () => {
 			const writable = await handle.createWritable();
 			await writable.write(npcJson);
 			await writable.close();
+			// Optional confirmation
+			// showAlert(`NPC "${app.activeNPC.name}" exported successfully.`);
 		} catch (err) {
-			if (err.name !== "AbortError") console.error("Error exporting NPC:", err);
+			if (err.name !== "AbortError") {
+				console.error("Error exporting NPC:", err);
+				showAlert("Failed to export NPC. See console for details.");
+			}
 		}
 	}
 
-    // *** NEW *** Placeholder function for FG Export
-    async function exportBestiaryToFG() {
-        if (!app.activeBestiary) return;
-        showAlert("Fantasy Grounds export is not yet implemented.");
-        console.log("Placeholder: Exporting Bestiary to FG format...");
-        // Future implementation will go here
-    }
+
+	async function exportBestiaryToFG() {
+		if (!app.activeBestiary) {
+			showAlert("No active bestiary to export.");
+			return;
+		}
+		// Placeholder message
+		showAlert("Fantasy Grounds export is not yet implemented.");
+		console.log("Placeholder: Exporting Bestiary to FG format...");
+		// Future implementation for FG XML export will go here.
+		// This will involve iterating through app.activeBestiary.npcs,
+		// mapping the data to the FG XML structure, and then saving the XML file.
+	}
+
 
 	function updateActiveNPCFromForm() {
-		if (app.isUpdatingForm || !app.activeNPC) return;
-		
-		// Store old values *before* reading from form
-		const oldAbility = app.activeNPC.innateAbility; 
-		const oldProfBonus = app.activeNPC.proficiencyBonus; 
-		// Store old calculated DC/Bonus *before* stats change
-		const oldCalculated = calculateInnateDCBonus(oldAbility, oldProfBonus, app.activeNPC);
-		const oldManualDC = app.activeNPC.innateDC;
-		const oldManualBonus = app.activeNPC.innateBonus;
+		if (app.isUpdatingForm || !app.activeNPC) return; // Prevent recursive updates or updates when no NPC is active
+
+		// Store old proficiency bonus and ability scores *before* any changes
+		const oldProfBonus = app.activeNPC.proficiencyBonus;
+		const oldAbilities = {
+			strength: app.activeNPC.strength, dexterity: app.activeNPC.dexterity, constitution: app.activeNPC.constitution,
+			intelligence: app.activeNPC.intelligence, wisdom: app.activeNPC.wisdom, charisma: app.activeNPC.charisma
+		};
+		const oldInnateAbility = app.activeNPC.innateAbility;
+		const oldActionAbility = app.activeNPC.actionCastingAbility;
 
 
+		// --- Name Validation ---
 		const newName = window.ui.inputs.name.value.trim();
 		if (newName && newName.toLowerCase() !== (app.activeNPC.name || "").toLowerCase()) {
-			const isDuplicate = app.activeBestiary.npcs.some((npc, index) => 
+			const isDuplicate = app.activeBestiary.npcs.some((npc, index) =>
 				index !== app.activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
 			);
-
 			if (isDuplicate) {
-				showAlert(`An NPC named "${newName}" already exists in this bestiary.`); // Use showAlert
-				window.ui.inputs.name.value = app.activeNPC.name; // Revert to the old name
-				return; // Stop the update
+				showAlert(`An NPC named "${newName}" already exists in this bestiary.`);
+				window.ui.inputs.name.value = app.activeNPC.name; // Revert input value
+				return; // Stop update
 			}
+			app.activeNPC.name = newName; // Update name only if valid and changed
+		} else if (!newName && app.activeNPC.name) {
+			// Handle clearing the name - maybe prevent or assign default?
+			// For now, allow empty but it might cause issues. Let's keep the old name if cleared.
+			window.ui.inputs.name.value = app.activeNPC.name;
+		} else if (!app.activeNPC.name && newName) {
+			app.activeNPC.name = newName; // Set name if it was initially empty
 		}
 
+
+		// --- Update Standard Properties from window.ui.inputs ---
 		for (const key in window.ui.inputs) {
-             // Skip action inputs and attack damage dice input
-            if (key.startsWith('common') || key === 'attackDamageDice') continue;
-            // Skip spellcasting radios, handled separately
-            if (key.startsWith('spellcastingTo')) continue; 
-			// Skip innate spell lists/freqs, handled below
-			if (key.startsWith('innate-freq-') || key.startsWith('innate-list-')) continue; 
-            
+			// Skip name (handled above), action/attack/radio inputs, and specific spellcasting inputs handled later
+			if (key === 'name' || key.startsWith('common') || key === 'attackDamageDice' || window.ui.inputs[key]?.type === 'radio') continue;
+			if (key.startsWith('innate-') || key.startsWith('action-casting-')) continue; // Skip detailed spell fields for now
+			if (key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') continue; // Skip main checkboxes for now
+
 			if (key === 'description') {
-				app.activeNPC[key] = window.ui.inputs.description.value;
+				app.activeNPC[key] = window.ui.inputs.description.value; // Get value from hidden input linked to Trix
 				continue;
 			}
+
 			const element = window.ui.inputs[key];
-			// Check if element exists before accessing properties (Fix for TypeError)
-			if (!element) {
-				continue; 
-			}
-			
+			if (!element) continue; // Skip if element doesn't exist
+
+			// Handle custom toggles (size, type, species, alignment)
 			const customToggle = document.getElementById(`toggle-custom-${key}`);
 			if (customToggle) {
 				if (customToggle.checked) {
 					const customInput = document.getElementById(`npc-${key}-custom`);
-					// Check if custom input exists
-					app.activeNPC[key] = customInput ? customInput.value : ''; 
+					app.activeNPC[key] = customInput ? customInput.value : '';
 				} else {
-					app.activeNPC[key] = element.value;
+					app.activeNPC[key] = element.value; // Read from the select dropdown
 				}
 			} else if (element.type === "checkbox") {
 				app.activeNPC[key] = element.checked;
 			} else if (element.type === "number") {
-                // Ensure numbers are stored as numbers
-                const parsedValue = parseInt(element.value, 10);
-                app.activeNPC[key] = isNaN(parsedValue) ? 0 : parsedValue; // Default to 0 if NaN
-            } else {
+				const parsedValue = parseInt(element.value, 10);
+				// Use defaultNPC value if parsing fails, or 0 if no default exists
+				const defaultValue = app.defaultNPC[key] !== undefined ? app.defaultNPC[key] : 0;
+				app.activeNPC[key] = isNaN(parsedValue) ? defaultValue : parsedValue;
+			} else {
+				// For text, select, etc.
 				app.activeNPC[key] = element.value;
 			}
 		}
 
-		// Update Proficiency Bonus based on Challenge Rating *first*
+		// --- Update Proficiency Bonus based on NEW Challenge Rating ---
 		const newProfBonus = calculateProficiencyBonus(app.activeNPC.challenge);
-        app.activeNPC.proficiencyBonus = newProfBonus;
+		const profBonusChanged = newProfBonus !== oldProfBonus;
+		app.activeNPC.proficiencyBonus = newProfBonus;
 		if(window.ui.proficiencyBonusDisplay) window.ui.proficiencyBonusDisplay.textContent = `+${newProfBonus}`;
-        if(window.ui.experienceDisplay) window.ui.experienceDisplay.textContent = crToXpMap[app.activeNPC.challenge] || '';
-		
-		// --- Innate Spellcasting fields (with checks) ---
-		// Checkboxes
-		const hasInnateCheck = window.ui.inputs.hasInnateSpellcasting;
-		if (hasInnateCheck) app.activeNPC.hasInnateSpellcasting = hasInnateCheck.checked;
-		
-		const isPsionicsCheck = window.ui.inputs.innateIsPsionics;
-		if (isPsionicsCheck) app.activeNPC.innateIsPsionics = isPsionicsCheck.checked;
-		
-		const innateAbilitySelect = document.getElementById('npc-innate-ability');
-		if (innateAbilitySelect) app.activeNPC.innateAbility = innateAbilitySelect.value;
+		app.activeNPC.experience = crToXpMap[app.activeNPC.challenge] || ''; // Update XP based on CR
+		if(window.ui.experienceDisplay) window.ui.experienceDisplay.textContent = app.activeNPC.experience;
 
-		const innateDCInput = document.getElementById('npc-innate-dc');
-		const innateBonusInput = document.getElementById('npc-innate-bonus');
-		
-		// --- Recalculate DC/Bonus ---
-		// Recalculate stats *after* reading ability scores but *before* calculating DC/Bonus
-    	calculateAllStats(); // This updates all ability bonuses
-		
-		const newAbility = app.activeNPC.innateAbility;
-		const { dc: newCalculatedDC, bonus: newCalculatedBonus } = calculateInnateDCBonus(newAbility, newProfBonus, app.activeNPC);
-		
-		// Check if the ability or proficiency bonus changed
-		if (newAbility !== oldAbility || newProfBonus !== oldProfBonus) {
-			// If they changed, check if the user had manually edited the DC/Bonus.
-			// If they hadn't (i.e., the value still matches the *old* calculation), update them.
-			if (innateDCInput && oldManualDC === oldCalculated.dc) {
-				app.activeNPC.innateDC = newCalculatedDC;
-				innateDCInput.value = newCalculatedDC; // Update input directly
-			} else if (innateDCInput) {
-				// User *had* edited it, so just read their manual value
-				app.activeNPC.innateDC = parseInt(innateDCInput.value, 10) || newCalculatedDC;
+		// --- Recalculate Ability Bonuses *after* reading scores ---
+		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+		let abilitiesChanged = false;
+		abilities.forEach(ability => {
+			const newBonus = calculateAbilityBonus(app.activeNPC[ability]);
+			if (newBonus !== app.activeNPC[`${ability}Bonus`]) {
+				app.activeNPC[`${ability}Bonus`] = newBonus;
+				abilitiesChanged = true;
 			}
-			
-			if (innateBonusInput && oldManualBonus === oldCalculated.bonus) {
-				app.activeNPC.innateBonus = newCalculatedBonus;
-				innateBonusInput.value = newCalculatedBonus; // Update input directly
-			} else if (innateBonusInput) {
-				// User *had* edited it
-				app.activeNPC.innateBonus = parseInt(innateBonusInput.value, 10) || newCalculatedBonus;
+		});
+
+		// --- Innate Spellcasting fields ---
+		if(window.ui.inputs.hasInnateSpellcasting) app.activeNPC.hasInnateSpellcasting = window.ui.inputs.hasInnateSpellcasting.checked;
+		if(window.ui.inputs.innateIsPsionics) app.activeNPC.innateIsPsionics = window.ui.inputs.innateIsPsionics.checked;
+		if(window.ui.inputs.innateAbility) app.activeNPC.innateAbility = window.ui.inputs.innateAbility.value;
+		const innateAbilityChanged = app.activeNPC.innateAbility !== oldInnateAbility;
+
+		// Update DC: Use calculated if prof/ability changed AND user hasn't manually overridden
+		// Calculate DC based on OLD stats to check against current input
+		const { dc: currentInnateDC } = calculateSpellcastingDCBonus(oldInnateAbility, oldProfBonus, { ...app.activeNPC, ...oldAbilities });
+		// Calculate DC based on NEW stats
+		const { dc: newInnateCalculatedDC } = calculateSpellcastingDCBonus(app.activeNPC.innateAbility, newProfBonus, app.activeNPC);
+
+		const innateDCInput = window.ui.inputs.innateDC;
+		const manualInnateDC = innateDCInput ? parseInt(innateDCInput.value, 10) : NaN;
+
+		if (profBonusChanged || abilitiesChanged || innateAbilityChanged) {
+			// If the user's input matched the *old* calculation, update it automatically
+			if (!isNaN(manualInnateDC) && manualInnateDC === currentInnateDC) {
+				app.activeNPC.innateDC = newInnateCalculatedDC;
+				if (innateDCInput) innateDCInput.value = newInnateCalculatedDC; // Update input field
+			} else {
+				app.activeNPC.innateDC = isNaN(manualInnateDC) ? newInnateCalculatedDC : manualInnateDC; // Keep manual override or use new calc if invalid
 			}
 		} else {
-			// If ability/prof didn't change, just read the current values (in case of manual edit)
-			if (innateDCInput) app.activeNPC.innateDC = parseInt(innateDCInput.value, 10) || newCalculatedDC;
-			if (innateBonusInput) app.activeNPC.innateBonus = parseInt(innateBonusInput.value, 10) || newCalculatedBonus;
+			// If stats didn't change, just save whatever is in the input field (or calc if invalid)
+			app.activeNPC.innateDC = isNaN(manualInnateDC) ? newInnateCalculatedDC : manualInnateDC;
 		}
+		// Bonus calculation and saving removed
 
-
-		const innateComponentsInput = document.getElementById('npc-innate-components');
-		if (innateComponentsInput) app.activeNPC.innateComponents = innateComponentsInput.value;
-
-		// Innate Spell List inputs (Adjusted loop to 4)
+		if(window.ui.inputs.innateComponents) app.activeNPC.innateComponents = window.ui.inputs.innateComponents.value;
+		// Update spell lists
 		for (let i = 0; i < 4; i++) {
-			const freqInput = document.getElementById(`npc-innate-freq-${i}`);
-			const listInput = document.getElementById(`npc-innate-list-${i}`);
-			// Ensure the array structure exists and update
+			const freqInput = window.ui.inputs[`innate-freq-${i}`];
+			const listInput = window.ui.inputs[`innate-list-${i}`];
 			if (freqInput && listInput && app.activeNPC.innateSpells && app.activeNPC.innateSpells[i]) {
 				app.activeNPC.innateSpells[i].freq = freqInput.value.trim();
 				app.activeNPC.innateSpells[i].list = listInput.value.trim();
@@ -756,76 +964,96 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		// --- Spellcasting fields ---
-		const hasSpellCheck = window.ui.inputs.hasSpellcasting;
-		if (hasSpellCheck) app.activeNPC.hasSpellcasting = hasSpellCheck.checked;
-
-		// Radio buttons
+		if(window.ui.inputs.hasSpellcasting) app.activeNPC.hasSpellcasting = window.ui.inputs.hasSpellcasting.checked;
 		const spellPlacementRadio = document.querySelector('input[name="spellcasting-placement"]:checked');
-		if (spellPlacementRadio) { 
-			app.activeNPC.spellcastingPlacement = spellPlacementRadio.value;
+		app.activeNPC.spellcastingPlacement = spellPlacementRadio ? spellPlacementRadio.value : app.defaultNPC.spellcastingPlacement;
+
+		// --- Action-based Spellcasting fields ---
+		if(window.ui.inputs.actionCastingAbility) app.activeNPC.actionCastingAbility = window.ui.inputs.actionCastingAbility.value;
+		const actionAbilityChanged = app.activeNPC.actionCastingAbility !== oldActionAbility;
+
+		// Update DC similarly to Innate
+		const { dc: currentActionDC } = calculateSpellcastingDCBonus(oldActionAbility, oldProfBonus, { ...app.activeNPC, ...oldAbilities });
+		const { dc: newActionCalculatedDC } = calculateSpellcastingDCBonus(app.activeNPC.actionCastingAbility, newProfBonus, app.activeNPC);
+
+		const actionDCInput = window.ui.inputs.actionCastingDC;
+		const manualActionDC = actionDCInput ? parseInt(actionDCInput.value, 10) : NaN;
+
+		if (profBonusChanged || abilitiesChanged || actionAbilityChanged) {
+			if (!isNaN(manualActionDC) && manualActionDC === currentActionDC) {
+				app.activeNPC.actionCastingDC = newActionCalculatedDC;
+				if(actionDCInput) actionDCInput.value = newActionCalculatedDC;
+			} else {
+				app.activeNPC.actionCastingDC = isNaN(manualActionDC) ? newActionCalculatedDC : manualActionDC;
+			}
 		} else {
-			app.activeNPC.spellcastingPlacement = app.defaultNPC.spellcastingPlacement; 
+			app.activeNPC.actionCastingDC = isNaN(manualActionDC) ? newActionCalculatedDC : manualActionDC;
+		}
+		// Bonus calculation and saving removed
+
+		if (window.ui.inputs.actionCastingComponents) app.activeNPC.actionCastingComponents = window.ui.inputs.actionCastingComponents.value;
+		// Update spell lists
+		for (let i = 0; i < 4; i++) {
+			const freqInput = window.ui.inputs[`action-casting-freq-${i}`];
+			const listInput = window.ui.inputs[`action-casting-list-${i}`];
+			if (freqInput && listInput && app.activeNPC.actionCastingSpells && app.activeNPC.actionCastingSpells[i]) {
+				app.activeNPC.actionCastingSpells[i].freq = freqInput.value.trim();
+				app.activeNPC.actionCastingSpells[i].list = listInput.value.trim();
+			}
 		}
 
+		// --- Languages ---
 		const selectedLanguages = new Set();
 		window.ui.languageListboxes.forEach(listbox => {
 			if (listbox) {
-				Array.from(listbox.selectedOptions).forEach(option => {
-					selectedLanguages.add(option.value);
-				});
+				Array.from(listbox.selectedOptions).forEach(option => selectedLanguages.add(option.value));
 			}
 		});
 		app.activeNPC.selectedLanguages = Array.from(selectedLanguages);
-
 		const telepathyCheckbox = document.getElementById('npc-has-telepathy');
 		if (telepathyCheckbox) app.activeNPC.hasTelepathy = telepathyCheckbox.checked;
 		const telepathyRangeInput = document.getElementById('npc-telepathy-range');
 		if (telepathyRangeInput) app.activeNPC.telepathyRange = parseInt(telepathyRangeInput.value, 10) || 0;
 		const specialOptionSelect = document.getElementById('npc-special-language-option');
 		if (specialOptionSelect) app.activeNPC.specialLanguageOption = parseInt(specialOptionSelect.value, 10) || 0;
-		let languagesModified = false;
-		if (app.activeNPC.specialLanguageOption === 1) { // Speaks no languages
-			if (app.activeNPC.selectedLanguages.length > 0) {
-				app.activeNPC.selectedLanguages = [];
-				languagesModified = true;
-			}
-		} else if (app.activeNPC.specialLanguageOption === 2) { // Speaks all languages
-			const allLangs = [
-				...app.standardLanguages,
-				...app.exoticLanguages,
-				...app.monstrousLanguages1,
-				...app.monstrousLanguages2,
-				...(app.activeBestiary?.metadata?.userDefinedLanguages || []) // Added optional chaining
-			];
-			if (app.activeNPC.selectedLanguages.length !== allLangs.length) {
-				 app.activeNPC.selectedLanguages = allLangs;
-				 languagesModified = true;
-			}
+		// Check if special option forces a change in selected languages
+		let languagesModifiedBySpecialOption = false;
+		if (app.activeNPC.specialLanguageOption === 1 && app.activeNPC.selectedLanguages.length > 0) {
+			app.activeNPC.selectedLanguages = []; languagesModifiedBySpecialOption = true;
 		}
+		// Note: Option 2 (all languages) handling might be complex and is often just noted textually.
+		// We won't automatically select all languages here.
 
+		// --- Viewport Options ---
 		for (const key in window.ui.npcSettingsCheckboxes) {
 			const checkbox = window.ui.npcSettingsCheckboxes[key];
-			// Check if checkbox exists before reading property
-			if(checkbox) app.activeNPC[key] = checkbox.checked; 
+			if(checkbox) app.activeNPC[key] = checkbox.checked;
 		}
-		
-		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
+
+		// --- Saves & Skills ---
 		abilities.forEach(ability => {
 			const profCheck = document.getElementById(`npc-${ability}-saving-throw-prof`);
 			const adjustInput = document.getElementById(`npc-${ability}-saving-throw-adjust`);
 			if (profCheck) app.activeNPC[`${ability}SavingThrowProf`] = profCheck.checked;
 			if (adjustInput) app.activeNPC[`${ability}SavingThrowAdjust`] = parseInt(adjustInput.value, 10) || 0;
 		});
-		
 		skills.forEach(skill => {
 			const profCheck = document.getElementById(`skill-${skill.id}-prof`);
 			const expCheck = document.getElementById(`skill-${skill.id}-exp`);
-			const adjustInput = document.getElementById(`skill-${skill.id}-adjust`); 
+			const adjustInput = document.getElementById(`skill-${skill.id}-adjust`);
 			if (profCheck) app.activeNPC[`skill_${skill.id}_prof`] = profCheck.checked;
-			if (expCheck) app.activeNPC[`skill_${skill.id}_exp`] = expCheck.checked;
+			// Ensure expertise implies proficiency
+			if (expCheck) {
+				app.activeNPC[`skill_${skill.id}_exp`] = expCheck.checked;
+				if (expCheck.checked && profCheck && !profCheck.checked) {
+					profCheck.checked = true; // Also check proficiency box visually
+					app.activeNPC[`skill_${skill.id}_prof`] = true; // Update data model too
+				}
+			}
 			if (adjustInput) app.activeNPC[`skill_${skill.id}_adjust`] = parseInt(adjustInput.value, 10) || 0;
-        });
-		
+		});
+
+		// --- Resistances/Immunities ---
 		damageTypes.forEach(type => {
 			const vulnCheck = document.getElementById(`vuln-${type}`);
 			const resCheck = document.getElementById(`res-${type}`);
@@ -833,54 +1061,70 @@ document.addEventListener("DOMContentLoaded", () => {
 			if(vulnCheck) app.activeNPC[`vulnerability_${type}`] = vulnCheck.checked;
 			if(resCheck) app.activeNPC[`resistance_${type}`] = resCheck.checked;
 			if(immCheck) app.activeNPC[`immunity_${type}`] = immCheck.checked;
+			// Ensure resistance and immunity aren't both checked for the same type
+			if (app.activeNPC[`resistance_${type}`] && app.activeNPC[`immunity_${type}`]) {
+				app.activeNPC[`resistance_${type}`] = false; // Prioritize immunity, uncheck resistance
+				if(resCheck) resCheck.checked = false; // Update UI
+			}
 		});
-
 		conditions.forEach(condition => {
 			const ciCheck = document.getElementById(`ci-${condition}`);
 			if(ciCheck) app.activeNPC[`ci_${condition}`] = ciCheck.checked;
 		});
-
 		const selectedWeaponRes = document.querySelector('input[name="weapon-resistance"]:checked');
-		if (selectedWeaponRes) {
-			app.activeNPC.weaponResistance = selectedWeaponRes.value;
-		}
-
+		if (selectedWeaponRes) app.activeNPC.weaponResistance = selectedWeaponRes.value;
 		const selectedWeaponImm = document.querySelector('input[name="weapon-immunity"]:checked');
-		if (selectedWeaponImm) {
-			app.activeNPC.weaponImmunity = selectedWeaponImm.value;
-		}
+		if (selectedWeaponImm) app.activeNPC.weaponImmunity = selectedWeaponImm.value;
 
-		// Experience and Proficiency Bonus are now updated earlier based on CR change
-		
-		// calculateAllStats() was already called
-		window.ui.updateStatDisplays(); // Updates bonuses, saves, passive perception in UI
-		window.ui.updateSkillDisplays(); // Updates skill totals in UI
-		window.viewport.updateViewport(); // Updates the preview pane
-		
-		if(window.ui.npcSelector && window.ui.npcSelector.selectedIndex >= 0) { // Check if selector and selection exist
+		// --- Recalculate derived stats (Saves, Skills, Passive Perception) ---
+		calculateAllStats(); // This now calculates ability bonuses, saves, skills, passive perception
+
+		// --- Final UI Updates ---
+		window.ui.updateStatDisplays(); // Update bonus/total displays for saves
+		window.ui.updateSkillDisplays(); // Update skill totals
+		window.viewport.updateViewport(); // Refresh the main preview
+
+		// Update name in selector dropdown if it changed
+		if(window.ui.npcSelector && window.ui.npcSelector.selectedIndex >= 0) {
 			const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
-			if(currentOption) {
+			if(currentOption && currentOption.textContent !== app.activeNPC.name) {
 				currentOption.textContent = app.activeNPC.name;
 			}
 		}
-		if (languagesModified) {
-			// Need to re-populate lists and potentially re-select options
-			window.ui.updateFormFromActiveNPC(); 
+
+		// If special language option forced a change, re-run updateForm to show it visually
+		if (languagesModifiedBySpecialOption) {
+			// Need to temporarily disable the update flag to allow recursive call
+			const wasUpdating = app.isUpdatingForm;
+			app.isUpdatingForm = false;
+			window.ui.updateFormFromActiveNPC();
+			app.isUpdatingForm = wasUpdating;
 		}
-		
-		// Update UI visibility/titles dynamically after state change
+
+		// Update spellcasting section visibility based on checkboxes and radio buttons
 		window.ui.updateSpellcastingVisibility();
 
+		// --- Save ---
 		saveActiveBestiaryToDB();
 	}
-	
+
+
 	// --- Calculation Functions ---
 	function calculateAbilityBonus(score) {
-		return Math.floor((parseInt(score, 10) - 10) / 2);
+		const numScore = parseInt(score, 10);
+		return isNaN(numScore) ? 0 : Math.floor((numScore - 10) / 2);
 	}
 
 	function calculateProficiencyBonus(cr) {
-		const crValue = Number(String(cr).replace(/[^0-9.]/g, ''));
+		// Handle fractional CRs by converting to numeric value approx
+		let crValue;
+		if (cr === '1/8') crValue = 0.125;
+		else if (cr === '1/4') crValue = 0.25;
+		else if (cr === '1/2') crValue = 0.5;
+		else crValue = parseInt(cr, 10);
+
+		if (isNaN(crValue) || crValue < 0) crValue = 0; // Default to CR 0 if invalid
+
 		if (crValue <= 4) return 2;
 		if (crValue <= 8) return 3;
 		if (crValue <= 12) return 4;
@@ -888,730 +1132,885 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (crValue <= 20) return 6;
 		if (crValue <= 24) return 7;
 		if (crValue <= 28) return 8;
-		return 9; // for CR 29-30
+		return 9; // CR 29+
 	}
-	
-	// --- Calculate Innate DC and Bonus ---
-	function calculateInnateDCBonus(abilityKey, profBonus, npc) {
-		// Ensure NPC object exists and abilityKey is valid before calculation
-		if (!npc || !abilityKey || !npc.hasOwnProperty(`${abilityKey}Bonus`)) {
-			// Fallback calculation (e.g., during initialization before npc stats are ready)
-			const tempBonus = npc ? calculateAbilityBonus(npc[abilityKey] || 10) : 0;
-			return { dc: 8 + (profBonus || 2) + tempBonus, bonus: (profBonus || 2) + tempBonus };
+
+	function calculateSpellcastingDCBonus(abilityKey, profBonus, npc) {
+		if (!npc || !abilityKey) {
+			console.warn("Missing data for calculateSpellcastingDCBonus:", { abilityKey, profBonus, npc });
+			const tempBonus = calculateAbilityBonus(npc?.[abilityKey] || 10); // Calculate bonus even if key missing from NPC obj
+			const safeProfBonus = profBonus || 2;
+			return { dc: 8 + safeProfBonus + tempBonus, bonus: safeProfBonus + tempBonus };
 		}
-		const abilityBonus = npc[`${abilityKey}Bonus`] ?? 0; // Use nullish coalescing for safety
-		const dc = 8 + profBonus + abilityBonus;
-		const bonus = profBonus + abilityBonus;
-		return { dc, bonus };
+		// Ensure bonus property exists before accessing, fallback to calculating it
+		const abilityBonus = npc[`${abilityKey}Bonus`] ?? calculateAbilityBonus(npc[abilityKey] || 10);
+		const safeProfBonus = profBonus || 2; // Ensure profBonus is a number
+
+		const dc = 8 + safeProfBonus + abilityBonus;
+		const bonus = safeProfBonus + abilityBonus;
+		return { dc, bonus }; // Still return bonus, even if not stored on NPC
 	}
-	
+
+
 	function calculateSpeedString(npc) {
-		if (!npc) return "";
-
-		let speedParts = [];
-		let baseSpeedString = `${npc.speedBase || 0} ft.`;
-		
-		if (parseInt(npc.speedBase, 10) > 0 || (parseInt(npc.speedBase, 10) === 0 && !npc.speedBurrow && !npc.speedClimb && !npc.speedFly && !npc.speedSwim)) {
-			speedParts.push(baseSpeedString);
-		}
-
-		if (npc.speedBurrow > 0) {
-			speedParts.push(`burrow ${npc.speedBurrow} ft.`);
-		}
-		if (npc.speedClimb > 0) {
-			speedParts.push(`climb ${npc.speedClimb} ft.`);
-		}
-		if (npc.speedFly > 0) {
-			let flyString = `fly ${npc.speedFly} ft.`;
-			if (npc.flyHover) {
-				flyString += " (hover)";
-			}
-			speedParts.push(flyString);
-		}
-		if (npc.speedSwim > 0) {
-			speedParts.push(`swim ${npc.speedSwim} ft.`);
-		}
-		
-		if (speedParts.length > 1 && speedParts[0] === '0 ft.') {
-			speedParts.shift();
-		}
-
-		return speedParts.join(', ');
+		let parts = [];
+		if (npc.speedBase > 0) parts.push(`${npc.speedBase} ft.`);
+		if (npc.speedBurrow > 0) parts.push(`burrow ${npc.speedBurrow} ft.`);
+		if (npc.speedClimb > 0) parts.push(`climb ${npc.speedClimb} ft.`);
+		if (npc.speedFly > 0) parts.push(`fly ${npc.speedFly} ft.${npc.flyHover ? ' (hover)' : ''}`);
+		if (npc.speedSwim > 0) parts.push(`swim ${npc.speedSwim} ft.`);
+		return parts.join(', ') || '0 ft.';
 	}
 
 	function calculateSensesString(npc) {
-		if (!npc) return "";
-		const sensesParts = [];
-
-		if (npc.senseBlindsight > 0) {
-			let blindString = `blindsight ${npc.senseBlindsight} ft.`;
-			if (npc.blindBeyond) {
-				blindString += " (blind beyond this radius)";
-			}
-			sensesParts.push(blindString);
-		}
-		if (npc.senseDarkvision > 0) {
-			sensesParts.push(`darkvision ${npc.senseDarkvision} ft.`);
-		}
-		if (npc.senseTremorsense > 0) {
-			sensesParts.push(`tremorsense ${npc.senseTremorsense} ft.`);
-		}
-		if (npc.senseTruesight > 0) {
-			sensesParts.push(`truesight ${npc.senseTruesight} ft.`);
-		}
-		
-		sensesParts.push(`passive Perception ${npc.passivePerception || 10}`);
-
-		return sensesParts.join(', ');
+		let parts = [];
+		if (npc.senseBlindsight > 0) parts.push(`blindsight ${npc.senseBlindsight} ft.${npc.blindBeyond ? ' (blind beyond this radius)' : ''}`);
+		if (npc.senseDarkvision > 0) parts.push(`darkvision ${npc.senseDarkvision} ft.`);
+		if (npc.senseTremorsense > 0) parts.push(`tremorsense ${npc.senseTremorsense} ft.`);
+		if (npc.senseTruesight > 0) parts.push(`truesight ${npc.senseTruesight} ft.`);
+		parts.push(`passive Perception ${npc.passivePerception || 10}`); // Always include passive perception
+		return parts.join(', ');
 	}
 
 	function calculateDamageModifiersString(npc) {
-		if (!npc) return { vulnerabilities: "", resistances: "", immunities: "" };
+		const vulnerabilities = damageTypes.filter(type => npc[`vulnerability_${type}`]);
+		const resistances = damageTypes.filter(type => npc[`resistance_${type}`]);
+		const immunities = damageTypes.filter(type => npc[`immunity_${type}`]);
 
-		const vulnerabilities = [];
-		const resistances = [];
-
-		damageTypes.forEach(type => {
-			if (npc[`vulnerability_${type}`]) {
-				vulnerabilities.push(type);
-			}
-			if (npc[`resistance_${type}`]) {
-				resistances.push(type);
-			}
-		});
-		
-		let resistanceString = resistances.join(', ');
-		
-		const weaponResTextMap = {
-			'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
-			'silvered': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
-			'adamantine': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
+		const weaponResMap = {
+			nonmagical: "bludgeoning, piercing, and slashing from nonmagical attacks",
+			silvered: "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
+			adamantine: "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
 			'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron",
-			'magical': "bludgeoning, piercing, and slashing from magical attacks",
+			magical: "bludgeoning, piercing, and slashing from magical attacks" // Added magical
 		};
-		const weaponResText = weaponResTextMap[npc.weaponResistance];
-		if (weaponResText) {
-			if (resistanceString) {
-				resistanceString += '; ' + weaponResText;
-			} else {
-				resistanceString = weaponResText;
-			}
-		}
-		
-		const immunities = [];
-
-		damageTypes.forEach(type => {
-			if (npc[`immunity_${type}`]) {
-				immunities.push(type);
-			}
-		});
-		
-		let immunityString = immunities.join(', ');
-		
-		const weaponImmTextMap = {
-			'nonmagical': "bludgeoning, piercing, and slashing from nonmagical attacks",
-			'silvered': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
-			'adamantine': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
-			'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron",
+		const weaponImmMap = {
+			nonmagical: "bludgeoning, piercing, and slashing from nonmagical attacks",
+			silvered: "bludgeoning, piercing, and slashing from nonmagical attacks that aren't silvered",
+			adamantine: "bludgeoning, piercing, and slashing from nonmagical attacks that aren't adamantine",
+			'cold-forged': "bludgeoning, piercing, and slashing from nonmagical attacks that aren't cold-forged iron"
 		};
-		const weaponImmText = weaponImmTextMap[npc.weaponImmunity];
-		if (weaponImmText) {
-			if (immunityString) {
-				immunityString += '; ' + weaponImmText;
-			} else {
-				immunityString = weaponImmText;
-			}
-		}
 
+		if (npc.weaponResistance && npc.weaponResistance !== 'none' && weaponResMap[npc.weaponResistance]) {
+			resistances.push(weaponResMap[npc.weaponResistance]);
+		}
+		if (npc.weaponImmunity && npc.weaponImmunity !== 'none' && weaponImmMap[npc.weaponImmunity]) {
+			immunities.push(weaponImmMap[npc.weaponImmunity]);
+		}
 
 		return {
 			vulnerabilities: vulnerabilities.join(', '),
-			resistances: resistanceString,
-			immunities: immunityString
+			resistances: resistances.join(', '),
+			immunities: immunities.join(', ')
 		};
 	}
-	
+
 	function calculateConditionImmunitiesString(npc) {
-		if (!npc) return "";
-		const immuneConditions = [];
-		conditions.forEach(condition => {
-			if (npc[`ci_${condition}`]) {
-				immuneConditions.push(condition);
-			}
-		});
-		return immuneConditions.join(', ');
+		return conditions.filter(condition => npc[`ci_${condition}`]).join(', ');
 	}
 
 	function calculateLanguagesString(npc) {
-		if (!npc) return "";
+		if (!npc) return '—';
 
-		switch (npc.specialLanguageOption) {
-			case 1: return "—";
-			case 2: return "All";
-			case 3: return "the languages it knew in life";
-			case 4:
-				const knownLanguages = [...(npc.selectedLanguages || [])].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).join(', ');
-				return `Understands ${knownLanguages || 'no languages'} but can't speak`;
-			case 5: return "Understands the languages of its creator but can't speak";
-			case 6: return "Understands the languages it knew in life but can't speak";
-			case 0: default: break;
+		const specialMap = {
+			1: "understands all languages but speaks none",
+			2: "all languages",
+			3: "the languages it knew in life",
+			4: "understands the languages selected but can't speak",
+			5: "understands its creator's languages but can't speak",
+			6: "understands the languages it knew in life but can't speak"
+		};
+
+		const specialText = specialMap[npc.specialLanguageOption] || null;
+		const selected = Array.isArray(npc.selectedLanguages) ? [...npc.selectedLanguages].sort((a,b) => a.localeCompare(b)) : [];
+		const telepathy = npc.hasTelepathy ? `telepathy ${npc.telepathyRange || 60} ft.` : null; // Default range if unspecified
+
+		let mainPart = '—'; // Default if nothing else applies
+		if (specialText) {
+			mainPart = specialText;
+		} else if (selected.length > 0) {
+			mainPart = selected.join(', ');
 		}
-	
-		let languages = [...(npc.selectedLanguages || [])];
-		if (languages.length === 0 && !npc.hasTelepathy) {
-			return "";
-		}
-	
-		languages.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-		let languageString = languages.join(', ');
-	
-		if (npc.hasTelepathy) {
-			const telepathyText = `telepathy ${npc.telepathyRange || 0} ft.`;
-			if (languageString.length > 0) {
-				languageString += `, ${telepathyText}`;
+
+		// Combine main part and telepathy
+		if (telepathy) {
+			if (mainPart === '—' || npc.specialLanguageOption === 1 || npc.specialLanguageOption === 4 || npc.specialLanguageOption === 5 || npc.specialLanguageOption === 6) {
+				// If no spoken languages or can't speak, just list telepathy
+				return telepathy;
 			} else {
-				languageString = telepathyText;
+				// Otherwise, append telepathy
+				return `${mainPart}, ${telepathy}`;
 			}
+		} else {
+			return mainPart;
 		}
-	
-		return languageString;
 	}
+
 
 	function calculateAllStats() {
 		if (!app.activeNPC) return;
+
 		const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
 		const abilityAbbr = { strength: 'Str', dexterity: 'Dex', constitution: 'Con', intelligence: 'Int', wisdom: 'Wis', charisma: 'Cha' };
-		
+
+		// 1. Calculate Ability Bonuses first
 		abilities.forEach(ability => {
 			const score = app.activeNPC[ability] || 10;
 			app.activeNPC[`${ability}Bonus`] = calculateAbilityBonus(score);
 		});
 
+		// 2. Get Proficiency Bonus (already calculated in updateActiveNPCFromForm)
 		const profBonus = app.activeNPC.proficiencyBonus || 2;
+
+		// 3. Calculate Saving Throws
 		const savesArray = [];
 		abilities.forEach(ability => {
 			const base = app.activeNPC[`${ability}Bonus`] || 0;
 			const isProficient = app.activeNPC[`${ability}SavingThrowProf`] || false;
 			const adjust = app.activeNPC[`${ability}SavingThrowAdjust`] || 0;
 			const total = base + (isProficient ? profBonus : 0) + adjust;
-			
+			// Only add save to the string if proficient or adjusted
 			if (isProficient || adjust !== 0) {
 				savesArray.push(`${abilityAbbr[ability]} ${total >= 0 ? '+' : ''}${total}`);
 			}
 		});
 		app.activeNPC.saves = savesArray.join(', ');
-		
+
+		// 4. Calculate Skills (depends on ability bonuses and prof bonus)
 		calculateAllSkills();
 
+		// 5. Calculate Passive Perception (depends on Wisdom bonus and Perception skill)
 		const perceptionProf = app.activeNPC.skill_perception_prof || false;
 		const perceptionExp = app.activeNPC.skill_perception_exp || false;
 		const perceptionAdjust = app.activeNPC.skill_perception_adjust || 0;
 		const perceptionBonus = (app.activeNPC.wisdomBonus || 0) +
-								(perceptionProf ? profBonus : 0) +
-								(perceptionExp ? profBonus : 0) +
-								perceptionAdjust;
+			(perceptionProf ? profBonus : 0) +
+			(perceptionExp ? profBonus : 0) + // Expertise adds prof bonus again
+			perceptionAdjust;
 		app.activeNPC.passivePerception = 10 + perceptionBonus;
-		
+
+		// 6. Calculate Speed String
 		app.activeNPC.speed = calculateSpeedString(app.activeNPC);
 	}
-	
+
+
 	function calculateAllSkills() {
-        if (!app.activeNPC) return;
-        const profBonus = app.activeNPC.proficiencyBonus || 2;
-        const skillsArray = [];
-
-        skills.forEach(skill => {
-            const baseAbilityBonus = app.activeNPC[`${skill.attribute}Bonus`] || 0;
-            const isProf = app.activeNPC[`skill_${skill.id}_prof`] || false;
-            const isExp = app.activeNPC[`skill_${skill.id}_exp`] || false;
-            const adjust = app.activeNPC[`skill_${skill.id}_adjust`] || 0;
-
-            const total = baseAbilityBonus + (isProf ? profBonus : 0) + (isExp ? profBonus : 0) + adjust;
-
-            if (isProf || isExp || adjust !== 0) {
-                skillsArray.push(`${skill.name} ${total >= 0 ? '+' : ''}${total}`);
-            }
-        });
-        app.activeNPC.npcSkills = skillsArray.join(', ');
-    }
-
-	// --- NEW ACTION FUNCTIONS ---
-	function addOrUpdateAction(type) {
 		if (!app.activeNPC) return;
+		const profBonus = app.activeNPC.proficiencyBonus || 2;
+		const skillsArray = [];
+
+		skills.forEach(skill => {
+			const baseAbilityBonus = app.activeNPC[`${skill.attribute}Bonus`] || 0;
+			const isProf = app.activeNPC[`skill_${skill.id}_prof`] || false;
+			const isExp = app.activeNPC[`skill_${skill.id}_exp`] || false;
+			const adjust = app.activeNPC[`skill_${skill.id}_adjust`] || 0;
+
+			// Calculate total skill bonus
+			const total = baseAbilityBonus +
+				(isProf ? profBonus : 0) +
+				(isExp ? profBonus : 0) + // Expertise adds proficiency bonus again
+				adjust;
+
+			// Add skill to the string only if proficient, expert, or adjusted
+			if (isProf || isExp || adjust !== 0) {
+				skillsArray.push(`${skill.name} ${total >= 0 ? '+' : ''}${total}`);
+			}
+		});
+		// Sort skills alphabetically for consistent display
+		skillsArray.sort();
+		app.activeNPC.npcSkills = skillsArray.join(', ');
+	}
+
+
+	// --- Action Functions ---
+	function addOrUpdateAction(type) {
+		if (!app.activeNPC || !window.ui.inputs.commonName || !window.ui.inputs.commonDesc) return;
+
 		const name = window.ui.inputs.commonName.value.trim();
-		const desc = window.ui.inputs.commonDesc.value.trim();
-		if (!name || !desc) {
-			showAlert("Please provide both a name and a description.");
+		const desc = window.ui.inputs.commonDesc.value.trim(); // Get value from textarea
+
+		if (!name) {
+			showAlert("Action name cannot be empty.");
+			return;
+		}
+		if (!desc) {
+			showAlert("Action description cannot be empty.");
 			return;
 		}
 
-		if (currentlyEditingAction) {
-			const oldType = currentlyEditingAction.dataset.actionType;
-			const oldIndex = parseInt(currentlyEditingAction.dataset.actionIndex, 10);
-			
-			// If type is different, remove from old list
-			if(oldType !== type) {
-				app.activeNPC.actions[oldType].splice(oldIndex, 1);
-			}
-			
-			// Add/update in the new list
-			const newAction = { name, desc };
-			if(oldType === type) {
-				app.activeNPC.actions[type][oldIndex] = newAction;
+		const actionData = { name, desc };
+
+		// Ensure the actions object and specific type array exist
+		if (!app.activeNPC.actions) app.activeNPC.actions = { actions: [], 'bonus-actions': [], reactions: [], 'legendary-actions': [], 'lair-actions': [] };
+		if (!Array.isArray(app.activeNPC.actions[type])) app.activeNPC.actions[type] = [];
+
+		if (currentlyEditingAction !== null) {
+			// Update existing action
+			const { originalType, originalIndex } = currentlyEditingAction;
+			if (originalType === type) {
+				// If type hasn't changed, update in place
+				if (originalIndex >= 0 && originalIndex < app.activeNPC.actions[type].length) {
+					app.activeNPC.actions[type][originalIndex] = actionData;
+				} else {
+					console.error("Error updating action: Invalid original index.");
+					showAlert("Error updating action.");
+					clearInputs(); // Reset edit state
+					return;
+				}
 			} else {
-				app.activeNPC.actions[type].push(newAction);
+				// If type changed, remove from old list and add to new list
+				if (originalIndex >= 0 && originalIndex < app.activeNPC.actions[originalType].length) {
+					app.activeNPC.actions[originalType].splice(originalIndex, 1);
+					app.activeNPC.actions[type].push(actionData);
+				} else {
+					console.error("Error moving action: Invalid original index.");
+					showAlert("Error moving action.");
+					clearInputs(); // Reset edit state
+					return;
+				}
 			}
 		} else {
-			app.activeNPC.actions[type].push({ name, desc });
+			// Add new action
+			app.activeNPC.actions[type].push(actionData);
 		}
-		
-		window.ui.renderActions();
-		clearInputs();
-		saveActiveBestiaryToDB();
-		window.viewport.updateViewport();
+
+		clearInputs(); // Clear form and reset editing state
+		window.ui.renderActions(); // Re-render action lists
+		window.viewport.updateViewport(); // Update preview
+		saveActiveBestiaryToDB(); // Save changes
 	}
+
 
 	function editAction(element) {
-		if (currentlyEditingAction) {
-			currentlyEditingAction.classList.remove("editing");
+		if (!window.app.activeNPC || !element) return;
+
+		const type = element.dataset.actionType;
+		const originalIndex = parseInt(element.dataset.actionIndex, 10); // Get original index
+
+		if (type && !isNaN(originalIndex) && app.activeNPC.actions && app.activeNPC.actions[type]?.[originalIndex]) {
+			// Remove 'editing' class from previously edited item
+			document.querySelectorAll('.action-list-item.editing').forEach(el => el.classList.remove('editing', 'border-yellow-400'));
+
+			const actionData = app.activeNPC.actions[type][originalIndex];
+			window.ui.inputs.commonName.value = actionData.name || '';
+			window.ui.inputs.commonDesc.value = actionData.desc || ''; // Use textarea
+
+			currentlyEditingAction = { originalType: type, originalIndex: originalIndex }; // Store original info
+
+			// Add visual indicator to the item being edited
+			element.classList.add('editing', 'border-yellow-400');
+			if (window.ui.clearEditBtn) window.ui.clearEditBtn.classList.remove('hidden'); // Show cancel button
+			window.ui.inputs.commonName.focus(); // Focus name field
+		} else {
+			console.error("Could not find action data for editing:", {type, originalIndex});
 		}
-		currentlyEditingAction = element;
-		currentlyEditingAction.classList.add("editing");
-
-		const name = element.querySelector(".action-name").textContent;
-		const desc = element.querySelector(".action-desc").textContent;
-
-		window.ui.inputs.commonName.value = name;
-		window.ui.inputs.commonDesc.value = desc;
-		window.ui.clearEditBtn.classList.remove("hidden");
-		window.ui.inputs.commonName.focus();
 	}
 
+
 	function clearInputs() {
-		window.ui.inputs.commonName.value = "";
-		window.ui.inputs.commonDesc.value = "";
-		if (currentlyEditingAction) {
-			currentlyEditingAction.classList.remove("editing");
-			currentlyEditingAction = null;
-		}
-		window.ui.clearEditBtn.classList.add("hidden");
+		if (window.ui.inputs.commonName) window.ui.inputs.commonName.value = '';
+		if (window.ui.inputs.commonDesc) window.ui.inputs.commonDesc.value = ''; // Use textarea
+		if (window.ui.clearEditBtn) window.ui.clearEditBtn.classList.add('hidden'); // Hide cancel button
+		currentlyEditingAction = null; // Reset editing state
+		// Remove 'editing' class from list items
+		document.querySelectorAll('.action-list-item.editing').forEach(el => el.classList.remove('editing', 'border-yellow-400'));
 	}
 
 	function editBoilerplate(element) {
-        boilerplateTarget = element;
-        document.getElementById("boilerplate-editor").value = element.textContent;
-        openModal('boilerplate-modal');
-    }
+		if (!window.ui.boilerplateModal || !window.app.activeNPC) return;
+		const editor = document.getElementById('boilerplate-editor');
+		if (!editor) return;
 
-    function saveBoilerplate() {
-        if (boilerplateTarget && app.activeNPC) {
-            const newText = document.getElementById("boilerplate-editor").value;
-            boilerplateTarget.textContent = newText;
-            if (boilerplateTarget.id === 'legendary-boilerplate') {
-                app.activeNPC.legendaryBoilerplate = newText;
-            } else if (boilerplateTarget.id === 'lair-boilerplate') {
-                app.activeNPC.lairBoilerplate = newText;
-            }
-            saveActiveBestiaryToDB();
-            window.viewport.updateViewport();
-        }
-        closeModal('boilerplate-modal');
-    }
+		boilerplateTarget = element; // Store which element was clicked
+		if (element.id === 'legendary-boilerplate') {
+			editor.value = window.app.activeNPC.legendaryBoilerplate || app.defaultNPC.legendaryBoilerplate;
+		} else if (element.id === 'lair-boilerplate') {
+			editor.value = window.app.activeNPC.lairBoilerplate || app.defaultNPC.lairBoilerplate;
+		}
+		openModal('boilerplate-modal');
+		editor.focus();
+		editor.select();
+	}
 
-	// --- NEW ATTACK HELPER LOGIC ---
-    function handleAttackHelperOpen() {
-        const currentDesc = window.ui.inputs.commonDesc.value.trim();
-        
-        if (!currentDesc) {
-            // If empty, open blank helper
-            openBlankAttackHelper();
-            return;
-        }
-        
-        const parsedAttack = parseAttackString(currentDesc);
 
-        if (parsedAttack) {
-            // If parsing succeeds, populate and open
-            populateAttackHelper(parsedAttack);
-            openModal('attack-helper-modal');
-        } else {
-            // If parsing fails, ask user
-            showConfirm(
-                "Overwrite Description?",
-                "The current description doesn't look like a standard attack. Do you want to overwrite it using the Attack Helper?",
-                () => { // onConfirm
-                    openBlankAttackHelper();
-                }
-            );
-        }
-    }
+	function saveBoilerplate() {
+		if (!boilerplateTarget || !window.app.activeNPC) return;
+		const editor = document.getElementById('boilerplate-editor');
+		if (!editor) return;
 
-    function openBlankAttackHelper() {
-        // Reset fields before opening
-        document.getElementById('attack-type').value = 'Melee Weapon Attack';
-        document.getElementById('attack-bonus').value = '';
-        document.getElementById('attack-reach').value = '';
-        document.getElementById('attack-target').value = 'one target';
-        document.getElementById('attack-damage-dice').value = '';
-        document.getElementById('attack-damage-type').value = 'slashing';
-        // Remove additional damage rows
-        const container = document.getElementById('all-damage-rows-container');
-        while (container.children.length > 1) {
-            container.removeChild(container.lastChild);
-        }
-        openModal('attack-helper-modal');
-    }
+		const newText = editor.value;
 
-    // --- REFINED: parseAttackString ---
-    function parseAttackString(str) {
-        // Regex: Capture type, bonus, reach/range, target, and the entire damage string
-         const attackRegex = /^(Melee|Ranged)\s+(Weapon|Spell)\s+Attack:\s*([+-]\d+)\s+to hit,\s+(?:reach\s+([\d/]+)\s*ft\.|range\s+([\d/]+)\s*ft\.),\s+([^.]+)\.\s+Hit:\s*(.*)\.$/i;
-        const match = str.match(attackRegex);
+		if (boilerplateTarget.id === 'legendary-boilerplate') {
+			window.app.activeNPC.legendaryBoilerplate = newText;
+		} else if (boilerplateTarget.id === 'lair-boilerplate') {
+			window.app.activeNPC.lairBoilerplate = newText;
+		}
 
-        if (!match) return null; // Parsing failed at the basic structure level
+		boilerplateTarget.textContent = newText; // Update display immediately
+		boilerplateTarget = null; // Clear target
+		closeModal('boilerplate-modal');
+		window.viewport.updateViewport(); // Update main preview
+		saveActiveBestiaryToDB(); // Save changes
+	}
 
-        const data = {
-            type: `${match[1]} ${match[2]} Attack`,
-            bonus: match[3].replace(/[+-]/, ''), // Remove sign for input
-            reach: match[4] || match[5], // Use reach or range group
-            target: match[6],
-            damageComponents: []
-        };
 
-        // Parse the entire damage string after "Hit: "
-        const damageString = match[7].trim();
-        // Split by " plus " or " + ", trying to preserve parentheses content
-        const damageParts = damageString.split(/\s+plus\s+|\s*\+\s*(?![^()]*\))/i);
+	// --- Attack Helper Logic ---
+	function handleAttackHelperOpen() {
+		if (!window.app.activeNPC) return;
 
-        damageParts.forEach((part, index) => {
-            part = part.trim();
-             // Regex to find dice expression (including simple numbers) within optional parens, and damage type
-            const damageRegex = /(?:\(?\s*([^)]+?)\s*\)?\s+)?(\b\w+\b)\s+damage/i;
-            const damageMatch = part.match(damageRegex);
+		const currentDesc = window.ui.inputs.commonDesc.value || '';
+		const parsedData = parseAttackString(currentDesc); // Attempt to parse current description
 
-            if (damageMatch) {
-                let expression = damageMatch[1] ? damageMatch[1].trim() : ''; // Expression inside parens or the part before type if no parens
-                const type = damageMatch[2] ? damageMatch[2].toLowerCase() : '';
-                
-                 // If no explicit dice/bonus expression was found, check if the part itself is just a number before the type
-                 if (!expression && /^\d+$/.test(part.split(' ')[0])) {
-                    expression = part.split(' ')[0];
-                 }
+		if (parsedData) {
+			populateAttackHelper(parsedData); // Populate helper with parsed data
+		} else {
+			openBlankAttackHelper(); // Open with defaults if parsing fails
+		}
+		openModal('attack-helper-modal');
+	}
 
-                if (type) { // Ensure we captured a damage type
-                     data.damageComponents.push({
-                         expression: expression,
-                         type: type
-                     });
-                 }
-            } else {
-                 // Fallback if the standard regex fails, maybe it's just "X type damage"?
-                 const simpleDamageRegex = /(\d+)\s+(\w+)\s+damage/i;
-                 const simpleMatch = part.match(simpleDamageRegex);
-                 if (simpleMatch) {
-                      data.damageComponents.push({
-                         expression: simpleMatch[1],
-                         type: simpleMatch[2].toLowerCase()
-                     });
-                 }
-            }
-        });
-        
-        // Return null if NO damage components were found, as it's not a valid attack string
-        return data.damageComponents.length > 0 ? data : null;
-    }
+
+	function openBlankAttackHelper() {
+		// Reset fields to default or derive from NPC stats
+		const attackTypeSelect = document.getElementById('attack-type');
+		const bonusInput = document.getElementById('attack-bonus');
+		const reachInput = document.getElementById('attack-reach');
+		const targetSelect = document.getElementById('attack-target');
+		const damageDiceInput = document.getElementById('attack-damage-dice');
+		const damageTypeSelect = document.getElementById('attack-damage-type');
+
+		if (attackTypeSelect) attackTypeSelect.value = 'Melee Weapon Attack';
+		if (reachInput) reachInput.value = '5';
+		if (targetSelect) targetSelect.value = 'one target';
+		if (damageDiceInput) damageDiceInput.value = ''; // Start blank
+		if (damageTypeSelect) damageTypeSelect.value = 'slashing'; // Default damage type
+
+		// Calculate default bonus based on Str/Dex
+		let defaultBonus = 0;
+		if (window.app.activeNPC) {
+			const strBonus = window.app.activeNPC.strengthBonus || 0;
+			const dexBonus = window.app.activeNPC.dexterityBonus || 0;
+			const profBonus = window.app.activeNPC.proficiencyBonus || 2;
+			// Default to Strength for Melee, Dex otherwise (can be changed by user)
+			defaultBonus = (strBonus > dexBonus ? strBonus : dexBonus) + profBonus;
+		}
+		if (bonusInput) bonusInput.value = defaultBonus;
+
+		// Clear any extra damage rows
+		const container = document.getElementById('all-damage-rows-container');
+		if (container) {
+			const extraRows = container.querySelectorAll('.damage-row-extra');
+			extraRows.forEach(row => row.remove());
+		}
+
+		// Reset dice selectors for the primary row
+		if (damageDiceInput) {
+			const primaryDiceSelector = document.getElementById('primary-dice-selector');
+			if (primaryDiceSelector) createDiceSelector(primaryDiceSelector, damageDiceInput);
+		}
+	}
+
+
+	function parseAttackString(str) {
+		if (!str) return null;
+
+		const mainPattern = /^(Melee|Ranged)\s(Weapon|Spell)\sAttack:\s*([+-]\d+)\s*to hit,\s*reach\s*(\d+)\s*ft\.? or range\s*(\d+\/\d+|\d+)\s*ft\.?,\s*(one target|one creature|self|one willing creature|all creatures in range)\.\s*Hit:\s*(.*)$/i;
+		const reachOnlyPattern = /^(Melee|Ranged)\s(Weapon|Spell)\sAttack:\s*([+-]\d+)\s*to hit,\s*reach\s*(\d+)\s*ft\.?,\s*(one target|one creature|self|one willing creature|all creatures in range)\.\s*Hit:\s*(.*)$/i;
+		const rangeOnlyPattern = /^(Melee|Ranged)\s(Weapon|Spell)\sAttack:\s*([+-]\d+)\s*to hit,\s*range\s*(\d+\/\d+|\d+)\s*ft\.?,\s*(one target|one creature|self|one willing creature|all creatures in range)\.\s*Hit:\s*(.*)$/i;
+
+		let match = str.match(mainPattern);
+		let reach = null;
+		let range = null;
+		let damageString = '';
+
+		if (match) {
+			reach = match[4];
+			range = match[5];
+			damageString = match[7];
+		} else {
+			match = str.match(reachOnlyPattern);
+			if (match) {
+				reach = match[4];
+				damageString = match[6];
+			} else {
+				match = str.match(rangeOnlyPattern);
+				if (match) {
+					range = match[4];
+					damageString = match[6];
+				} else {
+					return null; // Doesn't match any primary pattern
+				}
+			}
+		}
+
+		const data = {
+			attackType: `${match[1]} ${match[2]} Attack`,
+			bonus: parseInt(match[3], 10),
+			reach: reach || (range ? '' : '5'), // Default reach 5 if no range
+			range: range || '',
+			target: match[match.length - 2], // Target is second to last group in all patterns
+			damages: []
+		};
+
+		// Parse damage string
+		// Example: "10 (2d6 + 3) bludgeoning damage plus 7 (2d6) poison damage. If the target..."
+		// Or: "7 (2d6) poison damage."
+		const damageParts = damageString.split(/ plus | and (?=\d+\s*\()/); // Split by " plus " or " and " followed by dice avg
+		const dicePattern = /(\d+)\s*\((.*?)\)\s*(\w+)\s*damage/;
+		const flatDamagePattern = /(\d+)\s*(\w+)\s*damage/; // For cases like "5 poison damage"
+
+		damageParts.forEach((part, index) => {
+			part = part.trim();
+			let diceMatch = part.match(dicePattern);
+			let dice = '';
+			let type = '';
+
+			if (diceMatch) {
+				dice = diceMatch[2].trim();
+				type = diceMatch[3].toLowerCase();
+			} else {
+				let flatMatch = part.match(flatDamagePattern);
+				if (flatMatch) {
+					dice = flatMatch[1].trim(); // Store flat damage in the 'dice' field for simplicity
+					type = flatMatch[2].toLowerCase();
+				} else {
+					// Could be descriptive text after the last damage type
+					// Or maybe it's just a complex single damage type. Try to grab the last word?
+					const words = part.split(' ');
+					const lastWord = words[words.length - 1];
+					// Very basic check, might need refinement
+					if (damageTypes.includes(lastWord.toLowerCase())) {
+						type = lastWord.toLowerCase();
+						// Attempt to find dice somewhere earlier in the part
+						const simpleDiceMatch = part.match(/(\d+d\d+(?:\s*[+-]\s*\d+)?)/);
+						if (simpleDiceMatch) {
+							dice = simpleDiceMatch[1];
+						} else {
+							dice = part.replace(new RegExp(`\\s*${lastWord}\\s*damage.*$`), '').trim(); // Try removing type and text
+						}
+
+					} else if (index === 0) {
+						// If it's the first part and doesn't match, assume it's complex description?
+						// For now, let's skip adding it as damage.
+						console.warn("Could not parse primary damage part:", part);
+						return; // Skip this part
+					} else {
+						// Likely descriptive text following the last damage type
+						// We've already captured the damage, so we can ignore this.
+						return;
+					}
+				}
+			}
+
+			// Validate type
+			if (!damageTypes.includes(type)) {
+				console.warn(`Unknown damage type "${type}" found during parsing.`);
+				// Fallback or skip? Let's skip for now.
+				return;
+			}
+
+			data.damages.push({ dice: dice || '', type: type });
+		});
+
+		// Ensure at least one damage entry exists, even if empty
+		if (data.damages.length === 0) {
+			data.damages.push({ dice: '', type: 'slashing' });
+		}
+
+		return data;
+	}
 
 
 	function populateAttackHelper(data) {
-        document.getElementById('attack-type').value = data.type;
-        document.getElementById('attack-bonus').value = data.bonus;
-        document.getElementById('attack-reach').value = data.reach;
-        document.getElementById('attack-target').value = data.target;
+		if (!data) return;
 
-        // Clear existing damage rows except the first one
-        const container = document.getElementById('all-damage-rows-container');
-        while (container.children.length > 1) {
-            container.removeChild(container.lastChild);
-        }
+		const attackTypeSelect = document.getElementById('attack-type');
+		const bonusInput = document.getElementById('attack-bonus');
+		const reachInput = document.getElementById('attack-reach');
+		const targetSelect = document.getElementById('attack-target');
+		const container = document.getElementById('all-damage-rows-container');
 
-        // Populate damage components
-        data.damageComponents.forEach((comp, index) => {
-            if (index === 0) {
-                // Populate primary row
-                document.getElementById('attack-damage-dice').value = comp.expression;
-                document.getElementById('attack-damage-type').value = comp.type;
-            } else {
-                // Add and populate additional rows
-                addDamageRow(); // This function now creates unique IDs
-                const newRow = container.lastChild;
-                // Find the inputs within the newly added row
-                const damageInput = newRow.querySelector('.damage-expression');
-                const typeSelect = newRow.querySelector('.damage-type');
-                if(damageInput) damageInput.value = comp.expression;
-                if(typeSelect) typeSelect.value = comp.type;
-            }
-        });
-    }
+		if (attackTypeSelect) attackTypeSelect.value = data.attackType || 'Melee Weapon Attack';
+		if (bonusInput) bonusInput.value = data.bonus || 0;
 
-	// --- DICE SELECTOR LOGIC (REUSABLE) ---
-	function createDiceSelector(container, targetInput) {
-		if (!container || !targetInput) return;
-		container.innerHTML = ''; // Clear previous icons
-		const dice = [4, 6, 8, 10, 12, 20, 100];
-
-		dice.forEach((sides) => {
-			const dieWrapper = document.createElement('div');
-			dieWrapper.className = 'die-icon';
-			dieWrapper.title = `Left click to add 1d${sides}.\nRight click to remove 1d${sides}.`;
-			dieWrapper.innerHTML = `<svg viewBox="0 0 1000 1000" width="32" height="32"><use href="#icon-die-d${sides}" fill="currentColor"></use></svg>`;
-			
-			dieWrapper.addEventListener('click', () => updateDiceString(targetInput, sides, 1));
-			dieWrapper.addEventListener('contextmenu', (e) => { e.preventDefault(); updateDiceString(targetInput, sides, -1); });
-			container.appendChild(dieWrapper);
-		});
-
-		const bonusWrapper = document.createElement('div');
-		bonusWrapper.className = 'bonus-icon die-icon';
-		bonusWrapper.title = `Left click to add 1 to the bonus.\nRight click to subtract 1 from the bonus.`;
-		bonusWrapper.innerHTML = `<svg viewBox="0 0 1000 1000" width="32" height="32"><use href="#icon-die-bonus" fill="currentColor"></use></svg>`;
-		bonusWrapper.addEventListener('click', () => updateBonus(targetInput, 1));
-		bonusWrapper.addEventListener('contextmenu', (e) => { e.preventDefault(); updateBonus(targetInput, -1); });
-		container.appendChild(bonusWrapper);
-	}
-
-	function updateDiceString(targetInput, sides, change) {
-		let currentValue = targetInput.value.trim(); const dieTerm = `d${sides}`; let terms = currentValue.split(/([+-])/).map(t => t.trim()).filter(t => t); // Split by + or - keeping delimiter
-		let found = false;
-        let newTerms = [];
-        let operator = '+'; // Default operator
-
-        // Combine terms with their preceding operator
-        for(let i = 0; i < terms.length; i++) {
-            if (terms[i] === '+' || terms[i] === '-') {
-                operator = terms[i];
-            } else if (terms[i].endsWith(dieTerm)) {
-                found = true;
-                const count = parseInt(terms[i].slice(0, -dieTerm.length), 10) || 1;
-                const newCount = count + change;
-                if (newCount > 0) {
-                     newTerms.push({ term: `${newCount}${dieTerm}`, operator: operator });
-                }
-                 operator = '+'; // Reset operator after use
-            } else {
-                 newTerms.push({ term: terms[i], operator: operator });
-                 operator = '+'; // Reset operator after use
-            }
-        }
-
-		if (!found && change > 0) {
-             newTerms.push({ term: `1${dieTerm}`, operator: '+' });
+		// Handle reach/range logic - prioritize reach for melee, range for ranged
+		if (reachInput) {
+			if (data.attackType.startsWith('Melee') && data.reach) {
+				reachInput.value = data.reach;
+			} else if (!data.attackType.startsWith('Melee') && data.range) {
+				reachInput.value = data.range; // Put range in the 'reach' input for simplicity
+			} else if (data.reach) { // Fallback if type doesn't match range/reach
+				reachInput.value = data.reach;
+			} else if (data.range) {
+				reachInput.value = data.range;
+			} else {
+				reachInput.value = data.attackType.startsWith('Melee') ? '5' : '30'; // Default based on type
+			}
 		}
 
-        // Reconstruct the string
-        let result = "";
-        newTerms.forEach((item, index) => {
-            if(index === 0) {
-                // Handle potential negative bonus as first term
-                result += (item.operator === '-' ? '-' : '') + item.term;
-            } else {
-                 result += ` ${item.operator} ${item.term}`;
-            }
-        });
+		if (targetSelect) targetSelect.value = data.target || 'one target';
 
-		targetInput.value = result.trim();
+		// Clear existing rows (except potential template row if used)
+		if (container) {
+			container.innerHTML = ''; // Clear completely
+		}
+
+		// Add rows for each damage component
+		if (data.damages && data.damages.length > 0) {
+			data.damages.forEach((dmg, index) => {
+				addDamageRow(dmg.dice, dmg.type, index === 0); // isPrimary = true only for the first one
+			});
+		} else {
+			// Add a default primary row if parsing found no damages
+			addDamageRow('', 'slashing', true);
+		}
 	}
+
+
+	// --- Dice Selector Logic ---
+	function createDiceSelector(container, targetInput) {
+		if (!container || !targetInput) return;
+		container.innerHTML = ''; // Clear previous
+
+		const dice = [4, 6, 8, 10, 12, 20]; // Common dice types
+		const bonusIcon = `<svg class="bonus-icon h-5 w-5 mx-1" viewBox="0 0 1000 1000"><use href="#icon-die-bonus"></use></svg>`;
+
+		dice.forEach(sides => {
+			const icon = `<svg class="die-icon h-6 w-6 -ml-2" viewBox="0 0 1000 1000"><use href="#icon-die-d${sides}"></use></svg>`;
+			const button = document.createElement('button');
+			button.innerHTML = icon;
+			button.title = `Add d${sides}`;
+			button.type = 'button'; // Prevent form submission
+			button.onclick = (e) => updateDiceString(targetInput, sides, e.shiftKey ? -1 : 1);
+			container.appendChild(button);
+		});
+
+		// Add bonus button
+		const bonusButton = document.createElement('button');
+		bonusButton.innerHTML = bonusIcon;
+		bonusButton.title = 'Add +1 bonus (Shift+Click for -1)';
+		bonusButton.type = 'button';
+		bonusButton.onclick = (e) => updateBonus(targetInput, e.shiftKey ? -1 : 1);
+		container.appendChild(bonusButton);
+	}
+
+
+	function updateDiceString(targetInput, sides, change) {
+		if (!targetInput) return;
+		let currentValue = targetInput.value.trim();
+		const dieRegex = new RegExp(`(\\d+)d${sides}`);
+		let match = currentValue.match(dieRegex);
+		let newCount = change;
+
+		if (match) {
+			newCount = parseInt(match[1], 10) + change;
+			if (newCount <= 0) {
+				// Remove the XdY part entirely
+				currentValue = currentValue.replace(new RegExp(`\\s*\\+?\\s*${match[0]}`), '').replace(new RegExp(`${match[0]}\\s*\\+?\\s*`), '').trim();
+				// If removing dice leaves only a sign, remove it too
+				if (currentValue.match(/^\s*[+-]\s*$/)) currentValue = '';
+				// If removing dice leaves "+ BONUS" -> "BONUS" or "- BONUS", keep sign
+				currentValue = currentValue.replace(/^\s*\+\s*(\d+)$/, '$1').replace(/^\s*\+\s*(\d+d\d+)/, '$1');
+
+			} else {
+				currentValue = currentValue.replace(dieRegex, `${newCount}d${sides}`);
+			}
+		} else if (change > 0) {
+			// Add the new die type
+			if (currentValue && !currentValue.match(/[+-]\s*$/)) {
+				// Add a plus if there's existing content that doesn't end in +/-
+				currentValue += ` + ${change}d${sides}`;
+			} else if (currentValue) {
+				// Append directly if ending in +/-
+				currentValue += ` ${change}d${sides}`;
+			} else {
+				// First die type
+				currentValue = `${change}d${sides}`;
+			}
+		}
+		// Clean up potential leading/trailing/double spaces or operators
+		currentValue = currentValue.replace(/\s{2,}/g, ' ').replace(/^\s*\+\s*/, '').trim();
+		// If string becomes just "+", clear it.
+		if (currentValue === '+') currentValue = '';
+
+
+		targetInput.value = currentValue;
+	}
+
 
 	function updateBonus(targetInput, change) {
 		if (!targetInput) return;
-		let expression = targetInput.value.trim();
-		let terms = expression.split(/([+-])/).map(t => t.trim()).filter(t => t); // Split by + or - keeping delimiter
-		let bonus = 0;
-		let diceTerms = [];
-        let currentOperator = '+';
+		let currentValue = targetInput.value.trim();
+		const bonusRegex = /([+-])\s*(\d+)$/; // Matches sign and number at the end
+		let match = currentValue.match(bonusRegex);
+		let newBonus = change;
 
-        // Separate dice terms and calculate existing bonus
-        for (let i = 0; i < terms.length; i++) {
-            if (terms[i] === '+' || terms[i] === '-') {
-                 currentOperator = terms[i];
-            } else if (terms[i].includes('d')) {
-                 // Push the operator and the dice term
-                 diceTerms.push(currentOperator === '-' ? ` - ${terms[i]}` : (diceTerms.length > 0 ? ` + ${terms[i]}` : terms[i]));
-                 currentOperator = '+'; // Reset for next term
-            } else if (!isNaN(parseInt(terms[i]))) {
-                bonus += (currentOperator === '-' ? -1 : 1) * parseInt(terms[i], 10);
-                currentOperator = '+'; // Reset for next term
-            } else {
-                 // If it's not a dice term or number, treat as part of dice terms (e.g., weird input)
-                 diceTerms.push(currentOperator === '-' ? ` - ${terms[i]}` : (diceTerms.length > 0 ? ` + ${terms[i]}` : terms[i]));
-                  currentOperator = '+'; // Reset for next term
-            }
-        }
+		if (match) {
+			const sign = match[1];
+			const currentBonus = parseInt(match[2], 10);
+			if (sign === '+') {
+				newBonus = currentBonus + change;
+			} else { // sign === '-'
+				newBonus = currentBonus - change; // Subtracting a negative increases, subtracting positive decreases
+			}
 
-		const newBonus = bonus + change;
-		let newExpression = diceTerms.join('').trim();
+			if (newBonus === 0) {
+				// Remove the bonus part entirely
+				currentValue = currentValue.replace(bonusRegex, '').trim();
+			} else if (newBonus > 0) {
+				// Update with positive bonus
+				currentValue = currentValue.replace(bonusRegex, `+ ${newBonus}`);
+			} else { // newBonus < 0
+				// Update with negative bonus (use absolute value)
+				currentValue = currentValue.replace(bonusRegex, `- ${Math.abs(newBonus)}`);
+			}
+		} else if (change !== 0) {
+			// No existing bonus, add one
+			const sign = change > 0 ? '+' : '-';
+			const bonusValue = Math.abs(change);
+			if (currentValue) { // Append if there's other dice stuff
+				currentValue += ` ${sign} ${bonusValue}`;
+			} else { // Just the bonus
+				currentValue = `${change > 0 ? '' : '-'}${bonusValue}`; // No plus sign if it's the only thing
+			}
+		}
 
-		if (newBonus !== 0) {
-            if (newExpression) {
-                newExpression += newBonus > 0 ? ` + ${newBonus}` : ` - ${Math.abs(newBonus)}`;
-            } else {
-                newExpression = `${newBonus}`;
-            }
-		} else if (!newExpression) {
-             // If bonus is 0 and no dice terms, the expression is empty
-             newExpression = "";
-        }
+		// Clean up potential leading/trailing/double spaces or operators
+		currentValue = currentValue.replace(/\s{2,}/g, ' ').replace(/^\s*\+\s*/, '').trim();
+		// If string becomes just "+", clear it.
+		if (currentValue === '+') currentValue = '';
 
-		targetInput.value = newExpression;
+		targetInput.value = currentValue;
 	}
 
 
-	// --- ATTACK HELPER SPECIFIC LOGIC ---
-	function addDamageRow() {
+	// --- Attack Helper Specific Logic ---
+	function addDamageRow(dice = '', type = 'slashing', isPrimary = false) {
 		const container = document.getElementById('all-damage-rows-container');
-		const newRow = document.createElement('div');
-        // Generate a unique ID suffix based on timestamp or random number for robustness
-        const newIdSuffix = Date.now() + Math.random().toString(36).substring(2, 7);
-		newRow.className = 'additional-damage-row p-3 border rounded-lg bg-gray-50';
-		newRow.innerHTML = `
+		if (!container) return;
+
+		const rowId = isPrimary ? 'primary' : `extra-${Date.now()}`; // Unique ID for extra rows
+
+		const rowDiv = document.createElement('div');
+		rowDiv.className = `p-3 border rounded-lg ${isPrimary ? 'bg-gray-50' : 'bg-blue-50 damage-row-extra mt-2'}`;
+		rowDiv.id = `damage-row-${rowId}`;
+
+		const damageDiceInputId = `attack-damage-dice-${rowId}`;
+		const diceSelectorId = `dice-selector-${rowId}`;
+		const damageTypeSelectId = `attack-damage-type-${rowId}`;
+		const clearBtnId = `clear-btn-${rowId}`;
+
+		let deleteButtonHtml = '';
+		if (!isPrimary) {
+			deleteButtonHtml = `
+				<button type="button" onclick="document.getElementById('damage-row-${rowId}').remove()" class="text-red-500 hover:text-red-700 font-bold text-xl leading-none" title="Remove this damage type">&times;</button>
+			`;
+		}
+
+		rowDiv.innerHTML = `
 			<div class="flex flex-wrap items-center gap-4 text-sm">
 				<div class="flex-grow">
-					<input id="add-damage-dice-${newIdSuffix}" type="text" placeholder="Additional Damage" class="w-full rounded-md border-gray-300 info-input damage-expression" title="Enter the damage dice and bonus manually, or use the clickable icons.">
-					<button id="add-damage-dice-clear-${newIdSuffix}" class="clear-btn">clear</button>
+					<label for="${damageDiceInputId}" class="label-text mb-1">${isPrimary ? 'Primary Damage' : 'Additional Damage'}</label>
+					<input id="${damageDiceInputId}" type="text" value="${dice}" class="w-full rounded-md border-gray-300 info-input" placeholder="e.g., 1d6 + 1">
+					<button id="${clearBtnId}" class="clear-btn">clear</button>
 				</div>
-				<div id="add-dice-selector-${newIdSuffix}" class="dice-selector-container flex items-center"></div>
-				<div><select id="add-damage-type-${newIdSuffix}" class="rounded-md border-gray-300 info-select damage-type" title="Select the type of damage this attack deals."></select></div>
-				<button onclick="this.parentElement.parentElement.remove()" class="px-2 py-0.5 border rounded-full text-xs font-bold self-start text-red-600 hover:bg-red-100" title="Remove this damage component">X</button>
-			</div>
-		`;
-		container.appendChild(newRow);
-		window.ui.populateDamageTypes(`add-damage-type-${newIdSuffix}`);
-        const damageInput = document.getElementById(`add-damage-dice-${newIdSuffix}`);
-        const clearButton = document.getElementById(`add-damage-dice-clear-${newIdSuffix}`);
-        clearButton.addEventListener('click', () => { damageInput.value = ''; });
-		createDiceSelector(document.getElementById(`add-dice-selector-${newIdSuffix}`), damageInput);
+				<div id="${diceSelectorId}" class="dice-selector-container flex items-center self-end">
+					</div>
+				<div class="self-end">
+					<label for="${damageTypeSelectId}" class="label-text mb-1 invisible">Type</label>
+					<select id="${damageTypeSelectId}" class="rounded-md border-gray-300 info-select"></select>
+				</div>
+				<div class="w-6 h-6 self-end">
+					${deleteButtonHtml}
+				</div>
+			</div>`;
+
+		container.appendChild(rowDiv);
+
+		// Populate and setup controls for the new row
+		const damageDiceInput = document.getElementById(damageDiceInputId);
+		const diceSelector = document.getElementById(diceSelectorId);
+		const damageTypeSelect = document.getElementById(damageTypeSelectId);
+		const clearBtn = document.getElementById(clearBtnId);
+
+		if (damageDiceInput && diceSelector) {
+			createDiceSelector(diceSelector, damageDiceInput);
+		}
+		if (damageTypeSelect) {
+			window.ui.populateDamageTypes(damageTypeSelectId); // Use global UI function
+			damageTypeSelect.value = type.toLowerCase() || (isPrimary ? 'slashing' : 'acid'); // Default type
+		}
+		if (clearBtn && damageDiceInput) {
+			clearBtn.addEventListener('click', () => { damageDiceInput.value = ''; });
+		}
 	}
 
-    // --- REFINED: generateAttackString ---
-	function generateAttackString() {
-		const type = document.getElementById('attack-type').value; const bonusRaw = document.getElementById('attack-bonus').value; const reachRaw = document.getElementById('attack-reach').value; const target = document.getElementById('attack-target').value;
-		if (!bonusRaw || !reachRaw) { showAlert('Please provide at least a bonus and reach/range.'); return; }
-		const bonus = parseInt(bonusRaw) >= 0 ? `+${bonusRaw}` : bonusRaw;
-		// Determine reach or range label based on attack type
-		const reachLabel = type.toLowerCase().includes('melee') ? 'reach' : 'range';
-		const reach = `${reachLabel} ${reachRaw} ft.`;
 
-		let fullString = `${type}: ${bonus} to hit, ${reach}, ${target}. Hit: `; let damageParts = [];
-		
-		const pExpression = document.getElementById('attack-damage-dice').value.trim();
-		const pType = document.getElementById('attack-damage-type').value;
-		if (pExpression) {
-             // Check if expression is just a number, if so, wrap in parens
-             if (!isNaN(pExpression) && !pExpression.includes('d')) {
-                 damageParts.push(`(${pExpression}) ${pType} damage`);
-             } else {
-                damageParts.push(`(${pExpression}) ${pType} damage`);
-             }
-		} else if (pType) {
-            // Only add if there's a type, even without expression
-            damageParts.push(`${pType} damage`);
-        }
-		
-		document.querySelectorAll('.additional-damage-row').forEach(row => {
-			const aExpression = row.querySelector('.damage-expression').value.trim();
-			const aType = row.querySelector('.damage-type').value;
-			 if (aExpression) {
-                  // Check if expression is just a number, if so, wrap in parens
-                 if (!isNaN(aExpression) && !aExpression.includes('d')) {
-                     damageParts.push(`plus (${aExpression}) ${aType} damage`);
-                 } else {
-                     damageParts.push(`plus (${aExpression}) ${aType} damage`);
-                 }
-			 } else if (aType) {
-                 // Only add if there's a type, even without expression
-                 damageParts.push(`plus ${aType} damage`);
-             }
+	function generateAttackString() {
+		const attackType = document.getElementById('attack-type')?.value || 'Melee Weapon Attack';
+		const bonusVal = document.getElementById('attack-bonus')?.value;
+		const reachRangeVal = document.getElementById('attack-reach')?.value.trim() || (attackType.startsWith('Melee') ? '5' : '30'); // Default based on type
+		const target = document.getElementById('attack-target')?.value || 'one target';
+
+		const bonus = bonusVal ? (parseInt(bonusVal, 10) >= 0 ? `+${bonusVal}` : bonusVal) : '+0';
+
+		let reachRangePart;
+		if (reachRangeVal.includes('/')) {
+			reachRangePart = `range ${reachRangeVal} ft.`;
+		} else if (attackType.startsWith('Ranged')) {
+			reachRangePart = `range ${reachRangeVal} ft.`;
+		} else {
+			reachRangePart = `reach ${reachRangeVal} ft.`;
+		}
+
+		let hitString = 'Hit: ';
+		const damageRows = document.getElementById('all-damage-rows-container')?.querySelectorAll('.p-3') || []; // Select all rows
+		const damages = [];
+
+		damageRows.forEach(row => {
+			const diceInput = row.querySelector('input[type="text"]');
+			const typeSelect = row.querySelector('select');
+			if (diceInput && typeSelect) {
+				const dice = diceInput.value.trim();
+				const type = typeSelect.value;
+				if (dice && type) { // Only add if both dice and type are present
+					damages.push({ dice, type });
+				}
+			}
 		});
-		
-		if(damageParts.length === 0) { showAlert('Please add at least one damage component.'); return; }
-		fullString += damageParts.join(' ') + '.';
-		window.ui.inputs.commonDesc.value = fullString;
+
+		if (damages.length === 0) {
+			hitString += 'No damage defined.'; // Placeholder if no damage rows valid
+		} else {
+			hitString += damages.map(({ dice, type }) => {
+				// Try to calculate average damage
+				let averageDamage = '';
+				const diceMatch = dice.match(/(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?/);
+				const flatMatch = dice.match(/^([+-]?\d+)$/);
+
+				if (diceMatch) {
+					const numDice = parseInt(diceMatch[1], 10);
+					const dieType = parseInt(diceMatch[2], 10);
+					const sign = diceMatch[3];
+					const bonus = parseInt(diceMatch[4] || '0', 10);
+					if (!isNaN(numDice) && !isNaN(dieType) && dieType > 0) {
+						const avgRoll = Math.floor(numDice * ((dieType / 2) + 0.5));
+						let totalAvg = avgRoll;
+						if (sign === '+') totalAvg += bonus;
+						else if (sign === '-') totalAvg -= bonus;
+						averageDamage = `${Math.max(1, totalAvg)} `; // Ensure average is at least 1
+					}
+				} else if (flatMatch) {
+					// If it's just a flat number, use that as the "average"
+					averageDamage = `${Math.max(1, parseInt(flatMatch[1], 10))} `;
+					dice = ''; // Don't show brackets for flat damage
+				}
+
+
+				return `${averageDamage}${dice ? `(${dice}) ` : ''}${type} damage`;
+			}).join(' plus ');
+			hitString += '.';
+		}
+
+
+		const fullAttackString = `${attackType}: ${bonus} to hit, ${reachRangePart}, ${target}. ${hitString}`;
+
+		// Insert into the main description field
+		if (window.ui.inputs.commonDesc) {
+			window.ui.inputs.commonDesc.value = fullAttackString;
+		}
+
 		closeModal('attack-helper-modal');
 	}
 
 
-	// --- MODAL & ALERT HELPERS ---
-    function openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
+	// --- Modal & Alert Helpers ---
+	function openModal(modalId) {
+		if (!window.ui.modalOverlay) return;
+		const modal = document.getElementById(modalId);
+		if (modal) {
 			window.ui.modalOverlay.classList.remove('hidden');
-            modal.classList.remove('hidden');
-        }
-    }
-
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('hidden');
-			const allModals = document.querySelectorAll('.modal-content');
-            // Check if ANY modal content is still visible
-            const isAnyModalOpen = Array.from(allModals).some(m => !m.classList.contains('hidden'));
-			if (!isAnyModalOpen) {
-				window.ui.modalOverlay.classList.add('hidden');
+			modal.classList.remove('hidden');
+			// Improve focus handling - focus first focusable element inside modal
+			const focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+			if (focusable) {
+				setTimeout(() => focusable.focus(), 50); // Delay focus slightly for transition
 			}
-        }
-        // Reset confirm callback when any modal closes, just in case
-        confirmCallback = null;
-    }
+		}
+	}
 
-    function showAlert(message) {
-        showDialog("Alert", message); // Use the general dialog function
-    }
 
-    function showConfirm(title, message, onConfirm) {
-        confirmCallback = onConfirm; // Store the confirmation action
-        showDialog(title, message, true); // Show with cancel button
-    }
+	function closeModal(modalId) {
+		const modal = document.getElementById(modalId);
+		if (modal) modal.classList.add('hidden');
 
-    // NEW general dialog function
-function showDialog(title, message, showCancel = false) {
-        // Ensure UI elements exist before using them
-        if (!window.ui.alertTitle || !window.ui.alertMessageText || !window.ui.alertOkBtn || !window.ui.alertCancelBtn) {
-            console.error("Alert modal elements not found!");
-            return; // Stop if elements are missing
-        }
+		// Check if any other modals are open before hiding overlay
+		const anyOpen = document.querySelectorAll('.modal-content:not(.hidden)').length > 0;
+		if (!anyOpen && window.ui.modalOverlay) {
+			window.ui.modalOverlay.classList.add('hidden');
+		}
 
-        window.ui.alertTitle.textContent = title;
-        window.ui.alertMessageText.textContent = message;
+		// Clear confirm callback if it was the alert modal being closed
+		if (modalId === 'alert-modal') {
+			confirmCallback = null;
+		}
+	}
 
-        // Reset button states and handlers
-        window.ui.alertOkBtn.onclick = null;
-        window.ui.alertCancelBtn.onclick = null;
-        window.ui.alertCancelBtn.classList.add('hidden');
 
-        if (showCancel) {
-            window.ui.alertCancelBtn.classList.remove('hidden');
-            window.ui.alertOkBtn.textContent = 'OK'; // Or 'Confirm', 'Yes' etc.
-            window.ui.alertOkBtn.onclick = () => {
-                closeModal('alert-modal');
-                if (confirmCallback) {
-                    confirmCallback(); // Execute the stored action
-                    confirmCallback = null; // Clear after execution
-                }
-            }; 
-            window.ui.alertCancelBtn.onclick = () => {
-                 closeModal('alert-modal');
-                 confirmCallback = null; // Clear on cancel
-            }; 
-        } else {
-            // Simple alert mode
-             window.ui.alertOkBtn.textContent = 'OK';
-             window.ui.alertOkBtn.onclick = () => closeModal('alert-modal'); 
-        }
+	function showAlert(message) {
+		showDialog("Alert", message, false);
+	}
 
-        openModal('alert-modal');
-    }
+
+	function showConfirm(title, message, onConfirm) {
+		confirmCallback = onConfirm; // Store the callback
+		showDialog(title, message, true); // Show with cancel button
+	}
+
+
+	function showDialog(title, message, showCancel = false) {
+		if (!window.ui.alertModal || !window.ui.alertTitle || !window.ui.alertMessageText || !window.ui.alertOkBtn || !window.ui.alertCancelBtn) {
+			console.error("Alert modal elements not found!");
+			alert(message); // Fallback to browser alert
+			return;
+		}
+
+		window.ui.alertTitle.textContent = title;
+		window.ui.alertMessageText.textContent = message;
+
+		window.ui.alertOkBtn.onclick = () => {
+			closeModal('alert-modal');
+			if (confirmCallback && !showCancel) { // Only call callback if it was a confirm dialog (no cancel shown) or OK was clicked on confirm
+				confirmCallback();
+				confirmCallback = null; // Clear callback
+			} else if (confirmCallback && showCancel) {
+				confirmCallback(); // Call callback on OK for confirm dialogs
+				confirmCallback = null;
+			}
+		};
+
+		if (showCancel) {
+			window.ui.alertCancelBtn.classList.remove('hidden');
+			window.ui.alertCancelBtn.onclick = () => {
+				closeModal('alert-modal');
+				confirmCallback = null; // Clear callback on cancel
+			};
+		} else {
+			window.ui.alertCancelBtn.classList.add('hidden');
+			window.ui.alertCancelBtn.onclick = null;
+		}
+
+		openModal('alert-modal');
+		setTimeout(() => window.ui.alertOkBtn.focus(), 50); // Focus OK button
+	}
+
 
 	// --- INITIALIZATION ---
-	window.ui.init();
-	window.importer.init(); // Initialize importer
+	window.ui.init(); // Initialize UI elements and basic listeners
+	window.importer.init(); // Initialize the importer module
+	// Initial load or default state setup
+	// Check for last opened bestiary? Or just load empty state?
+	// For now, start empty:
+	window.ui.updateUIForActiveBestiary();
+
 });
