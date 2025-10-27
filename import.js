@@ -782,7 +782,7 @@ window.importer = {
       this.closeImportModal();
    },
 
-   // --- Event Listeners ---
+// --- Event Listeners ---
    setupEventListeners() {
       const cancelBtn = document.getElementById('import-cancel-btn');
       const confirmBtn = document.getElementById('import-confirm-btn');
@@ -799,10 +799,13 @@ window.importer = {
 
       if (appendBtn) appendBtn.addEventListener('click', async () => {
          try {
-            const text = await navigator.clipboard.readText();
+            let text = await navigator.clipboard.readText(); // Read text
+            if (window.importCleaner && typeof window.importCleaner.cleanImportText === 'function') {
+               text = window.importCleaner.cleanImportText(text); // Clean it
+            }
             if (textArea) {
-               textArea.value += text + '\n\n';
-               this.parseText();
+               textArea.value += text + '\n\n'; // Add spacing after appending cleaned text
+               this.parseText(); // Parse the *entire* text area content now
             }
          } catch (err) {
             console.error('Failed to read clipboard contents: ', err);
@@ -813,18 +816,28 @@ window.importer = {
       if (textArea) {
          textArea.addEventListener('paste', (e) => {
             e.preventDefault();
-            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            let text = (e.clipboardData || window.clipboardData).getData('text/plain');
+
+            // --- CLEAN THE PASTED TEXT ---
+            if (window.importCleaner && typeof window.importCleaner.cleanImportText === 'function') {
+               text = window.importCleaner.cleanImportText(text); // Clean it
+            }
+            // --- END CLEANING ---
+
+            // Insert cleaned text manually
             if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
                document.execCommand('insertText', false, text);
             } else {
+                // Fallback insertion
                 const start = textArea.selectionStart;
                 const end = textArea.selectionEnd;
                 textArea.value = textArea.value.substring(0, start) + text + textArea.value.substring(end);
                 textArea.selectionStart = textArea.selectionEnd = start + text.length;
             }
-             this.parseText();
+             this.parseText(); // Parse the *entire* text area content now
          });
 
+         // Debounce parsing during input (no cleaning on regular input)
          let debounceTimer;
          textArea.addEventListener('input', () => {
              clearTimeout(debounceTimer);
