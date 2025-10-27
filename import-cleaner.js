@@ -70,7 +70,7 @@ function cleanImportText(inputText) {
       { find: /Skills:?/gi, replace: 'Skills' },
       { find: /Senses:?/gi, replace: 'Senses' },
       { find: /Languages:?/gi, replace: 'Languages' },
-      // Challenge header is handled below
+      { find: /Challenge:?/gi, replace: 'Challenge' }, // General Challenge normalization
       { find: /Vulnerabilities:?/gi, replace: 'Vulnerabilities' }, // Added from AHK list
       { find: /Resistances:?/gi, replace: 'Resistances' },         // Added from AHK list
       { find: /Immunities:?/gi, replace: 'Immunities' },           // Added from AHK list
@@ -131,9 +131,11 @@ function cleanImportText(inputText) {
       // Made robust: Handles existing XP, commas in XP, optional space before paren
       { find: /Challenge(.*)\s*\((\d{1,3}(?:,\d{3})*)(?:\s*XP)?\)/gi, replace: 'Challenge$1($2 XP)' },
 
-      // --- SPECIFIC OCR FIX: "Challenges (1,800 XP)" -> "Challenge 5 (1,800 XP)" ---
-      { find: /^Challenges\s*\(\s*1(?:,\s*|\s*)?800\s*XP\s*\)/gi, replace: 'Challenge 5 (1,800 XP)' },
-
+      { find: 'Challenges (1, 800 XP)', replace: 'Challenge 5 (1,800 XP)' },
+      { find: 'Challenges (1,800 XP)', replace: 'Challenge 5 (1,800 XP)' },
+      { find: 'Challenges (1800 XP)', replace: 'Challenge 5 (1,800 XP)' },
+      { find: 'Challenges (1 800 XP)', replace: 'Challenge 5 (1,800 XP)' },
+      
        // General cleanup & Whitespace around punctuation
       { find: /\s+([.,:;])/g, replace: '$1'}, // Remove space BEFORE .,:;
       { find: /([.,:;])(?![\n\s.,:;)]|$)/g, replace: '$1 '}, // Add space AFTER .,:; if not followed by newline, space, punctuation, closing paren, or end of string.
@@ -154,11 +156,10 @@ function cleanImportText(inputText) {
 
    for (const { find, replace } of replacements) {
       if (typeof find === 'string') {
-         // Basic string replacement if needed, though regex is more powerful
+         fixme = fixme.replace(find, replace); // string replacement
          // fixme = fixme.split(find).join(replace); // Basic replaceAll simulation
       } else {
-         // Regex replacement
-         fixme = fixme.replace(find, replace);
+         fixme = fixme.replace(find, replace); // Regex replacement
       }
    }
 
