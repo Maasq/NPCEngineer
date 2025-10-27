@@ -1,6 +1,29 @@
 // import-cleaner.js
 
 /**
+ * Converts a string to Title Case.
+ * @param {string} str - The string to convert.
+ * @returns {string} The Title Cased string.
+ */
+function toTitleCase(str) {
+   if (!str) return "";
+   // Basic Title Case, doesn't handle articles/prepositions specially.
+   return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+/**
+ * Converts a string to Sentence case.
+ * Capitalizes the first letter of the first word and keeps the rest lower.
+ * @param {string} str - The string to convert.
+ * @returns {string} The Sentence cased string.
+ */
+function toSentenceCase(str) {
+   if (!str) return "";
+   const lower = str.toLowerCase();
+   return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+/**
  * Cleans up raw text pasted from scanned statblocks to improve parsing accuracy.
  * @param {string} inputText The raw text input.
  * @returns {string} The cleaned text.
@@ -12,11 +35,21 @@ function cleanImportText(inputText) {
 
    // --- Ligatures & Special Characters ---
    const replacements = [
+      // Line Endings (CRLF -> LF, CR -> LF) - Run First!
+      { find: /\r\n/g, replace: '\n' },
+      { find: /\r/g, replace: '\n' },
+
+      // Normalize Dashes
+      { find: /[\u2013\u2014]/g, replace: '-' }, // En-dash (–), Em-dash (—) -> Hyphen (-)
+
+      // Standardize Ellipses
+      { find: /\.\.\./g, replace: '\u2026' }, // Three periods -> Ellipsis character (…)
+
       // Ligatures
       { find: /\uFB02/g, replace: 'fl' }, // liga_fl (ﬂ)
       { find: /\uFB01/g, replace: 'fi' }, // liga_fi (ﬁ)
       { find: /\uFB00/g, replace: 'ff' }, // liga_ff (ﬀ) // Corrected AHK map
-      { find: /\u2010/g, replace: '-' }, // liga_hy (‐) - Hyphen
+      { find: /\u2010/g, replace: '-' }, // liga_hy (‐) - Hyphen (redundant but safe)
 
       // Smart Quotes / Primes -> Standard Quotes
       { find: /[\u2018\u2019\u201B\u2032]/g, replace: "'" }, // liga_sq1-4 (‘ ’ ‛ ′) -> '
@@ -37,7 +70,7 @@ function cleanImportText(inputText) {
       { find: /Skills:?/gi, replace: 'Skills' },
       { find: /Senses:?/gi, replace: 'Senses' },
       { find: /Languages:?/gi, replace: 'Languages' },
-      { find: /Challenge:?/gi, replace: 'Challenge' },
+      // Challenge header is handled below
       { find: /Vulnerabilities:?/gi, replace: 'Vulnerabilities' }, // Added from AHK list
       { find: /Resistances:?/gi, replace: 'Resistances' },         // Added from AHK list
       { find: /Immunities:?/gi, replace: 'Immunities' },           // Added from AHK list
@@ -45,7 +78,6 @@ function cleanImportText(inputText) {
       // Word spacing / character errors
       { find: /o f /g, replace: 'of ' }, // Note: Added trailing space
       { find: /w ere /g, replace: 'were ' }, // Note: Added trailing space
-      { find: / {2,}/g, replace: ' ' }, // Replace multiple spaces with one
       { find: / xp/gi, replace: ' XP' }, // Ensure XP is uppercase
       { find: /0XP/g, replace: '0 XP' }, // Add space after CR 0
       { find: /{/g, replace: '(' },
@@ -70,7 +102,6 @@ function cleanImportText(inputText) {
       { find: /fitnd/gi, replace: 'fiend' },
       { find: /choolic/gi, replace: 'chaotic' },
       { find: /Armo\.r/gi, replace: 'Armor' },
-      { find: / ,/g, replace: ',' }, // Space before comma
       { find: /dl0|dlO/gi, replace: 'd10' }, // l0/lO -> 10
       { find: /ld([1468])/g, replace: '1d$1' }, // l -> 1 before d#
       { find: /non magical/gi, replace: 'nonmagical' },
@@ -100,14 +131,25 @@ function cleanImportText(inputText) {
       // Made robust: Handles existing XP, commas in XP, optional space before paren
       { find: /Challenge(.*)\s*\((\d{1,3}(?:,\d{3})*)(?:\s*XP)?\)/gi, replace: 'Challenge$1($2 XP)' },
 
-       // General cleanup
-      { find: /\s+\./g, replace: '.'}, // Remove space before period
-      { find: /\s+,/g, replace: ','}, // Remove space before comma
-      { find: /\s+:/g, replace: ':'}, // Remove space before colon
+      // --- SPECIFIC OCR FIX: "Challenges (1,800 XP)" -> "Challenge 5 (1,800 XP)" ---
+      { find: /^Challenges\s*\(\s*1(?:,\s*|\s*)?800\s*XP\s*\)/gi, replace: 'Challenge 5 (1,800 XP)' },
+
+       // General cleanup & Whitespace around punctuation
+      { find: /\s+([.,:;])/g, replace: '$1'}, // Remove space BEFORE .,:;
+      { find: /([.,:;])(?![\n\s.,:;)]|$)/g, replace: '$1 '}, // Add space AFTER .,:; if not followed by newline, space, punctuation, closing paren, or end of string.
       { find: /:\s*\./g, replace: ':'}, // Replace ': .' with just ':'
-      { find: /\.\s*\./g, replace: '.'}, // Replace '. .' with just '.'
-      { find: /,\s*,/g, replace: ','}, // Replace ', ,' with just ','
-      { find: /\n\s*\n/g, replace: '\n' }, // Remove empty lines
+      // NEW: Remove double punctuation
+      { find: /\.\.+/g, replace: '.'}, // Replace '..' or more with '.'
+      { find: /,,+/g, replace: ','}, // Replace ',,' or more with ','
+      { find: /::+/g, replace: ':'}, // Replace '::' or more with ':'
+      { find: /;;+/g, replace: ';'}, // Replace ';;' or more with ';'
+
+      // Space before newline
+      { find: / +\n/g, replace: '\n'}, // Remove space(s) right before a newline
+
+      // Multiple Spaces / Blank Lines - Run near the end
+      { find: / {2,}/g, replace: ' ' }, // Replace multiple spaces with one
+      { find: /\n{2,}/g, replace: '\n' }, // Remove blank lines (replace multiple LFs with one)
    ];
 
    for (const { find, replace } of replacements) {
@@ -120,10 +162,74 @@ function cleanImportText(inputText) {
       }
    }
 
+   // Final pass to ensure space after punctuation handles edge cases after multiple space removal
+   fixme = fixme.replace(/([.,:;])(?![\n\s.,:;)]|$)/g, '$1 ');
+
    return fixme.trim(); // Trim final result
 }
 
-// Assign to window if needed, or keep scoped if only used by import.js
+
+/**
+ * Joins selected lines into a single paragraph with spaces.
+ * Removes blank lines within the selection before joining.
+ * @param {string} selectedText The text currently selected in the textarea.
+ * @returns {string} The processed text as a single paragraph.
+ */
+function joinSelectedLines(selectedText) {
+   if (!selectedText) return ''; // Return empty string if input is empty
+
+   // 1. Normalize line endings to LF (\n)
+   let processed = selectedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+   // 2. Remove blank lines within the selection (sequences of newline + whitespace + newline)
+   processed = processed.replace(/\n\s*\n/g, '\n');
+
+   // 3. Replace all remaining LF characters with a single space
+   processed = processed.replace(/\n/g, ' ');
+
+   // 4. Collapse multiple spaces into single spaces
+   processed = processed.replace(/ {2,}/g, ' ');
+
+   // 5. Trim leading/trailing whitespace
+   processed = processed.trim();
+
+   // 6. Return the processed text without adding a newline
+   return processed;
+}
+
+/**
+ * Cycles the case of the selected text through: Title -> UPPER -> lower -> Sentence.
+ * @param {string} selectedText The text currently selected.
+ * @returns {string} The text with the next case applied.
+ */
+function cycleSelectedTextCase(selectedText) {
+   if (!selectedText) return "";
+
+   const firstChar = selectedText.charAt(0);
+   const isLower = selectedText === selectedText.toLowerCase();
+   const isUpper = selectedText === selectedText.toUpperCase();
+   // Improved Title Case check: Check if *most* words start with uppercase
+   const words = selectedText.split(' ');
+   const titleCaseWordCount = words.filter(word => word.length === 0 || word[0] === word[0].toUpperCase()).length;
+   const isTitle = !isUpper && !isLower && titleCaseWordCount >= words.length / 2; // Heuristic
+   // Sentence case check: First char upper, rest mostly lower (simplistic)
+   const isSentence = !isLower && !isUpper && !isTitle && firstChar === firstChar.toUpperCase() && selectedText.slice(1) === selectedText.slice(1).toLowerCase();
+
+   if (isTitle) {
+      return selectedText.toUpperCase(); // Title -> UPPER
+   } else if (isUpper) {
+      return selectedText.toLowerCase(); // UPPER -> lower
+   } else if (isLower) {
+      return toSentenceCase(selectedText); // lower -> Sentence
+   } else { // Includes Sentence case or mixed case
+      return toTitleCase(selectedText); // Sentence/Mixed -> Title
+   }
+}
+
+
+// Assign functions to the window object
 window.importCleaner = {
-   cleanImportText
+   cleanImportText,
+   joinSelectedLines,
+   cycleSelectedTextCase // Expose the new function
 };
