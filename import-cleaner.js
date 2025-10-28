@@ -39,7 +39,10 @@ function cleanImportText(inputText) {
       { find: /\r\n/g, replace: '\n' },
       { find: /\r/g, replace: '\n' },
 
-      // Normalize Dashes
+      // Replace Non-Breaking Spaces with Regular Spaces - Run Early!
+      { find: /\u00A0/g, replace: ' ' },
+
+      // Normalize Dashes (En and Em)
       { find: /[\u2013\u2014]/g, replace: '-' }, // En-dash (–), Em-dash (—) -> Hyphen (-)
 
       // Standardize Ellipses
@@ -131,14 +134,15 @@ function cleanImportText(inputText) {
       // Made robust: Handles existing XP, commas in XP, optional space before paren
       { find: /Challenge(.*)\s*\((\d{1,3}(?:,\d{3})*)(?:\s*XP)?\)/gi, replace: 'Challenge$1($2 XP)' },
 
+      // --- SPECIFIC OCR FIX: Using specific string replacements ---
       { find: 'Challenges (1, 800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'Challenges (1,800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'Challenges (1800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'Challenges (1 800 XP)', replace: 'Challenge 5 (1,800 XP)' },
-      
+
        // General cleanup & Whitespace around punctuation
       { find: /\s+([.,:;])/g, replace: '$1'}, // Remove space BEFORE .,:;
-      { find: /([.,:;])(?![\n\s.,:;)]|$)/g, replace: '$1 '}, // Add space AFTER .,:; if not followed by newline, space, punctuation, closing paren, or end of string.
+      // { find: /([.,:;])(?![\n\s.,:;)]|$)/g, replace: '$1 '}, // Add space AFTER .,:; - MODIFIED BELOW
       { find: /:\s*\./g, replace: ':'}, // Replace ': .' with just ':'
       // NEW: Remove double punctuation
       { find: /\.\.+/g, replace: '.'}, // Replace '..' or more with '.'
@@ -156,15 +160,15 @@ function cleanImportText(inputText) {
 
    for (const { find, replace } of replacements) {
       if (typeof find === 'string') {
-         fixme = fixme.replace(find, replace); // string replacement
-         // fixme = fixme.split(find).join(replace); // Basic replaceAll simulation
+         fixme = fixme.replace(find, replace); // string replacement (first occurrence only)
       } else {
-         fixme = fixme.replace(find, replace); // Regex replacement
+         fixme = fixme.replace(find, replace); // Regex replacement (respects 'g' flag)
       }
    }
 
    // Final pass to ensure space after punctuation handles edge cases after multiple space removal
-   fixme = fixme.replace(/([.,:;])(?![\n\s.,:;)]|$)/g, '$1 ');
+   // --- MODIFIED REGEX: Now excludes digits \d in the negative lookahead ---
+   fixme = fixme.replace(/([.,:;])(?![\n\s.,:;)\d]|$) /g, '$1 ');
 
    return fixme.trim(); // Trim final result
 }
