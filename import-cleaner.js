@@ -184,7 +184,7 @@ function cleanImportText(inputText) {
 
        // General cleanup & Whitespace around punctuation
       { find: /\s+([.,:;])/g, replace: '$1'}, // Remove space BEFORE .,:;
-      // { find: /([.,:;])(?![\n\s.,:;)]|$)/g, replace: '$1 '}, // Add space AFTER .,:; - MODIFIED BELOW
+      // { find: /([.,:;])(?![\n\s.,:;)]|$)/g, replace: '$1 '}, // MODIFIED BELOW
       { find: /:\s*\./g, replace: ':'}, // Replace ': .' with just ':'
       // NEW: Remove double punctuation
       { find: /\.\.+/g, replace: '.'}, // Replace '..' or more with '.'
@@ -212,7 +212,14 @@ function cleanImportText(inputText) {
    // --- MODIFIED REGEX: Now excludes digits \d in the negative lookahead ---
    fixme = fixme.replace(/([.,:;])(?![\n\s.,:;)\d]|$) /g, '$1 ');
 
-   return fixme.trim(); // Trim final result
+   fixme = fixme.trim(); // Trim final result
+
+   // --- NEW: Title Case the first line (the Name) ---
+   let lines = fixme.split('\n');
+   if (lines.length > 0) {
+      lines[0] = toTitleCase(lines[0]); // Use the function defined in this file
+   }
+   return lines.join('\n');
 }
 
 
