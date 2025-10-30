@@ -217,62 +217,68 @@ function calculateLanguagesString(npc) {
 
 
 function calculateAllStats() {
-   if (!window.app.activeNPC) return;
+   // Use 'this.activeNPC' when called via .call() from importer, otherwise use window.app.activeNPC
+   const npc = this?.activeNPC || window.app?.activeNPC;
+   if (!npc) return;
 
    const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
    const abilityAbbr = { strength: 'Str', dexterity: 'Dex', constitution: 'Con', intelligence: 'Int', wisdom: 'Wis', charisma: 'Cha' };
 
    // 1. Calculate Ability Bonuses first
    abilities.forEach(ability => {
-      const score = window.app.activeNPC[ability] || 10;
-      window.app.activeNPC[`${ability}Bonus`] = calculateAbilityBonus(score);
+      const score = npc[ability] || 10;
+      npc[`${ability}Bonus`] = calculateAbilityBonus(score);
    });
 
    // 2. Get Proficiency Bonus (already calculated in updateActiveNPCFromForm)
-   const profBonus = window.app.activeNPC.proficiencyBonus || 2;
+   const profBonus = npc.proficiencyBonus || 2;
 
    // 3. Calculate Saving Throws
    const savesArray = [];
    abilities.forEach(ability => {
-      const base = window.app.activeNPC[`${ability}Bonus`] || 0;
-      const isProficient = window.app.activeNPC[`${ability}SavingThrowProf`] || false;
-      const adjust = window.app.activeNPC[`${ability}SavingThrowAdjust`] || 0;
+      const base = npc[`${ability}Bonus`] || 0;
+      const isProficient = npc[`${ability}SavingThrowProf`] || false;
+      const adjust = npc[`${ability}SavingThrowAdjust`] || 0;
       const total = base + (isProficient ? profBonus : 0) + adjust;
-      // Only add save to the string if proficient or adjusted
-      if (isProficient || adjust !== 0) {
+      // Only add save to the string if proficient or adjusted, AND total is not 0
+      if ((isProficient || adjust !== 0) && total !== 0) {
          savesArray.push(`${abilityAbbr[ability]} ${total >= 0 ? '+' : ''}${total}`);
       }
    });
-   window.app.activeNPC.saves = savesArray.join(', ');
+   npc.saves = savesArray.join(', ');
+
 
    // 4. Calculate Skills (depends on ability bonuses and prof bonus)
-   calculateAllSkills();
+   calculateAllSkills.call({ activeNPC: npc }); // Ensure 'this' context is passed
 
    // 5. Calculate Passive Perception (depends on Wisdom bonus and Perception skill)
-   const perceptionProf = window.app.activeNPC.skill_perception_prof || false;
-   const perceptionExp = window.app.activeNPC.skill_perception_exp || false;
-   const perceptionAdjust = window.app.activeNPC.skill_perception_adjust || 0;
-   const perceptionBonus = (window.app.activeNPC.wisdomBonus || 0) +
+   const perceptionProf = npc.skill_perception_prof || false;
+   const perceptionExp = npc.skill_perception_exp || false;
+   const perceptionAdjust = npc.skill_perception_adjust || 0;
+   const perceptionBonus = (npc.wisdomBonus || 0) +
       (perceptionProf ? profBonus : 0) +
       (perceptionExp ? profBonus : 0) + // Expertise adds prof bonus again
       perceptionAdjust;
-   window.app.activeNPC.passivePerception = 10 + perceptionBonus;
+   npc.passivePerception = 10 + perceptionBonus;
 
    // 6. Calculate Speed String
-   window.app.activeNPC.speed = calculateSpeedString(window.app.activeNPC);
+   npc.speed = calculateSpeedString(npc);
 }
 
 
 function calculateAllSkills() {
-   if (!window.app.activeNPC) return;
-   const profBonus = window.app.activeNPC.proficiencyBonus || 2;
+   // Use 'this.activeNPC' when called via .call() from importer, otherwise use window.app.activeNPC
+   const npc = this?.activeNPC || window.app?.activeNPC;
+   if (!npc) return;
+
+   const profBonus = npc.proficiencyBonus || 2;
    const skillsArray = [];
 
-   window.app.skills.forEach(skill => { // Access via window.app
-      const baseAbilityBonus = window.app.activeNPC[`${skill.attribute}Bonus`] || 0;
-      const isProf = window.app.activeNPC[`skill_${skill.id}_prof`] || false;
-      const isExp = window.app.activeNPC[`skill_${skill.id}_exp`] || false;
-      const adjust = window.app.activeNPC[`skill_${skill.id}_adjust`] || 0;
+   window.app.skills.forEach(skill => { // Access via window.app for skill definitions
+      const baseAbilityBonus = npc[`${skill.attribute}Bonus`] || 0;
+      const isProf = npc[`skill_${skill.id}_prof`] || false;
+      const isExp = npc[`skill_${skill.id}_exp`] || false;
+      const adjust = npc[`skill_${skill.id}_adjust`] || 0;
 
       // Calculate total skill bonus
       const total = baseAbilityBonus +
@@ -280,14 +286,14 @@ function calculateAllSkills() {
          (isExp ? profBonus : 0) + // Expertise adds proficiency bonus again
          adjust;
 
-      // Add skill to the string only if proficient, expert, or adjusted
-      if (isProf || isExp || adjust !== 0) {
-         skillsArray.push(`${skill.name} ${total >= 0 ? '+' : ''}${total}`);
+      // Add skill to the string only if proficient, expert, or adjusted, AND total is not 0
+      if ((isProf || isExp || adjust !== 0) && total !== 0) {
+          skillsArray.push(`${skill.name} ${total >= 0 ? '+' : ''}${total}`);
       }
    });
    // Sort skills alphabetically for consistent display
    skillsArray.sort();
-   window.app.activeNPC.npcSkills = skillsArray.join(', ');
+   npc.npcSkills = skillsArray.join(', ');
 }
 
 
@@ -991,7 +997,6 @@ async function showDialog(title, message, showCancel = false) { // Make the func
          try {
             // Await the callback if it's async (like DB operations)
             await currentCallback();
-            console.log("Confirm callback executed successfully."); // Log success
          } catch (err) {
             shouldCloseModal = false; // Keep modal open to show error
             console.error("Error executing confirm callback:", err);

@@ -33,6 +33,47 @@ function cleanImportText(inputText) {
 
    let fixme = inputText;
 
+   // --- NEW: Colon Protection Logic (from AHK script) ---
+   // This section converts non-structural colons to periods to aid parsing.
+   // It first protects known structural colons by replacing them with a placeholder.
+   // Using global regex replacement (e.g., /find/g) is the JS equivalent of AHK's "All" flag.
+
+   const protect = [
+      // From user's snippet
+      { find: /components:/gi, replace: 'components~##~' },
+      { find: /component:/gi, replace: 'component~##~' },
+      { find: /spells:/gi, replace: 'spells~##~' },
+      { find: /Weapon Attack:\r\n/g, replace: 'Weapon Attack~##~ \r\n' }, // Specific case from snippet
+      { find: /Weapon Attack:/gi, replace: 'Weapon Attack~##~' },
+      { find: /Spell Attack:/gi, replace: 'Spell Attack~##~' },
+      { find: /will:/gi, replace: 'will~##~' },
+      { find: /each:/gi, replace: 'each~##~' },
+      { find: /slots:/gi, replace: 'slots~##~' },
+      { find: /slot:/gi, replace: 'slot~##~' },
+      { find: /prepared:/gi, replace: 'prepared~##~' },
+      { find: /will\):/gi, replace: 'will)~##~' },
+      { find: /each\):/gi, replace: 'each)~##~' },
+      { find: /slots\):/gi, replace: 'slots)~##~' },
+      { find: /slot\):/g, replace: 'slot)~##~' },
+      { find: /Hit:/gi, replace: 'Hit~##~' },
+      { find: /\/Day:/g, replace: '/day~##~' }, // Corrected case
+      { find: /\/day:/g, replace: '/day~##~' },
+   ];
+
+   // Apply protection
+   for (const { find, replace } of protect) {
+      fixme = fixme.replace(find, replace);
+   }
+
+   // Replace all remaining (non-protected) colons with periods
+   fixme = fixme.replace(/:/g, '.');
+
+   // Restore protected colons
+   fixme = fixme.replace(/~##~/g, ':');
+
+   // --- End of Colon Protection Logic ---
+
+
    // --- Ligatures & Special Characters ---
    const replacements = [
       // Line Endings (CRLF -> LF, CR -> LF) - Run First!
@@ -60,11 +101,10 @@ function cleanImportText(inputText) {
 
       // Replacement Characters (often from encoding errors)
       { find: /\uFFFD/g, replace: "'" }, // Specific replacement character  -> ' (Adjust if needed)
-      // Generic catch-all for potential other bad chars if needed, but risky.
-      // { find: /[^\x00-\x7F]+/g, replace: '' }, // Example: Remove non-ASCII, might remove valid chars
 
       // --- Common OCR/Formatting Fixes ---
       // Normalize Headers (Remove colon, fix case variations)
+      // NOTE: User's script handles this by NOT protecting these.
       { find: /Armor Class:?/gi, replace: 'Armor Class' },
       { find: /Armour Class:?/gi, replace: 'Armor Class' },
       { find: /Hit Points:?/gi, replace: 'Hit Points' },
@@ -85,6 +125,8 @@ function cleanImportText(inputText) {
       { find: /0XP/g, replace: '0 XP' }, // Add space after CR 0
       { find: /{/g, replace: '(' },
       { find: /}/g, replace: ')' },
+      // Note: The colon-protection logic above should handle Weapon Attack:
+      // We still need these to fix cases where a period was used instead of a colon
       { find: /Melee Weapon Attack\.(?=\s)/gi, replace: 'Melee Weapon Attack:' }, // Fix period to colon
       { find: /Melee Weapon Attack\.\n/gi, replace: 'Melee Weapon Attack: ' }, // Fix period to colon with newline
       { find: /Ranged Weapon Attack\.(?=\s)/gi, replace: 'Ranged Weapon Attack:' }, // Added for Ranged

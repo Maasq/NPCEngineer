@@ -56,27 +56,22 @@ window.importer = {
     */
    parseText() {
       if (!this.htmlLoaded) return;
-      console.log("Starting parseText..."); // LOGGING
-
+      
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
 
       const textArea = document.getElementById('import-text-area');
       const text = textArea ? textArea.value : ''; // Don't trim yet, cleaner handles it
       if (!text) {
-         console.log("Input text area is empty."); // LOGGING
          this.importNPC.name = "Import Preview";
          this.updateImportViewport();
          return;
       }
 
       // Use the cleaner function FIRST
-      console.log("Running cleaner..."); // LOGGING
       const cleanedText = window.importCleaner.cleanImportText(text);
-      console.log("Cleaned Text:\n", cleanedText); // LOGGING
-
+      
       const lines = cleanedText.split('\n'); // Split cleaned text
       if (lines.length === 0 || lines.every(line => !line.trim())) {
-          console.log("No non-empty lines after cleaning."); // LOGGING
           this.importNPC.name = "Import Preview";
           this.updateImportViewport();
           return;
@@ -88,18 +83,16 @@ window.importer = {
 
       // Helper function to safely get next line, trimming it
       const getLine = (index) => (index < lines.length ? lines[index].trim() : null);
-      // Helper to peek next line without incrementing index
-      const peekLine = (index) => (index + 1 < lines.length ? lines[index + 1].trim() : null);
+      // Helper to peek next line (no trim)
+      const peekLine = (index) => (index + 1 < lines.length ? lines[index + 1] : null); // Return raw line
 
 
       // --- Line 1: Name ---
       this.importNPC.name = this.toTitleCase(getLine(currentLineIndex++) || "Unnamed Import");
-      console.log(`Parsed Name: ${this.importNPC.name}`); // LOGGING
-
+      
       // --- Line 2: Size Type (Species), Alignment ---
       let line = getLine(currentLineIndex);
       if (line) {
-         console.log(`Processing Line ${currentLineIndex + 1}: ${line}`); // LOGGING
          const sizeTypeAlignRegex = /^(\w+)\s+(.+?)(?:,\s*(.*?))?$/i;
          const match = line.match(sizeTypeAlignRegex);
          if (match) {
@@ -116,7 +109,6 @@ window.importer = {
                this.importNPC.type = typeSpecies.toLowerCase();
                this.importNPC.species = "";
             }
-            console.log(`Parsed Size/Type/Align: Size=${this.importNPC.size}, Type=${this.importNPC.type}, Species=${this.importNPC.species}, Align=${this.importNPC.alignment}`); // LOGGING
             currentLineIndex++;
          } else {
              console.warn("Could not parse Size/Type/Alignment line:", line);
@@ -126,25 +118,21 @@ window.importer = {
       // --- Process Remaining Lines ---
       while (currentLineIndex < lines.length) {
          line = getLine(currentLineIndex);
-         console.log(`Processing Line ${currentLineIndex + 1} [Section: ${currentSection}]: ${line}`); // LOGGING
          if (!line) { currentLineIndex++; continue; } // Skip effectively blank lines after trimming
 
          const lowerLine = line.toLowerCase();
          if (lowerLine === 'actions') {
-            console.log("Switching to ACTIONS section"); // LOGGING
             currentSection = 'actions';
             currentItem = null;
             currentLineIndex++;
             continue;
          } else if (lowerLine === 'legendary actions') {
-            console.log("Switching to LEGENDARY section"); // LOGGING
             currentSection = 'legendary';
             currentItem = null;
             currentLineIndex++;
-            let nextLine = peekLine(currentLineIndex-1); // Peek next line
-            if (nextLine && !nextLine.match(/^([\w\s().,'’-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/)) {
-                console.log(`Found Legendary boilerplate: ${nextLine}`); // LOGGING
-                this.importNPC.legendaryBoilerplate = nextLine;
+            let nextLine = peekLine(currentLineIndex-1); // Peek next line (raw)
+            if (nextLine && nextLine.trim() && !nextLine.trim().match(/^([\w\s().,'’–—\/]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/)) {
+                this.importNPC.legendaryBoilerplate = nextLine.trim();
                 currentLineIndex++; // Consume the boilerplate line
             }
             continue;
@@ -155,21 +143,15 @@ window.importer = {
             let match;
             if ((match = line.match(/^Armor Class\s+(.*)/i))) {
                this.importNPC.armorClass = match[1].trim();
-               console.log(`Parsed AC: ${this.importNPC.armorClass}`); // LOGGING
             } else if ((match = line.match(/^Hit Points\s+(\d+)\s*\((.*?)\)/i))) {
                this.importNPC.hitPoints = `${match[1]} (${match[2]})`;
-               console.log(`Parsed HP: ${this.importNPC.hitPoints}`); // LOGGING
             } else if (line.match(/^Speed\s+/i)) { // Check more generally
-               console.log("Found Speed line, parsing..."); // LOGGING
                this.parseSpeed(line);
             } else if (line.match(/^STR\s+DEX\s+CON\s+INT\s+WIS\s+CHA/i)) { // More robust check
-               console.log("Found STR DEX header, switching to STATS section"); // LOGGING
                currentSection = 'stats';
             } else if ((match = line.match(/^Saving Throws\s+(.*)/i))) {
-               console.log("Found Saving Throws line, parsing..."); // LOGGING
                this.parseSaves(match[1]);
             } else if ((match = line.match(/^Skills\s+(.*)/i))) {
-               console.log("Found Skills line, parsing..."); // LOGGING
                this.parseSkills(match[1]);
             } else if ((match = line.match(/^Damage Vulnerabilities\s+(.*)/i))) {
                this.parseDamageModifiers(match[1], 'vulnerability');
@@ -180,36 +162,28 @@ window.importer = {
             } else if ((match = line.match(/^Condition Immunities\s+(.*)/i))) {
                this.parseConditionImmunities(match[1]);
             } else if (line.match(/^Senses\s+/i)) { // Check more generally
-               console.log("Found Senses line, parsing..."); // LOGGING
-               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex));
-               console.log(`parseSenses consumed ${linesConsumed} additional lines.`); // LOGGING
+               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); // Trim peeked line for logic
                currentLineIndex += linesConsumed; // Advance index by lines consumed in parseSenses
                currentLineIndex++; // Increment index for the current line itself
                continue; // Continue loop AFTER advancing index
             } else if ((match = line.match(/^Languages\s+(.*)/i))) {
-               console.log("Found Languages line, parsing..."); // LOGGING
                this.parseLanguages(match[1]);
             } else if ((match = line.match(/^Challenge\s+([\d\/]+)\s*\((\d{1,3}(?:,?\d{3})*)\s*XP\)(?:\s*Proficiency Bonus\s*([+-]\d+))?/i))) {
-               console.log("Found Challenge line, parsing..."); // LOGGING
                this.importNPC.challenge = match[1];
-               this.importNPC.experience = match[2].replace(/,/g, ''); // Remove comma from XP
+               this.importNPC.experience = match[2]; // Keep comma
                if (match[3]) {
                   this.importNPC.proficiencyBonus = parseInt(match[3].replace('+',''), 10);
                } else {
                   this.importNPC.proficiencyBonus = window.app.calculateProficiencyBonus(match[1]);
                }
-               console.log(`Parsed Challenge: CR=${this.importNPC.challenge}, XP=${this.importNPC.experience}, PB=${this.importNPC.proficiencyBonus}`); // LOGGING
                currentSection = 'traits';
             } else {
-               console.log("Line didn't match known header items, assuming start of TRAITS section"); // LOGGING
                currentSection = 'traits';
                currentItem = null; // Ensure currentItem is reset before reprocessing
                continue; // Re-process this line in the 'traits' section
             }
          }
          else if (currentSection === 'stats') {
-             console.log(`Attempting to parse STATS numbers: ${line}`); // LOGGING
-             // Regex adjusted slightly for robustness (optional parens content)
              const statRegex = /(\d+)\s*(?:\([+-]?\d+\))?\s+(\d+)\s*(?:\([+-]?\d+\))?\s+(\d+)\s*(?:\([+-]?\d+\))?\s+(\d+)\s*(?:\([+-]?\d+\))?\s+(\d+)\s*(?:\([+-]?\d+\))?\s+(\d+)\s*(?:\([+-]?\d+\))?/;
              const match = line.match(statRegex);
              if (match) {
@@ -219,7 +193,6 @@ window.importer = {
                  this.importNPC.intelligence = parseInt(match[4], 10);
                  this.importNPC.wisdom = parseInt(match[5], 10);
                  this.importNPC.charisma = parseInt(match[6], 10);
-                 console.log(`Parsed Stats: Str=${this.importNPC.strength}, Dex=${this.importNPC.dexterity}, ...`); // LOGGING
                  currentSection = 'header'; // Go back to parsing header items below stats
              } else {
                 console.warn("Could not parse stat line:", line);
@@ -228,37 +201,73 @@ window.importer = {
              }
          }
          else if (currentSection === 'traits') {
-            // Regex to match trait name ending with a period, followed by description.
-            // Allows more characters in name, handles parens. Uses non-greedy match for name.
-            const traitMatch = line.match(/^([\w\s().,'’–—-]+?)\.\s*(.*)/); // Added dashes
+            // MODIFIED: Added / to character class
+            const traitMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (traitMatch) {
-               // New trait found
+               // Always start a new trait when pattern matches
                currentItem = { name: traitMatch[1].trim(), desc: traitMatch[2].trim() };
                this.importNPC.traits.push(currentItem);
-               console.log(`Found new trait: ${currentItem.name}`); // LOGGING
             } else if (currentItem) {
-               // Continuation of the previous trait's description
-               console.log(`Appending to trait ${currentItem.name}: ${line}`); // LOGGING
-               currentItem.desc += " " + line; // Append the current line
+               // Doesn't match pattern, append if currentItem exists
+               currentItem.desc += " " + line;
             } else if (line) {
-               // Line doesn't match trait format and no current item exists
+               // Orphan line
                console.warn("Assuming line is a trait name (missing period?):", line);
-               currentItem = { name: line.trim(), desc: "" }; // Start with empty desc
+               currentItem = { name: line.trim(), desc: "" };
                this.importNPC.traits.push(currentItem);
             } else {
-                // Ignore empty lines
-                console.warn("Skipping potentially empty or unparseable trait line:", line);
+               // Blank line, reset
+               console.warn("Skipping potentially empty trait line:", line);
+               currentItem = null;
             }
+
+            // --- NEW LINE-JOINING LOGIC (Based on User's Idea) ---
+            if (currentItem && !currentItem.name.toLowerCase().startsWith('innate spellcasting') && currentItem.name.toLowerCase() !== 'spellcasting') {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+                  
+                  // Stop if current line ends in punctuation
+                  if (/[.:]$/.test(currentDesc)) {
+                     break; 
+                  }
+
+                  // 1. Hyphenation Check
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine; // Remove hyphen and join
+                     currentLineIndex++; // Consume the next line
+                     nextLineRaw = peekLine(currentLineIndex); // Peek next
+                     continue; // Continue loop
+                  }
+
+                  // 2. Continuation Check (lowercase, space, or number)
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/); // Check raw line
+                  if (continuationMatch) {
+                     currentItem.desc += " " + nextLine; // Append trimmed line
+                     currentLineIndex++; // Consume the next line
+                     nextLineRaw = peekLine(currentLineIndex); // Peek next
+                     continue; // Continue loop
+                  }
+
+                  // 3. No match, break
+                  break;
+               }
+            }
+            // --- END NEW LINE-JOINING LOGIC ---
          }
          else if (currentSection === 'actions') {
             const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            // Action Regex: Matches name ending with period, then description. Allows more chars in name.
-            const actionMatch = line.match(/^([\w\s().,'’–—-]+?)\.\s*(.*)/); // Added dashes
+            // MODIFIED: Added / to character class
+            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (spellcastingHeaderMatch) {
-                console.log("Found Spellcasting in Actions"); // LOGGING
+                currentItem = null; // Spellcasting block always ends the previous item
+                // ... (rest of spellcasting parsing) ...
                 this.importNPC.hasSpellcasting = true;
                 this.importNPC.spellcastingPlacement = 'actions';
                 let boilerplate = spellcastingHeaderMatch[1];
@@ -266,16 +275,12 @@ window.importer = {
                 if (castingInfoMatch) {
                     this.importNPC.actionCastingAbility = castingInfoMatch[1].toLowerCase();
                     this.importNPC.actionCastingDC = parseInt(castingInfoMatch[2], 10);
-                    console.log(`Parsed Action Spellcasting Info: Ability=${this.importNPC.actionCastingAbility}, DC=${this.importNPC.actionCastingDC}`); // LOGGING
                 }
-
-                // Parse spell lists on subsequent lines
                 let spellListIndex = 0;
                 this.importNPC.actionCastingSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.actionCastingSpells));
                 while (spellListIndex < this.importNPC.actionCastingSpells.length) {
                     currentLineIndex++;
                     let spellLine = getLine(currentLineIndex);
-                    console.log(`Parsing action spell line ${currentLineIndex + 1}: ${spellLine}`); // LOGGING
                     const spellListMatch = spellLine ? spellLine.match(/^(.*?):\s*(.*)/) : null;
                     if (spellListMatch && (spellListMatch[1].toLowerCase() === 'at will' || spellListMatch[1].match(/^\d+\s*\/\s*day(?:\s+each)?/i))) {
                            this.importNPC.actionCastingSpells[spellListIndex].freq = spellListMatch[1].trim();
@@ -283,62 +288,162 @@ window.importer = {
                                .map(spell => spell.replace(/<\/?i>/g, '').replace(/\*/g, '').trim().toLowerCase())
                                .filter(spell => spell);
                            this.importNPC.actionCastingSpells[spellListIndex].list = spellNames.join(', ');
-                           console.log(`   Parsed spells: Freq=${this.importNPC.actionCastingSpells[spellListIndex].freq}, List=${this.importNPC.actionCastingSpells[spellListIndex].list}`); // LOGGING
                         spellListIndex++;
                     } else {
-                        console.log("   Not a spell list line, backtracking."); // LOGGING
-                        currentLineIndex--; // Backtrack if it's not a spell list line
-                        break; // Stop parsing spell lists
+                        currentLineIndex--;
+                        break;
                     }
                 }
-                currentItem = null; // Reset item parsing after spellcasting block
-                currentLineIndex++; // Move past the last processed spell line or the non-spell line
-                continue; // Process next line (or end if spell list was last)
+                currentLineIndex++; // Move past the last processed line
+                continue; // Go to next line
             }
             else if (standardAttackMatch) {
-               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
+               // Standard attacks always start a new item
+               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() }; // Use full line
                this.importNPC.actions.actions.push(currentItem);
-               console.log(`Found standard action attack: ${currentItem.name}`); // LOGGING
             }
             else if (actionMatch) {
+               // Regular Name. Desc pattern starts a new item
                currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
                this.importNPC.actions.actions.push(currentItem);
-               console.log(`Found new action: ${currentItem.name}`); // LOGGING
-            } else if (currentItem) {
-               console.log(`Appending to action ${currentItem.name}: ${line}`); // LOGGING
-               currentItem.desc += " " + line; // Append the current line
-            } else {
-               console.warn("Could not parse action line (orphan line?):", line);
             }
-         }
-         else if (currentSection === 'legendary') {
-            const legendaryMatch = line.match(/^([\w\s().,'’–—-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/); // Added dashes
-            if (legendaryMatch) {
-               let name = legendaryMatch[1].trim();
-               let descText = legendaryMatch[3].trim();
-               if (legendaryMatch[2]) {
-                   name += ` (${legendaryMatch[2]})`;
-               }
-               currentItem = { name: name, desc: descText };
-               this.importNPC.actions['legendary-actions'].push(currentItem);
-               console.log(`Found new legendary action: ${currentItem.name}`); // LOGGING
-            } else if (currentItem) {
-               console.log(`Appending to legendary action ${currentItem.name}: ${line}`); // LOGGING
+            else if (currentItem) {
+               // Append if the line doesn't look like a new action or if we already have an item
                currentItem.desc += " " + line;
             } else {
-                if (!this.importNPC.legendaryBoilerplate && line.length > 50) { // Simple check
-                    console.log(`Assuming line is legendary boilerplate: ${line}`); // LOGGING
-                    this.importNPC.legendaryBoilerplate = line;
-                } else {
-                   console.warn("Could not parse legendary action line (orphan line?):", line);
-                }
+               // Orphan line
+               console.warn("Could not parse action line (orphan line?):", line);
+               currentItem = null;
             }
+
+            // --- NEW LINE-JOINING LOGIC (Actions) ---
+            if (currentItem) {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+                  
+                  // Check start of *next* line for patterns that signal a *new* action
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) ||
+                                            nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/); // Added /
+
+                  // Stop if current line ends in punctuation AND next line looks like a new action
+                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
+                     break;
+                  }
+
+                  // 1. Hyphenation Check
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine; // Remove hyphen and join
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  // 2. Continuation Check (lowercase, space, or number)
+                  //    AND next line does NOT look like a new action
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/); // Check raw line
+                  if (continuationMatch && !nextLineIsNewAction) { 
+                     currentItem.desc += " " + nextLine; // Append trimmed line
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+                  
+                  // 3. If it's a continuation *but* also matches a new action (e.g., "Hit."),
+                  //    let's append it anyway, as it's part of the current action description.
+                  if (continuationMatch && nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine; // Append trimmed line
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  // 4. No match, break
+                  break;
+               }
+            }
+            // --- END NEW LINE-JOINING LOGIC (Actions) ---
          }
+          else if (currentSection === 'legendary') {
+             // MODIFIED: Added / to character class
+             const legendaryMatch = line.match(/^([\w\s().,'’–—\/]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+
+             if (legendaryMatch) {
+                 // If the line matches the pattern, it starts a new legendary action.
+                 let name = legendaryMatch[1].trim();
+                 let descText = legendaryMatch[3].trim();
+                 if (legendaryMatch[2]) {
+                     name += ` (${legendaryMatch[2]})`;
+                 }
+                 currentItem = { name: name, desc: descText };
+                 this.importNPC.actions['legendary-actions'].push(currentItem);
+             } else if (currentItem) {
+                 // Line does NOT match pattern, but we have an active item -> append.
+                 currentItem.desc += " " + line;
+             } else {
+                 // Line does NOT match patterns, and no active item -> boilerplate or orphan.
+                 if (!this.importNPC.legendaryBoilerplate && line.length > 50) { // Simple boilerplate check
+                     this.importNPC.legendaryBoilerplate = line;
+                 } else {
+                     console.warn("Could not parse legendary action line (orphan line?):", line);
+                 }
+                 currentItem = null; // Ensure currentItem remains null
+             }
+
+            // --- NEW LINE-JOINING LOGIC (Legendary) ---
+            if (currentItem) {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+
+                  // MODIFIED: Added / to character class
+                  const nextLineIsNewAction = nextLine.match(/^([\w\s().,'’–—\/]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+
+                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
+                     break;
+                  }
+
+                  // 1. Hyphenation Check
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine;
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  // 2. Continuation Check (lowercase, space, or number)
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/); // Check raw line
+                  if (continuationMatch && !nextLineIsNewAction) { // Only join if it doesn't look like a new action
+                     currentItem.desc += " " + nextLine; // Append trimmed line
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  // 3. If it's a continuation *but* also matches a new action
+                  if (continuationMatch && nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine; // Append trimmed line
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  break;
+               }
+            }
+            // --- END NEW LINE-JOINING LOGIC (Legendary) ---
+         }
+
 
          currentLineIndex++; // Move to the next line for the next iteration
       } // End while loop
 
-      console.log("Finished main parsing loop."); // LOGGING
       // --- Post-Processing ---
       this.parseInnateSpellcastingTrait();
       this.parseTraitSpellcastingTrait();
@@ -346,12 +451,10 @@ window.importer = {
       ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
            this.importNPC[`${ability}Bonus`] = window.app.calculateAbilityBonus(this.importNPC[ability]);
        });
-      this.inferSavesAndSkills();
-      window.app.calculateAllStats.call({ activeNPC: this.importNPC });
+      this.inferSavesAndSkills(); // This now fixes adjustments
+      window.app.calculateAllStats.call({ activeNPC: this.importNPC }); // This now uses fixed adjustments
 
-      console.log("Updating import viewport..."); // LOGGING
       this.updateImportViewport();
-      console.log("parseText finished."); // LOGGING
    },
 
    // --- Parse Innate Spellcasting from Trait Description ---
@@ -359,7 +462,6 @@ window.importer = {
       // Find trait case-insensitively, allowing variations like "(Psionics)"
       const traitIndex = this.importNPC.traits.findIndex(trait => trait?.name?.toLowerCase().startsWith('innate spellcasting'));
       if (traitIndex === -1) return; // Trait not found
-      console.log("Found Innate Spellcasting trait, parsing..."); // LOGGING
 
       const trait = this.importNPC.traits[traitIndex];
       const desc = trait.desc || '';
@@ -378,10 +480,8 @@ window.importer = {
          } else {
             this.importNPC.innateDC = undefined; // Ensure auto-calc happens
          }
-         console.log(`   Parsed innate ability/DC: Ability=${this.importNPC.innateAbility}, DC=${this.importNPC.innateDC}`); // LOGGING
       } else {
           this.importNPC.innateDC = undefined; // Ensure auto-calc if regex fails
-          console.log("   Could not parse innate ability/DC from description."); // LOGGING
       }
 
       // Extract Components
@@ -392,8 +492,7 @@ window.importer = {
       } else {
          this.importNPC.innateComponents = window.app.defaultNPC.innateComponents;
       }
-      console.log(`   Parsed innate components: ${this.importNPC.innateComponents}`); // LOGGING
-
+      
       // --- Extract Spells Block ---
       const spellsStartIndex = desc.indexOf(':');
       if (spellsStartIndex === -1) {
@@ -419,7 +518,6 @@ window.importer = {
                   .map(spell => spell.replace(/<\/?i>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/\*/g, '').trim().toLowerCase())
                   .filter(spell => spell);
               this.importNPC.innateSpells[spellListIndex].list = spellNames.join(', ');
-              console.log(`   Parsed innate spell group: Freq=${freq}, List=${this.importNPC.innateSpells[spellListIndex].list}`); // LOGGING
               spellListIndex++;
           } else {
              console.warn(`Skipping potentially invalid frequency line in innate spellcasting: "${freq}: ${spellsRaw}"`)
@@ -439,7 +537,6 @@ window.importer = {
       // Find trait exactly named "Spellcasting" (case-insensitive)
       const traitIndex = this.importNPC.traits.findIndex(trait => trait?.name?.toLowerCase() === 'spellcasting');
       if (traitIndex === -1) return; // Trait not found
-      console.log("Found Trait Spellcasting trait, parsing..."); // LOGGING
 
       const trait = this.importNPC.traits[traitIndex];
       const desc = trait.desc || '';
@@ -470,11 +567,9 @@ window.importer = {
          this.importNPC.traitCastingAbility = abilityDcBonusMatch[1].toLowerCase();
          this.importNPC.traitCastingDC = abilityDcBonusMatch[2] ? parseInt(abilityDcBonusMatch[2], 10) : undefined;
          this.importNPC.traitCastingBonus = abilityDcBonusMatch[3] ? parseInt(abilityDcBonusMatch[3].replace('+',''), 10) : undefined;
-         console.log(`   Parsed trait ability/DC/Bonus: Ability=${this.importNPC.traitCastingAbility}, DC=${this.importNPC.traitCastingDC}, Bonus=${this.importNPC.traitCastingBonus}`); // LOGGING
       } else {
           this.importNPC.traitCastingDC = undefined;
           this.importNPC.traitCastingBonus = undefined;
-          console.log("   Could not parse trait ability/DC/Bonus from description."); // LOGGING
       }
 
       const classRegex = /following (\w+) spells prepared/i;
@@ -506,7 +601,6 @@ window.importer = {
               .map(spell => spell.replace(/<\/?i>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').replace('*', '').trim().toLowerCase())
               .filter(spell => spell);
           this.importNPC.traitCastingList[0] = spellNames.join(', ');
-          console.log(`   Parsed trait Cantrips: ${this.importNPC.traitCastingList[0]}`); // LOGGING
       } else {
          console.warn("Could not find Cantrips line in spellcasting block.")
       }
@@ -525,7 +619,6 @@ window.importer = {
                   .map(spell => spell.endsWith('*') ? spell : spell.replace('*',''))
                   .filter(spell => spell);
               this.importNPC.traitCastingList[level] = spellNames.join(', ');
-              console.log(`   Parsed trait Level ${level}: Slots=${slots}, List=${this.importNPC.traitCastingList[level]}`); // LOGGING
           }
       }
 
@@ -539,9 +632,7 @@ window.importer = {
              this.importNPC.traitCastingMarked = lastLine;
           }
       }
-      if(this.importNPC.traitCastingMarked) console.log(`   Parsed trait Marked Spells: ${this.importNPC.traitCastingMarked}`); // LOGGING
-
-
+      
       this.importNPC.traits.splice(traitIndex, 1); // Remove the processed trait
    },
 
@@ -575,10 +666,13 @@ window.importer = {
             this.importNPC.speedBase = speedVal;
          }
       });
+      // Assign calculated speed string for viewport
+      this.importNPC.speed = window.app.calculateSpeedString(this.importNPC); // Assign formatted speed string
+
       if (this.importNPC.speedBase === 0 && this.importNPC.speedFly === 0 && this.importNPC.speedClimb === 0 && this.importNPC.speedSwim === 0 && this.importNPC.speedBurrow === 0) {
-         this.importNPC.speedBase = 30; // Default
+         this.importNPC.speedBase = 30; // Default base speed if none parsed
+         this.importNPC.speed = window.app.calculateSpeedString(this.importNPC); // Recalculate string
       }
-      console.log(`   Parsed Speeds: Base=${this.importNPC.speedBase}, Fly=${this.importNPC.speedFly}, etc.`); // LOGGING
    },
 
    parseSaves(savesString) {
@@ -590,9 +684,9 @@ window.importer = {
             const bonus = parseInt(match[2], 10);
             const abilityFull = Object.keys(window.app.defaultNPC).find(k => k.startsWith(abilityShort) && ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].includes(k));
             if (abilityFull) {
+               // Store the raw parsed bonus in the Adjust field temporarily
                this.importNPC[`${abilityFull}SavingThrowAdjust`] = bonus;
-               this.importNPC[`${abilityFull}SavingThrowProf`] = false;
-               console.log(`   Stored raw save bonus for ${abilityFull}: ${bonus}`); // LOGGING
+               this.importNPC[`${abilityFull}SavingThrowProf`] = false; // Will be determined by inferSavesAndSkills
             }
          }
       });
@@ -607,10 +701,10 @@ window.importer = {
             const bonus = parseInt(match[2], 10);
             const skillData = window.app.skills.find(s => s.name.toLowerCase() === skillName.toLowerCase());
             if (skillData) {
+               // Store the raw parsed bonus in the Adjust field temporarily
                this.importNPC[`skill_${skillData.id}_adjust`] = bonus;
-               this.importNPC[`skill_${skillData.id}_prof`] = false;
-               this.importNPC[`skill_${skillData.id}_exp`] = false;
-               console.log(`   Stored raw skill bonus for ${skillName}: ${bonus}`); // LOGGING
+               this.importNPC[`skill_${skillData.id}_prof`] = false; // Will be determined by inferSavesAndSkills
+               this.importNPC[`skill_${skillData.id}_exp`] = false; // Will be determined by inferSavesAndSkills
             } else {
                console.warn("Unrecognized skill name found:", skillName);
             }
@@ -668,15 +762,8 @@ window.importer = {
       });
    },
 
-   // --- MODIFIED parseSenses ---
-   /**
-    * Parses the Senses line, potentially looking ahead for Passive Perception.
-    * @param {string} sensesLine The line starting with "Senses".
-    * @param {string|null} nextLine The next line in the input, if available.
-    * @returns {number} The number of *additional* lines consumed (0 or 1).
-    */
+
    parseSenses(sensesLine, nextLine) {
-       console.log(`   parseSenses called with line: "${sensesLine}", nextLine: "${nextLine}"`); // LOGGING
        this.importNPC.senseBlindsight = 0;
        this.importNPC.blindBeyond = false;
        this.importNPC.senseDarkvision = 0;
@@ -691,17 +778,14 @@ window.importer = {
       const nextLineMatch = nextLine ? nextLine.match(passiveOnNextRegex) : null;
 
       if (nextLineMatch) {
-         console.log(`   Found passive Perception on next line: ${nextLineMatch[1]}`); // LOGGING
          this.importNPC.passivePerception = parseInt(nextLineMatch[1], 10);
          consumedNextLine = true;
       } else {
          const passiveMatch = fullSensesString.match(/(?:,\s*|\s+|^)passive Perception\s+(\d+)/i);
          if (passiveMatch) {
-            console.log(`   Found passive Perception on current line: ${passiveMatch[1]}`); // LOGGING
             this.importNPC.passivePerception = parseInt(passiveMatch[1], 10);
             fullSensesString = fullSensesString.replace(/,?\s*passive Perception\s+\d+/i, '').trim();
          } else {
-             console.log("   Passive Perception not found on current or next line, using default."); // LOGGING
          }
       }
 
@@ -711,7 +795,6 @@ window.importer = {
          if (match) {
             const type = match[1].toLowerCase();
             const range = parseInt(match[2], 10);
-            console.log(`      Parsed sense: ${type} ${range}`); // LOGGING
             if (type === 'blindsight') {
                 this.importNPC.senseBlindsight = range;
                 if (sense.includes('(blind beyond this radius)')) {
@@ -731,10 +814,9 @@ window.importer = {
 
       return consumedNextLine ? 1 : 0;
    },
-   // --- END MODIFIED parseSenses ---
+
 
    parseLanguages(languagesString) {
-      console.log(`   parseLanguages called with: "${languagesString}"`); // LOGGING
       this.importNPC.selectedLanguages = [];
       this.importNPC.hasTelepathy = false;
       this.importNPC.telepathyRange = 0;
@@ -742,11 +824,9 @@ window.importer = {
 
       const langLower = languagesString.toLowerCase();
       if (langLower === '—' || langLower === '-') {
-          console.log("      Detected no languages ('—' or '-')"); // LOGGING
           this.importNPC.specialLanguageOption = 1;
           return;
        }
-       // ... rest of parseLanguages ...
        if (langLower === 'the languages it knew in life') {
            this.importNPC.specialLanguageOption = 3;
            return;
@@ -772,7 +852,6 @@ window.importer = {
              this.importNPC.specialLanguageOption = 4;
           }
            languagesString = languagesString.replace(/understands.*?(but can't speak)/i, '');
-           console.log(`      Detected 'understands but can't speak', option ${this.importNPC.specialLanguageOption}`); // LOGGING
        }
 
 
@@ -783,35 +862,32 @@ window.importer = {
            if (telepathyMatch) {
                this.importNPC.hasTelepathy = true;
                this.importNPC.telepathyRange = parseInt(telepathyMatch[1], 10);
-               console.log(`      Parsed telepathy range: ${this.importNPC.telepathyRange}`); // LOGGING
            } else if (part && part !== '—' && part !== '-') {
                this.importNPC.selectedLanguages.push(part);
            }
        });
 
        this.importNPC.selectedLanguages.sort((a,b) => a.localeCompare(b));
-       console.log(`      Parsed languages: ${this.importNPC.selectedLanguages.join(', ')}`); // LOGGING
    },
 
    // --- Inference Logic ---
    inferSavesAndSkills() {
-        // ... (rest of inferSavesAndSkills remains the same)
-        console.log("Inferring saves and skills..."); // LOGGING
         const npc = this.importNPC;
         const profBonus = npc.proficiencyBonus;
 
         const skipInfer = !profBonus || profBonus < 2;
         if (skipInfer) {
+            console.warn("Skipping save/skill proficiency inference due to low/undefined Proficiency Bonus.");
             ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
-                npc[`${ability}SavingThrowAdjust`] = 0;
+                npc[`${ability}SavingThrowAdjust`] = 0; // Clear any previously parsed raw value
                 npc[`${ability}SavingThrowProf`] = false;
             });
             window.app.skills.forEach(skill => {
-                npc[`skill_${skill.id}_adjust`] = 0;
+                npc[`skill_${skill.id}_adjust`] = 0; // Clear any previously parsed raw value
                 npc[`skill_${skill.id}_prof`] = false;
                 npc[`skill_${skill.id}_exp`] = false;
             });
-            console.warn("Skipping save/skill proficiency inference due to low/undefined Proficiency Bonus.");
+            npc.npcSkills = ""; // Clear the skills string
             return;
         }
 
@@ -819,29 +895,44 @@ window.importer = {
             const abilityBonus = npc[`${ability}Bonus`] ?? 0;
             const keyAdjust = `${ability}SavingThrowAdjust`;
             const keyProf = `${ability}SavingThrowProf`;
-            const parsedBonus = npc[keyAdjust];
+            // Use the temporarily stored raw bonus, OR default to 0 if none was parsed
+            const parsedBonus = npc[keyAdjust] ?? null; // Use null to distinguish "not parsed"
 
+            // Reset flags and adjustment before calculation
             npc[keyProf] = false;
-            npc[keyAdjust] = 0;
+            let finalAdjustment = 0; // Use a temp var
 
-            if (parsedBonus === undefined || parsedBonus === null) return;
+            if (parsedBonus === null) { // Skip if no save was listed
+               npc[keyAdjust] = 0; // Ensure it's 0
+               return; 
+            }
 
             const expectedBase = abilityBonus;
             const expectedProf = abilityBonus + profBonus;
-            const diffFromBase = parsedBonus - expectedBase;
-            const diffFromProf = parsedBonus - expectedProf;
 
+            
             if (parsedBonus === expectedProf) {
-                 npc[keyProf] = true;
+                 npc[keyProf] = true; // Matches proficiency bonus exactly
+                 finalAdjustment = 0;
             } else if (parsedBonus === expectedBase) {
-                 npc[keyProf] = false;
-            } else if (Math.abs(diffFromProf) <= Math.abs(diffFromBase)) {
-                npc[keyProf] = true;
-                npc[keyAdjust] = diffFromProf;
+                 npc[keyProf] = false; // Matches base ability bonus exactly
+                 finalAdjustment = 0;
             } else {
-                npc[keyProf] = false;
-                npc[keyAdjust] = diffFromBase;
+                 // Doesn't match exactly, calculate difference and store as adjustment
+                 const diffFromProf = parsedBonus - expectedProf;
+                 const diffFromBase = parsedBonus - expectedBase;
+
+                 if (Math.abs(diffFromProf) <= Math.abs(diffFromBase)) {
+                     // Closer to proficiency bonus than base, assume proficiency + adjustment
+                     npc[keyProf] = true;
+                     finalAdjustment = diffFromProf; // Store the difference as adjustment
+                 } else {
+                     // Closer to base ability bonus, assume no proficiency + adjustment
+                     npc[keyProf] = false;
+                     finalAdjustment = diffFromBase; // Store the difference as adjustment
+                 }
             }
+            npc[keyAdjust] = finalAdjustment; // Assign final calculated adjustment
         });
 
         window.app.skills.forEach(skill => {
@@ -849,45 +940,56 @@ window.importer = {
             const keyAdjust = `skill_${skill.id}_adjust`;
             const keyProf = `skill_${skill.id}_prof`;
             const keyExp = `skill_${skill.id}_exp`;
-            const parsedBonus = npc[keyAdjust];
+            const parsedBonus = npc[keyAdjust] ?? null; // Use null to distinguish "not parsed"
 
+            // Reset flags and adjustment before calculation
             npc[keyProf] = false;
             npc[keyExp] = false;
-            npc[keyAdjust] = 0;
+            let finalAdjustment = 0; // Use a temp var
 
-            if (parsedBonus === undefined || parsedBonus === null) return;
+            if (parsedBonus === null) { // Skip if skill wasn't listed
+               npc[keyAdjust] = 0; // Ensure it's 0
+               return; 
+            }
 
             const expectedBase = abilityBonus;
             const expectedProf = abilityBonus + profBonus;
             const expectedExp = abilityBonus + (profBonus * 2);
 
-            const diffFromBase = parsedBonus - expectedBase;
-            const diffFromProf = parsedBonus - expectedProf;
-            const diffFromExp = parsedBonus - expectedExp;
-
-             if (parsedBonus === expectedExp) {
+            
+             if (parsedBonus === expectedExp) { // Matches expertise exactly
                  npc[keyProf] = true;
                  npc[keyExp] = true;
-             } else if (parsedBonus === expectedProf) {
+                 finalAdjustment = 0;
+             } else if (parsedBonus === expectedProf) { // Matches proficiency exactly
                  npc[keyProf] = true;
                  npc[keyExp] = false;
-             } else if (parsedBonus === expectedBase) {
+                 finalAdjustment = 0;
+             } else if (parsedBonus === expectedBase) { // Matches base exactly
                  npc[keyProf] = false;
                  npc[keyExp] = false;
+                 finalAdjustment = 0;
             } else {
+                // Doesn't match exactly, find the closest and apply adjustment
+                const diffFromBase = parsedBonus - expectedBase;
+                const diffFromProf = parsedBonus - expectedProf;
+                const diffFromExp = parsedBonus - expectedExp;
+
                 const diffs = [
                     { diff: Math.abs(diffFromExp), prof: true, exp: true, adj: diffFromExp },
                     { diff: Math.abs(diffFromProf), prof: true, exp: false, adj: diffFromProf },
                     { diff: Math.abs(diffFromBase), prof: false, exp: false, adj: diffFromBase }
                 ];
-                diffs.sort((a, b) => a.diff - b.diff);
+                diffs.sort((a, b) => a.diff - b.diff); // Sort by smallest difference
 
                 npc[keyProf] = diffs[0].prof;
                 npc[keyExp] = diffs[0].exp;
-                npc[keyAdjust] = diffs[0].adj;
+                finalAdjustment = diffs[0].adj; // Store the difference as adjustment
             }
+            npc[keyAdjust] = finalAdjustment; // Assign final calculated adjustment
         });
-        console.log("Finished inferring saves and skills."); // LOGGING
+        
+        // Removed redundant call to calculateAllSkills - it's handled by calculateAllStats
    },
 
 
@@ -1037,7 +1139,7 @@ window.importer = {
       if (species) { NPCTypeString += ` (${species})`; }
       if (alignment) { NPCTypeString += `, ${alignment}`; }
 
-      const NPCspeed = speed || "";
+      const NPCspeed = speed || ""; // Use the formatted speed string
       const NPCstr = strength || "10";
       const NPCstrbo = strengthBonus !== undefined ? (strengthBonus >= 0 ? `+${strengthBonus}` : strengthBonus) : "+?";
       const NPCdex = dexterity || "10";
@@ -1134,7 +1236,10 @@ window.importer = {
       if (sortPreviewTraits) {
           combinedTraitsList.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' }));
       }
-      const allTraitsHtml = combinedTraitsList.map(item => item.html).join('');
+      const allTraitsHtml = combinedTraitsList.map(item => {
+          return item.html;
+       }).join('');
+      
 
       let actionSpellcastingBlockItem = null;
       if (hasSpellcasting && spellcastingPlacement === 'actions') {
@@ -1197,6 +1302,7 @@ window.importer = {
                    <span><b>Proficiency Bonus</b> ${NPCprofBonus}</span>
                </div>
            `;
+       } else {
        }
 
       const generatedHtml = `

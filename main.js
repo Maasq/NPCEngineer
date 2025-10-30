@@ -908,13 +908,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // --- Update Proficiency Bonus ---
+      // --- Update Proficiency Bonus & Experience ---
       const newProfBonus = window.app.calculateProficiencyBonus(window.app.activeNPC.challenge);
+      const newExperience = window.app.crToXpMap[window.app.activeNPC.challenge] || '0'; // <-- FIX: Calculate XP
       let profBonusChanged = false;
       if (newProfBonus !== oldProfBonus) {
          window.app.activeNPC.proficiencyBonus = newProfBonus;
          profBonusChanged = true;
       }
+      window.app.activeNPC.experience = newExperience; // <-- FIX: Save XP
+
 
       // --- Recalculate Ability Bonuses ---
       let abilityScoresChanged = false;
@@ -1089,6 +1092,12 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- Final UI Updates ---
       window.ui.updateStatDisplays(); // Update bonuses, save totals
       window.ui.updateSkillDisplays(); // Update skill totals
+
+      // --- FIX: Update XP and Prof Bonus displays on info card ---
+      if (window.ui.experienceDisplay) window.ui.experienceDisplay.textContent = window.app.activeNPC.experience || '';
+      if (window.ui.proficiencyBonusDisplay) window.ui.proficiencyBonusDisplay.textContent = `+${window.app.activeNPC.proficiencyBonus}` || '+2';
+      // --- END FIX ---
+
       window.viewport.updateViewport(); // Update stat block preview
 
       // Update name in selector dropdown if it changed
