@@ -27,8 +27,8 @@ window.ui = {
    menuDeleteNpc: null,
    menuSettings: null,
    menuExportFg: null,
-   menuExportDb: null, // NEW
-   menuImportDb: null, // NEW
+   menuExportDb: null,
+   menuImportDb: null,
    npcSelector: null,
    npcOptionsContainer: null,
    modalOverlay: null,
@@ -42,7 +42,10 @@ window.ui = {
    attackHelperModal: null,
    alertModal: null,
    firstUseModal: null,
-   importDbConfirmModal: null, // NEW
+   importDbConfirmModal: null,
+   importModal: null, // <-- Added importModal for completeness
+   importTextArea: null, // <-- Added importTextArea
+   importFilterSelect: null, // <-- NEW
    createBestiaryBtn: null,
    newBestiaryNameInput: null,
    bestiaryListDiv: null,
@@ -99,8 +102,8 @@ window.ui = {
    actionSpellcastingFields: null,
    firstUseOkBtn: null,
    settingDisableUnloadWarning: null,
-   importDbCancelBtn: null, // NEW
-   importDbConfirmBtn: null, // NEW
+   importDbCancelBtn: null,
+   importDbConfirmBtn: null,
    bestiarySettingsCheckboxes: {},
    npcSettingsCheckboxes: {},
    inputs: {},
@@ -135,8 +138,8 @@ window.ui = {
       this.menuDeleteNpc = document.getElementById('menu-delete-npc');
       this.menuSettings = document.getElementById('menu-settings');
       this.menuExportFg = document.getElementById('menu-export-fg');
-      this.menuExportDb = document.getElementById('menu-export-db'); // NEW
-      this.menuImportDb = document.getElementById('menu-import-db'); // NEW
+      this.menuExportDb = document.getElementById('menu-export-db');
+      this.menuImportDb = document.getElementById('menu-import-db');
       this.npcSelector = document.getElementById("npc-selector");
       this.npcOptionsContainer = document.getElementById('npc-options-container');
       this.modalOverlay = document.getElementById("modal-overlay");
@@ -150,7 +153,10 @@ window.ui = {
       this.attackHelperModal = document.getElementById('attack-helper-modal');
       this.alertModal = document.getElementById('alert-modal');
       this.firstUseModal = document.getElementById('first-use-modal');
-      this.importDbConfirmModal = document.getElementById('import-db-confirm-modal'); // NEW
+      this.importDbConfirmModal = document.getElementById('import-db-confirm-modal');
+      this.importModal = document.getElementById('import-modal'); // <-- Added
+      this.importTextArea = document.getElementById('import-text-area'); // <-- Added
+      this.importFilterSelect = document.getElementById('import-filter-select'); // <-- NEW
       this.createBestiaryBtn = document.getElementById("create-bestiary-btn");
       this.newBestiaryNameInput = document.getElementById("new-bestiary-name");
       this.bestiaryListDiv = document.getElementById("bestiary-list");
@@ -203,12 +209,12 @@ window.ui = {
       this.spellcastingHeader = document.getElementById('spellcasting-header');
       this.spellcastingFields = document.getElementById('spellcasting-fields');
       this.spellcastingDivider = document.getElementById('spellcasting-divider');
-      this.traitSpellcastingFields = document.getElementById('trait-spellcasting-fields'); // NEW
+      this.traitSpellcastingFields = document.getElementById('trait-spellcasting-fields');
       this.actionSpellcastingFields = document.getElementById('action-spellcasting-fields');
       this.firstUseOkBtn = document.getElementById('first-use-ok-btn');
       this.settingDisableUnloadWarning = document.getElementById('setting-disable-unload-warning');
-      this.importDbCancelBtn = document.getElementById('import-db-cancel-btn'); // NEW
-      this.importDbConfirmBtn = document.getElementById('import-db-confirm-btn'); // NEW
+      this.importDbCancelBtn = document.getElementById('import-db-cancel-btn');
+      this.importDbConfirmBtn = document.getElementById('import-db-confirm-btn');
 
       this.bestiarySettingsCheckboxes = {
          addDescription: document.getElementById('bestiary-add-description'),
@@ -272,7 +278,7 @@ window.ui = {
          traitCastingBonus: document.getElementById('npc-trait-casting-bonus'),
          traitCastingClass: document.getElementById('npc-trait-casting-class'),
          traitCastingFlavor: document.getElementById('npc-trait-casting-flavor'),
-         traitCastingMarked: document.getElementById('npc-trait-casting-marked'), // NEW
+         traitCastingMarked: document.getElementById('npc-trait-casting-marked'),
          // Action Casting Inputs
          actionCastingAbility: document.getElementById('npc-action-casting-ability'),
          actionCastingDC: document.getElementById('npc-action-casting-dc'),
@@ -363,7 +369,6 @@ window.ui = {
       if (this.menuDeleteNpc) this.menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDeleteNpc.classList.contains('disabled')) window.app.deleteCurrentNpc(); this.mainMenu.classList.add('hidden'); });
       if (this.menuSettings) this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuSettings.classList.contains('disabled')) this.showSettingsModal(); this.mainMenu.classList.add('hidden'); });
       if (this.menuExportFg) this.menuExportFg.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportFg.classList.contains('disabled')) window.app.exportBestiaryToFG(); this.mainMenu.classList.add('hidden'); });
-      // NEW: Database export/import menu items
       if (this.menuExportDb) this.menuExportDb.addEventListener('click', (e) => { e.preventDefault(); window.app.exportFullDatabase(); this.mainMenu.classList.add('hidden'); });
       if (this.menuImportDb) this.menuImportDb.addEventListener('click', (e) => { e.preventDefault(); window.app.confirmImportFullDatabase(); this.mainMenu.classList.add('hidden'); });
 
@@ -398,26 +403,23 @@ window.ui = {
       }
       if (this.settingsOkBtn) this.settingsOkBtn.addEventListener('click', this.hideAllModals.bind(this));
 
-      // Listener for First Use OK Button
       if (this.firstUseOkBtn) {
          this.firstUseOkBtn.addEventListener('click', () => {
-            window.app.markFirstUseComplete(); // Mark as completed in DB
-            this.hideAllModals(); // Close the modal
+            window.app.markFirstUseComplete();
+            this.hideAllModals();
          });
       }
 
-      // Listener for Disable Unload Warning checkbox in settings
       if (this.settingDisableUnloadWarning) {
          this.settingDisableUnloadWarning.addEventListener('change', (e) => {
-            window.app.setDisableUnloadWarning(e.target.checked); // Update setting in DB
+            window.app.setDisableUnloadWarning(e.target.checked);
          });
       }
 
-      // NEW: Listeners for Import DB confirmation modal
       if (this.importDbCancelBtn) this.importDbCancelBtn.addEventListener('click', () => this.hideAllModals());
       if (this.importDbConfirmBtn) this.importDbConfirmBtn.addEventListener('click', () => {
-         this.hideAllModals(); // Hide confirm modal first
-         window.app.importFullDatabase(); // Proceed with import
+         this.hideAllModals();
+         window.app.importFullDatabase();
       });
 
 
@@ -433,25 +435,22 @@ window.ui = {
       document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', this.hideAllModals.bind(this)));
       if (this.modalOverlay) {
          this.modalOverlay.addEventListener('click', (e) => {
-            // Close modals if clicking overlay, but not if clicking *inside* a modal
             if (e.target === this.modalOverlay) {
                this.hideAllModals();
             }
          });
       }
 
-      // --- Card Toggle Listener ---
       document.querySelectorAll('.card-header').forEach((header) => {
          header.addEventListener("click", (e) => {
-            // Prevent toggle if clicking manage buttons inside header
             if (e.target.closest('#fantasy-grounds-group, #manage-groups-btn, #manage-languages-btn, #manage-traits-btn')) {
                return;
             }
             const cardBody = header.nextElementSibling;
             if (cardBody && cardBody.classList.contains('card-body')) {
                if (cardBody.classList.contains('open')) {
-                  cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; // Set current height explicitly
-                  requestAnimationFrame(() => { // Allow browser to render current height
+                  cardBody.style.maxHeight = cardBody.scrollHeight + 'px';
+                  requestAnimationFrame(() => {
                      cardBody.classList.remove('open');
                      cardBody.style.maxHeight = '0';
                      cardBody.style.paddingTop = '0';
@@ -461,15 +460,14 @@ window.ui = {
                   cardBody.classList.add('open');
                   cardBody.style.paddingTop = '0.5rem';
                   cardBody.style.paddingBottom = '0.5rem';
-                  const scrollHeight = cardBody.scrollHeight; // Get full height
-                  cardBody.style.maxHeight = scrollHeight + 'px'; // Set to full height for transition
+                  const scrollHeight = cardBody.scrollHeight;
+                  cardBody.style.maxHeight = scrollHeight + 'px';
 
-                  // Use a transitionend listener to set maxHeight to 'none' after transition
                   cardBody.addEventListener('transitionend', function handler() {
-                     if (cardBody.classList.contains('open')) { // Only if still open
-                        cardBody.style.maxHeight = 'none'; // Allow content reflow
+                     if (cardBody.classList.contains('open')) {
+                        cardBody.style.maxHeight = 'none';
                      }
-                     cardBody.removeEventListener('transitionend', handler); // Clean up listener
+                     cardBody.removeEventListener('transitionend', handler);
                   }, { once: true });
                }
             }
@@ -477,42 +475,37 @@ window.ui = {
       });
 
 
-      // Centralized input listener for most fields
       Object.values(this.inputs).forEach((input) => {
          if (input && input.id && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') {
-            // Ability scores, challenge rating, spellcasting abilities, and caster level need extra recalc
             const recalcNeededIds = [
                'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'challenge',
                'innate-ability', 'trait-casting-level', 'trait-casting-ability', 'action-casting-ability'
             ];
-            const baseId = input.id.replace('npc-', ''); // Simplify ID for comparison
+            const baseId = input.id.replace('npc-', '');
 
             if (recalcNeededIds.includes(baseId)) {
                input.addEventListener("input", () => {
-                  window.app.updateActiveNPCFromForm(); // Update NPC object first
-                  // Calculations now happen directly within updateActiveNPCFromForm
+                  window.app.updateActiveNPCFromForm();
                });
             } else {
-               // All other standard inputs just update the NPC object
                input.addEventListener("input", window.app.updateActiveNPCFromForm);
             }
          }
       });
 
-      // Add listeners for spellcasting radio buttons
       if (this.inputs.spellcastingToTraits) {
          this.inputs.spellcastingToTraits.addEventListener('change', () => {
             if (this.inputs.spellcastingToTraits.checked) {
-               this.updateSpellcastingVisibility(); // Update UI
-               window.app.updateActiveNPCFromForm(); // Save the change
+               this.updateSpellcastingVisibility();
+               window.app.updateActiveNPCFromForm();
             }
          });
       }
       if (this.inputs.spellcastingToActions) {
          this.inputs.spellcastingToActions.addEventListener('change', () => {
             if (this.inputs.spellcastingToActions.checked) {
-               this.updateSpellcastingVisibility(); // Update UI
-               window.app.updateActiveNPCFromForm(); // Save the change
+               this.updateSpellcastingVisibility();
+               window.app.updateActiveNPCFromForm();
             }
          });
       }
@@ -565,7 +558,7 @@ window.ui = {
                const reader = new FileReader();
                reader.onload = (e) => {
                   window.app.activeNPC.token = e.target.result;
-                  this.updateTokenDisplay(); // Use 'this'
+                  this.updateTokenDisplay();
                   window.app.saveActiveBestiaryToDB();
                };
                reader.readAsDataURL(file);
@@ -583,7 +576,7 @@ window.ui = {
                const reader = new FileReader();
                reader.onload = (e) => {
                   window.app.activeNPC.image = e.target.result;
-                  this.updateImageDisplay(); // Use 'this'
+                  this.updateImageDisplay();
                   window.app.saveActiveBestiaryToDB();
                };
                reader.readAsDataURL(file);
@@ -597,7 +590,7 @@ window.ui = {
       if (this.inputs.hitPoints) {
          this.inputs.hitPoints.addEventListener('dblclick', () => {
             if (window.app.activeNPC) {
-               this.parseHpStringToModal(); // Use 'this'
+               this.parseHpStringToModal();
                window.app.openModal('hp-modal');
                if (this.hpDiceSelector && this.hpDiceString) {
                   window.app.createDiceSelector(this.hpDiceSelector, this.hpDiceString);
@@ -607,7 +600,7 @@ window.ui = {
       }
       if (this.hpModalCloseBtn) {
          this.hpModalCloseBtn.addEventListener('click', () => {
-            this.hideAllModals(); // Use 'this'
+            this.hideAllModals();
          });
       }
       if (this.hpApplyBtn) {
@@ -618,7 +611,7 @@ window.ui = {
             if (!diceString) {
                this.inputs.hitPoints.value = "";
                window.app.updateActiveNPCFromForm();
-               this.hideAllModals(); // Use 'this'
+               this.hideAllModals();
                return;
             }
 
@@ -659,7 +652,7 @@ window.ui = {
 
                this.inputs.hitPoints.value = `${totalHp} (${finalDiceString})`;
                window.app.updateActiveNPCFromForm();
-               this.hideAllModals(); // Use 'this'
+               this.hideAllModals();
             } else {
                 const simpleMatch = diceString.match(/^(\d+d\d+)\s+(\d+)$/);
                 if(simpleMatch) {
@@ -675,7 +668,7 @@ window.ui = {
                   let finalDiceString = `${numDice}d${dieType} + ${bonus}`;
                   this.inputs.hitPoints.value = `${totalHp} (${finalDiceString})`;
                   window.app.updateActiveNPCFromForm();
-                  this.hideAllModals(); // Use 'this'
+                  this.hideAllModals();
                 } else {
                   window.app.showAlert("Invalid Hit Dice format. Please use 'XdY + Z', 'XdY - Z', 'XdY', or just a number.");
                 }
@@ -703,7 +696,6 @@ window.ui = {
          });
       }
 
-      // Call setup functions defined in ui-updates.js (they should be on 'this')
       if (typeof this.setupCustomToggles === 'function') this.setupCustomToggles();
       if (typeof this.setupSavingThrowListeners === 'function') this.setupSavingThrowListeners();
       if (typeof this.setupSkillListeners === 'function') this.setupSkillListeners();
@@ -716,7 +708,6 @@ window.ui = {
    },
 
    // Placeholder for methods defined in ui-updates.js
-   // These will be overwritten when ui-updates.js loads
    updateUIForActiveBestiary: () => console.warn("ui-updates.js not loaded yet"),
    updateNpcSelector: () => console.warn("ui-updates.js not loaded yet"),
    populateLanguageListbox: () => console.warn("ui-updates.js not loaded yet"),
@@ -759,8 +750,4 @@ window.ui = {
    deleteSavedTrait: () => console.warn("ui-updates.js not loaded yet"),
    parseHpStringToModal: () => console.warn("ui-updates.js not loaded yet"),
    populateDamageTypes: () => console.warn("ui-updates.js not loaded yet"),
-   // Calculation functions are no longer needed here as logic moved to main.js
-   // updateInnateCalculatedFields: () => console.warn("Calculation moved to main.js"),
-   // updateTraitCalculatedFields: () => console.warn("Calculation moved to main.js"),
-   // updateActionCalculatedFields: () => console.warn("Calculation moved to main.js")
 };

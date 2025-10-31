@@ -2,6 +2,7 @@
 window.importer = {
    importNPC: null,
    htmlLoaded: false,
+   originalPastedText: null, // <-- NEW: To store the raw text
 
    // --- Helper Function ---
    /**
@@ -36,9 +37,14 @@ window.importer = {
       }
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
       this.importNPC.name = "Import Preview";
+      this.originalPastedText = null; // <-- NEW: Reset original text
 
-      const textArea = document.getElementById('import-text-area');
+      const textArea = window.ui.importTextArea; // Use cached UI element
       if (textArea) textArea.value = '';
+
+      const filterSelect = window.ui.importFilterSelect; // Use cached UI element
+      if (filterSelect) filterSelect.value = 'none'; // <-- NEW: Reset filter
+
       this.updateImportViewport();
 
       window.app.openModal('import-modal');
@@ -49,7 +55,42 @@ window.importer = {
    closeImportModal() {
       window.app.closeModal('import-modal');
       this.importNPC = null;
+      this.originalPastedText = null; // <-- NEW: Clear text on close
    },
+
+   /**
+    * NEW: Central function to process text using filters and cleaners.
+    */
+   processTextForImport() {
+      if (!this.htmlLoaded || !window.filters || !window.importCleaner) return;
+
+      const textArea = window.ui.importTextArea;
+      const filterSelect = window.ui.importFilterSelect;
+
+      if (!textArea || !filterSelect) return;
+
+      const rawText = this.originalPastedText;
+      if (rawText === null) {
+         // If no original text, just parse whatever is in the text area (e.g., after clearing)
+         this.parseText();
+         return;
+      }
+
+      const selectedFilter = filterSelect.value || 'none';
+
+      // 1. Apply source-specific filter
+      let filteredText = window.filters.applyFilter(selectedFilter, rawText);
+
+      // 2. Apply general cleaner
+      let cleanedText = window.importCleaner.cleanImportText(filteredText);
+
+      // 3. Update the text area with the cleaned text
+      textArea.value = cleanedText;
+
+      // 4. Parse the cleaned text to update the NPC object and viewport
+      this.parseText();
+   },
+
 
    /**
     * Parses the text in #import-text-area and updates this.importNPC.
@@ -59,16 +100,15 @@ window.importer = {
       
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
 
-      const textArea = document.getElementById('import-text-area');
-      const text = textArea ? textArea.value : ''; // Don't trim yet, cleaner handles it
-      if (!text) {
+      const textArea = window.ui.importTextArea;
+      // MODIFIED: Read text directly. The cleaning is now done *before* this function is called.
+      const cleanedText = textArea ? textArea.value : '';
+      
+      if (!cleanedText.trim()) {
          this.importNPC.name = "Import Preview";
          this.updateImportViewport();
          return;
       }
-
-      // Use the cleaner function FIRST
-      const cleanedText = window.importCleaner.cleanImportText(text);
       
       const lines = cleanedText.split('\n'); // Split cleaned text
       if (lines.length === 0 || lines.every(line => !line.trim())) {
@@ -131,7 +171,6 @@ window.importer = {
             currentItem = null;
             currentLineIndex++;
             let nextLine = peekLine(currentLineIndex-1); // Peek next line (raw)
-            // FIXED: Explicitly check for boilerplate text
             if (nextLine && nextLine.trim() && nextLine.trim().toLowerCase().startsWith("the ")) {
                 this.importNPC.legendaryBoilerplate = nextLine.trim();
                 currentLineIndex++; // Consume the boilerplate line
@@ -146,9 +185,9 @@ window.importer = {
                this.importNPC.armorClass = match[1].trim();
             } else if ((match = line.match(/^Hit Points\s+(\d+)\s*\((.*?)\)/i))) {
                this.importNPC.hitPoints = `${match[1]} (${match[2]})`;
-            } else if (line.match(/^Speed\s+/i)) { // Check more generally
+            } else if (line.match(/^Speed\s+/i)) {
                this.parseSpeed(line);
-            } else if (line.match(/^STR\s+DEX\s+CON\s+INT\s+WIS\s+CHA/i)) { // More robust check
+            } else if (line.match(/^STR\s+DEX\s+CON\s+INT\s+WIS\s+CHA/i)) {
                currentSection = 'stats';
             } else if ((match = line.match(/^Saving Throws\s+(.*)/i))) {
                this.parseSaves(match[1]);
@@ -162,16 +201,16 @@ window.importer = {
                this.parseDamageModifiers(match[1], 'immunity');
             } else if ((match = line.match(/^Condition Immunities\s+(.*)/i))) {
                this.parseConditionImmunities(match[1]);
-            } else if (line.match(/^Senses\s+/i)) { // Check more generally
-               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); // Trim peeked line for logic
-               currentLineIndex += linesConsumed; // Advance index by lines consumed in parseSenses
-               currentLineIndex++; // Increment index for the current line itself
-               continue; // Continue loop AFTER advancing index
+            } else if (line.match(/^Senses\s+/i)) {
+               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim());
+               currentLineIndex += linesConsumed;
+               currentLineIndex++;
+               continue; 
             } else if ((match = line.match(/^Languages\s+(.*)/i))) {
                this.parseLanguages(match[1]);
             } else if ((match = line.match(/^Challenge\s+([\d\/]+)\s*\((\d{1,3}(?:,?\d{3})*)\s*XP\)(?:\s*Proficiency Bonus\s*([+-]\d+))?/i))) {
                this.importNPC.challenge = match[1];
-               this.importNPC.experience = match[2]; // Keep comma
+               this.importNPC.experience = match[2];
                if (match[3]) {
                   this.importNPC.proficiencyBonus = parseInt(match[3].replace('+',''), 10);
                } else {
@@ -180,8 +219,8 @@ window.importer = {
                currentSection = 'traits';
             } else {
                currentSection = 'traits';
-               currentItem = null; // Ensure currentItem is reset before reprocessing
-               continue; // Re-process this line in the 'traits' section
+               currentItem = null;
+               continue; 
             }
          }
          else if (currentSection === 'stats') {
@@ -194,81 +233,68 @@ window.importer = {
                  this.importNPC.intelligence = parseInt(match[4], 10);
                  this.importNPC.wisdom = parseInt(match[5], 10);
                  this.importNPC.charisma = parseInt(match[6], 10);
-                 currentSection = 'header'; // Go back to parsing header items below stats
+                 currentSection = 'header';
              } else {
                 console.warn("Could not parse stat line:", line);
-                currentSection = 'header'; // Assume stats done even if parse failed
-                continue; // Re-process line in header context
+                currentSection = 'header';
+                continue; 
              }
          }
          else if (currentSection === 'traits') {
-            // This is the regex from 0.13.37 (includes period)
             const traitMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (traitMatch) {
-               // Always start a new trait when pattern matches
                currentItem = { name: traitMatch[1].trim(), desc: traitMatch[2].trim() };
                this.importNPC.traits.push(currentItem);
             } else if (currentItem) {
-               // Doesn't match pattern, append if currentItem exists
                currentItem.desc += " " + line;
             } else if (line) {
-               // Orphan line
                console.warn("Assuming line is a trait name (missing period?):", line);
                currentItem = { name: line.trim(), desc: "" };
                this.importNPC.traits.push(currentItem);
             } else {
-               // Blank line, reset
                console.warn("Skipping potentially empty trait line:", line);
                currentItem = null;
             }
 
-            // --- NEW LINE-JOINING LOGIC (Based on User's Idea) ---
             if (currentItem && !currentItem.name.toLowerCase().startsWith('innate spellcasting') && currentItem.name.toLowerCase() !== 'spellcasting') {
                let nextLineRaw = peekLine(currentLineIndex);
                while (nextLineRaw !== null) {
                   const currentDesc = currentItem.desc.trim();
                   const nextLine = nextLineRaw.trim();
                   
-                  // Stop if current line ends in punctuation
                   if (/[.:]$/.test(currentDesc)) {
                      break; 
                   }
 
-                  // 1. Hyphenation Check
                   const hyphenMatch = currentDesc.match(/(\w+)-$/);
                   const nextLineLowerMatch = nextLine.match(/^([a-z])/);
                   if (hyphenMatch && nextLineLowerMatch) {
-                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine; // Remove hyphen and join
-                     currentLineIndex++; // Consume the next line
-                     nextLineRaw = peekLine(currentLineIndex); // Peek next
-                     continue; // Continue loop
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine;
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue; 
                   }
 
-                  // 2. Continuation Check (lowercase, space, or number)
-                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/); // Check raw line
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/);
                   if (continuationMatch) {
-                     currentItem.desc += " " + nextLine; // Append trimmed line
-                     currentLineIndex++; // Consume the next line
-                     nextLineRaw = peekLine(currentLineIndex); // Peek next
-                     continue; // Continue loop
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue; 
                   }
 
-                  // 3. No match, break
                   break;
                }
             }
-            // --- END NEW LINE-JOINING LOGIC ---
          }
          else if (currentSection === 'actions') {
             const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            // This is the regex from 0.13.37 (includes period)
             const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (spellcastingHeaderMatch) {
-                currentItem = null; // Spellcasting block always ends the previous item
-                // ... (rest of spellcasting parsing) ...
+                currentItem = null;
                 this.importNPC.hasSpellcasting = true;
                 this.importNPC.spellcastingPlacement = 'actions';
                 let boilerplate = spellcastingHeaderMatch[1];
@@ -295,121 +321,37 @@ window.importer = {
                         break;
                     }
                 }
-                currentLineIndex++; // Move past the last processed line
-                continue; // Go to next line
+                currentLineIndex++;
+                continue; 
             }
             else if (standardAttackMatch) {
-               // Standard attacks always start a new item
-               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() }; // Use full line
+               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
                this.importNPC.actions.actions.push(currentItem);
             }
             else if (actionMatch) {
-               // Regular Name. Desc pattern starts a new item
                currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
                this.importNPC.actions.actions.push(currentItem);
             }
             else if (currentItem) {
-               // Append if the line doesn't look like a new action or if we already have an item
                currentItem.desc += " " + line;
             } else {
-               // Orphan line
                console.warn("Could not parse action line (orphan line?):", line);
                currentItem = null;
             }
 
-            // --- NEW LINE-JOINING LOGIC (Actions) ---
             if (currentItem) {
                let nextLineRaw = peekLine(currentLineIndex);
                while (nextLineRaw !== null) {
                   const currentDesc = currentItem.desc.trim();
                   const nextLine = nextLineRaw.trim();
                   
-                  // Check start of *next* line for patterns that signal a *new* action
                   const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) ||
-                                            nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/); // 0.13.37 regex
-
-                  // Stop if current line ends in punctuation AND next line looks like a new action
-                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
-                     break;
-                  }
-
-                  // 1. Hyphenation Check
-                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
-                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
-                  if (hyphenMatch && nextLineLowerMatch) {
-                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine; // Remove hyphen and join
-                     currentLineIndex++;
-                     nextLineRaw = peekLine(currentLineIndex);
-                     continue;
-                  }
-
-                  // 2. Continuation Check (lowercase, space, or number)
-                  //    AND next line does NOT look like a new action
-                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/); // Check raw line
-                  if (continuationMatch && !nextLineIsNewAction) { 
-                     currentItem.desc += " " + nextLine; // Append trimmed line
-                     currentLineIndex++;
-                     nextLineRaw = peekLine(currentLineIndex);
-                     continue;
-                  }
-                  
-                  // 3. If it's a continuation *but* also matches a new action (e.g., "Hit."),
-                  //    let's append it anyway, as it's part of the current action description.
-                  if (continuationMatch && nextLineIsNewAction) {
-                     currentItem.desc += " " + nextLine; // Append trimmed line
-                     currentLineIndex++;
-                     nextLineRaw = peekLine(currentLineIndex);
-                     continue;
-                  }
-
-                  // 4. No match, break
-                  break;
-               }
-            }
-            // --- END NEW LINE-JOINING LOGIC (Actions) ---
-         }
-          else if (currentSection === 'legendary') {
-             // FIXED: Removed period . from the character class to stop it from consuming the delimiter
-             const legendaryMatch = line.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
-
-             if (legendaryMatch) {
-                 // If the line matches the pattern, it starts a new legendary action.
-                 let name = legendaryMatch[1].trim();
-                 let descText = legendaryMatch[3].trim();
-                 if (legendaryMatch[2]) {
-                     name += ` (${legendaryMatch[2]})`;
-                 }
-                 currentItem = { name: name, desc: descText };
-                 this.importNPC.actions['legendary-actions'].push(currentItem);
-             } else if (currentItem) {
-                 // Line does NOT match pattern, but we have an active item -> append.
-                 currentItem.desc += " " + line;
-             } else {
-                 // Line does NOT match patterns, and no active item -> boilerplate or orphan.
-                 if (!this.importNPC.legendaryBoilerplate && line.length > 50) { // Simple boilerplate check
-                     console.log(`Assuming line is legendary boilerplate: ${line}`);
-                     this.importNPC.legendaryBoilerplate = line;
-                 } else {
-                     console.warn("Could not parse legendary action line (orphan line?):", line);
-                 }
-                 currentItem = null; // Ensure currentItem remains null
-             }
-
-            // --- NEW LINE-JOINING LOGIC (Legendary) ---
-            if (currentItem) {
-               let nextLineRaw = peekLine(currentLineIndex);
-               while (nextLineRaw !== null) {
-                  const currentDesc = currentItem.desc.trim();
-                  const nextLine = nextLineRaw.trim();
-
-                  // FIXED: Removed period . from the character class here as well
-                  const nextLineIsNewAction = nextLine.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+                                            nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
                      break;
                   }
 
-                  // 1. Hyphenation Check
                   const hyphenMatch = currentDesc.match(/(\w+)-$/);
                   const nextLineLowerMatch = nextLine.match(/^([a-z])/);
                   if (hyphenMatch && nextLineLowerMatch) {
@@ -419,18 +361,16 @@ window.importer = {
                      continue;
                   }
 
-                  // 2. Continuation Check (lowercase, space, or number)
-                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/); // Check raw line
-                  if (continuationMatch && !nextLineIsNewAction) { // Only join if it doesn't look like a new action
-                     currentItem.desc += " " + nextLine; // Append trimmed line
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/);
+                  if (continuationMatch && !nextLineIsNewAction) { 
+                     currentItem.desc += " " + nextLine;
                      currentLineIndex++;
                      nextLineRaw = peekLine(currentLineIndex);
                      continue;
                   }
-
-                  // 3. If it's a continuation *but* also matches a new action
+                  
                   if (continuationMatch && nextLineIsNewAction) {
-                     currentItem.desc += " " + nextLine; // Append trimmed line
+                     currentItem.desc += " " + nextLine;
                      currentLineIndex++;
                      nextLineRaw = peekLine(currentLineIndex);
                      continue;
@@ -439,11 +379,73 @@ window.importer = {
                   break;
                }
             }
-            // --- END NEW LINE-JOINING LOGIC (Legendary) ---
+         }
+          else if (currentSection === 'legendary') {
+             const legendaryMatch = line.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+
+             if (legendaryMatch) {
+                 let name = legendaryMatch[1].trim();
+                 let descText = legendaryMatch[3].trim();
+                 if (legendaryMatch[2]) {
+                     name += ` (${legendaryMatch[2]})`;
+                 }
+                 currentItem = { name: name, desc: descText };
+                 this.importNPC.actions['legendary-actions'].push(currentItem);
+             } else if (currentItem) {
+                 currentItem.desc += " " + line;
+             } else {
+                 if (!this.importNPC.legendaryBoilerplate && line.length > 50) { 
+                     console.log(`Assuming line is legendary boilerplate: ${line}`);
+                     this.importNPC.legendaryBoilerplate = line;
+                 } else {
+                     console.warn("Could not parse legendary action line (orphan line?):", line);
+                 }
+                 currentItem = null;
+             }
+
+            if (currentItem) {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+
+                  const nextLineIsNewAction = nextLine.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+
+                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
+                     break;
+                  }
+
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine;
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/);
+                  if (continuationMatch && !nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  if (continuationMatch && nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++;
+                     nextLineRaw = peekLine(currentLineIndex);
+                     continue;
+                  }
+
+                  break;
+               }
+            }
          }
 
 
-         currentLineIndex++; // Move to the next line for the next iteration
+         currentLineIndex++; 
       } // End while loop
 
       // --- Post-Processing ---
@@ -453,8 +455,8 @@ window.importer = {
       ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
            this.importNPC[`${ability}Bonus`] = window.app.calculateAbilityBonus(this.importNPC[ability]);
        });
-      this.inferSavesAndSkills(); // This now fixes adjustments
-      window.app.calculateAllStats.call({ activeNPC: this.importNPC }); // This now uses fixed adjustments
+      this.inferSavesAndSkills();
+      window.app.calculateAllStats.call({ activeNPC: this.importNPC });
 
       this.updateImportViewport();
    },
@@ -476,14 +478,13 @@ window.importer = {
       const abilityDcMatch = desc.match(abilityDcRegex);
       if (abilityDcMatch) {
          this.importNPC.innateAbility = abilityDcMatch[1].toLowerCase();
-         // Store DC only if explicitly found, otherwise let it be auto-calculated
          if (abilityDcMatch[2]) {
             this.importNPC.innateDC = parseInt(abilityDcMatch[2], 10);
          } else {
-            this.importNPC.innateDC = undefined; // Ensure auto-calc happens
+            this.importNPC.innateDC = undefined;
          }
       } else {
-          this.importNPC.innateDC = undefined; // Ensure auto-calc if regex fails
+          this.importNPC.innateDC = undefined;
       }
 
       // Extract Components
@@ -495,20 +496,18 @@ window.importer = {
          this.importNPC.innateComponents = window.app.defaultNPC.innateComponents;
       }
       
-      // --- Extract Spells Block ---
       const spellsStartIndex = desc.indexOf(':');
       if (spellsStartIndex === -1) {
          console.warn("Could not find start of innate spell list (missing colon ':').");
-         this.importNPC.traits.splice(traitIndex, 1); // Remove trait even if spells fail
+         this.importNPC.traits.splice(traitIndex, 1);
          return;
       }
       const spellsBlock = desc.substring(spellsStartIndex + 1).trim();
 
-      // --- Parse Spells Block ---
-      const spellGroupRegex = /([\w\s\/]+):\s*([\s\S]*?)(?=\n?[\w\s\/]+:|\Z)/gi; // Allow '/' in freq
+      const spellGroupRegex = /([\w\s\/]+):\s*([\s\S]*?)(?=\n?[\w\s\/]+:|\Z)/gi;
       let match;
       let spellListIndex = 0;
-      this.importNPC.innateSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.innateSpells)); // Deep copy defaults
+      this.importNPC.innateSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.innateSpells));
 
       while ((match = spellGroupRegex.exec(spellsBlock)) !== null && spellListIndex < this.importNPC.innateSpells.length) {
           const freq = match[1].trim();
@@ -527,18 +526,17 @@ window.importer = {
       }
       for (let i = spellListIndex; i < this.importNPC.innateSpells.length; i++) {
          this.importNPC.innateSpells[i].freq = window.app.defaultNPC.innateSpells[i]?.freq || "";
-         this.importNPC.innateSpells[i].list = ""; // Ensure list is empty
+         this.importNPC.innateSpells[i].list = "";
       }
 
 
-      this.importNPC.traits.splice(traitIndex, 1); // Remove the processed trait
+      this.importNPC.traits.splice(traitIndex, 1);
    },
 
    // --- Parse Trait Spellcasting from Trait Description ---
    parseTraitSpellcastingTrait() {
-      // Find trait exactly named "Spellcasting" (case-insensitive)
       const traitIndex = this.importNPC.traits.findIndex(trait => trait?.name?.toLowerCase() === 'spellcasting');
-      if (traitIndex === -1) return; // Trait not found
+      if (traitIndex === -1) return;
 
       const trait = this.importNPC.traits[traitIndex];
       const desc = trait.desc || '';
@@ -635,13 +633,12 @@ window.importer = {
           }
       }
       
-      this.importNPC.traits.splice(traitIndex, 1); // Remove the processed trait
+      this.importNPC.traits.splice(traitIndex, 1);
    },
 
    // --- Parsing Helper Functions ---
 
    parseSpeed(line) {
-      // Reset speed values
       this.importNPC.speedBase = 0;
       this.importNPC.speedFly = 0;
       this.importNPC.flyHover = false;
@@ -649,7 +646,7 @@ window.importer = {
       this.importNPC.speedSwim = 0;
       this.importNPC.speedBurrow = 0;
 
-      const parts = line.replace(/^Speed\s*/i, '').split(','); // Remove "Speed " case-insensitively
+      const parts = line.replace(/^Speed\s*/i, '').split(',');
       parts.forEach(part => {
          part = part.trim();
          const match = part.match(/(\d+)/);
@@ -668,12 +665,11 @@ window.importer = {
             this.importNPC.speedBase = speedVal;
          }
       });
-      // Assign calculated speed string for viewport
-      this.importNPC.speed = window.app.calculateSpeedString(this.importNPC); // Assign formatted speed string
+      this.importNPC.speed = window.app.calculateSpeedString(this.importNPC);
 
       if (this.importNPC.speedBase === 0 && this.importNPC.speedFly === 0 && this.importNPC.speedClimb === 0 && this.importNPC.speedSwim === 0 && this.importNPC.speedBurrow === 0) {
-         this.importNPC.speedBase = 30; // Default base speed if none parsed
-         this.importNPC.speed = window.app.calculateSpeedString(this.importNPC); // Recalculate string
+         this.importNPC.speedBase = 30;
+         this.importNPC.speed = window.app.calculateSpeedString(this.importNPC);
       }
    },
 
@@ -686,9 +682,8 @@ window.importer = {
             const bonus = parseInt(match[2], 10);
             const abilityFull = Object.keys(window.app.defaultNPC).find(k => k.startsWith(abilityShort) && ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].includes(k));
             if (abilityFull) {
-               // Store the raw parsed bonus in the Adjust field temporarily
                this.importNPC[`${abilityFull}SavingThrowAdjust`] = bonus;
-               this.importNPC[`${abilityFull}SavingThrowProf`] = false; // Will be determined by inferSavesAndSkills
+               this.importNPC[`${abilityFull}SavingThrowProf`] = false;
             }
          }
       });
@@ -703,10 +698,9 @@ window.importer = {
             const bonus = parseInt(match[2], 10);
             const skillData = window.app.skills.find(s => s.name.toLowerCase() === skillName.toLowerCase());
             if (skillData) {
-               // Store the raw parsed bonus in the Adjust field temporarily
                this.importNPC[`skill_${skillData.id}_adjust`] = bonus;
-               this.importNPC[`skill_${skillData.id}_prof`] = false; // Will be determined by inferSavesAndSkills
-               this.importNPC[`skill_${skillData.id}_exp`] = false; // Will be determined by inferSavesAndSkills
+               this.importNPC[`skill_${skillData.id}_prof`] = false;
+               this.importNPC[`skill_${skillData.id}_exp`] = false;
             } else {
                console.warn("Unrecognized skill name found:", skillName);
             }
@@ -771,7 +765,7 @@ window.importer = {
        this.importNPC.senseDarkvision = 0;
        this.importNPC.senseTremorsense = 0;
        this.importNPC.senseTruesight = 0;
-       this.importNPC.passivePerception = 10; // Default
+       this.importNPC.passivePerception = 10;
 
       let consumedNextLine = false;
       let fullSensesString = sensesLine.replace(/^Senses\s*/i, '').trim();
@@ -881,15 +875,15 @@ window.importer = {
         if (skipInfer) {
             console.warn("Skipping save/skill proficiency inference due to low/undefined Proficiency Bonus.");
             ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
-                npc[`${ability}SavingThrowAdjust`] = 0; // Clear any previously parsed raw value
+                npc[`${ability}SavingThrowAdjust`] = 0;
                 npc[`${ability}SavingThrowProf`] = false;
             });
             window.app.skills.forEach(skill => {
-                npc[`skill_${skill.id}_adjust`] = 0; // Clear any previously parsed raw value
+                npc[`skill_${skill.id}_adjust`] = 0;
                 npc[`skill_${skill.id}_prof`] = false;
                 npc[`skill_${skill.id}_exp`] = false;
             });
-            npc.npcSkills = ""; // Clear the skills string
+            npc.npcSkills = "";
             return;
         }
 
@@ -897,15 +891,13 @@ window.importer = {
             const abilityBonus = npc[`${ability}Bonus`] ?? 0;
             const keyAdjust = `${ability}SavingThrowAdjust`;
             const keyProf = `${ability}SavingThrowProf`;
-            // Use the temporarily stored raw bonus, OR default to 0 if none was parsed
-            const parsedBonus = npc[keyAdjust] ?? null; // Use null to distinguish "not parsed"
+            const parsedBonus = npc[keyAdjust] ?? null;
 
-            // Reset flags and adjustment before calculation
             npc[keyProf] = false;
-            let finalAdjustment = 0; // Use a temp var
+            let finalAdjustment = 0;
 
-            if (parsedBonus === null) { // Skip if no save was listed
-               npc[keyAdjust] = 0; // Ensure it's 0
+            if (parsedBonus === null) {
+               npc[keyAdjust] = 0;
                return; 
             }
 
@@ -914,27 +906,24 @@ window.importer = {
 
             
             if (parsedBonus === expectedProf) {
-                 npc[keyProf] = true; // Matches proficiency bonus exactly
+                 npc[keyProf] = true;
                  finalAdjustment = 0;
             } else if (parsedBonus === expectedBase) {
-                 npc[keyProf] = false; // Matches base ability bonus exactly
+                 npc[keyProf] = false;
                  finalAdjustment = 0;
             } else {
-                 // Doesn't match exactly, calculate difference and store as adjustment
                  const diffFromProf = parsedBonus - expectedProf;
                  const diffFromBase = parsedBonus - expectedBase;
 
                  if (Math.abs(diffFromProf) <= Math.abs(diffFromBase)) {
-                     // Closer to proficiency bonus than base, assume proficiency + adjustment
                      npc[keyProf] = true;
-                     finalAdjustment = diffFromProf; // Store the difference as adjustment
+                     finalAdjustment = diffFromProf;
                  } else {
-                     // Closer to base ability bonus, assume no proficiency + adjustment
                      npc[keyProf] = false;
-                     finalAdjustment = diffFromBase; // Store the difference as adjustment
+                     finalAdjustment = diffFromBase;
                  }
             }
-            npc[keyAdjust] = finalAdjustment; // Assign final calculated adjustment
+            npc[keyAdjust] = finalAdjustment;
         });
 
         window.app.skills.forEach(skill => {
@@ -942,15 +931,14 @@ window.importer = {
             const keyAdjust = `skill_${skill.id}_adjust`;
             const keyProf = `skill_${skill.id}_prof`;
             const keyExp = `skill_${skill.id}_exp`;
-            const parsedBonus = npc[keyAdjust] ?? null; // Use null to distinguish "not parsed"
+            const parsedBonus = npc[keyAdjust] ?? null;
 
-            // Reset flags and adjustment before calculation
             npc[keyProf] = false;
             npc[keyExp] = false;
-            let finalAdjustment = 0; // Use a temp var
+            let finalAdjustment = 0;
 
-            if (parsedBonus === null) { // Skip if skill wasn't listed
-               npc[keyAdjust] = 0; // Ensure it's 0
+            if (parsedBonus === null) {
+               npc[keyAdjust] = 0;
                return; 
             }
 
@@ -959,20 +947,19 @@ window.importer = {
             const expectedExp = abilityBonus + (profBonus * 2);
 
             
-             if (parsedBonus === expectedExp) { // Matches expertise exactly
+             if (parsedBonus === expectedExp) {
                  npc[keyProf] = true;
                  npc[keyExp] = true;
                  finalAdjustment = 0;
-             } else if (parsedBonus === expectedProf) { // Matches proficiency exactly
+             } else if (parsedBonus === expectedProf) {
                  npc[keyProf] = true;
                  npc[keyExp] = false;
                  finalAdjustment = 0;
-             } else if (parsedBonus === expectedBase) { // Matches base exactly
+             } else if (parsedBonus === expectedBase) {
                  npc[keyProf] = false;
                  npc[keyExp] = false;
                  finalAdjustment = 0;
             } else {
-                // Doesn't match exactly, find the closest and apply adjustment
                 const diffFromBase = parsedBonus - expectedBase;
                 const diffFromProf = parsedBonus - expectedProf;
                 const diffFromExp = parsedBonus - expectedExp;
@@ -982,16 +969,15 @@ window.importer = {
                     { diff: Math.abs(diffFromProf), prof: true, exp: false, adj: diffFromProf },
                     { diff: Math.abs(diffFromBase), prof: false, exp: false, adj: diffFromBase }
                 ];
-                diffs.sort((a, b) => a.diff - b.diff); // Sort by smallest difference
+                diffs.sort((a, b) => a.diff - b.diff);
 
                 npc[keyProf] = diffs[0].prof;
                 npc[keyExp] = diffs[0].exp;
-                finalAdjustment = diffs[0].adj; // Store the difference as adjustment
+                finalAdjustment = diffs[0].adj;
             }
-            npc[keyAdjust] = finalAdjustment; // Assign final calculated adjustment
+            npc[keyAdjust] = finalAdjustment;
         });
         
-        // Removed redundant call to calculateAllSkills - it's handled by calculateAllStats
    },
 
 
@@ -1016,29 +1002,34 @@ window.importer = {
 
 // --- Event Listeners ---
    setupEventListeners() {
-      // ... (Event listeners remain the same)
       const cancelBtn = document.getElementById('import-cancel-btn');
       const confirmBtn = document.getElementById('import-confirm-btn');
       const clearBtn = document.getElementById('import-clear-btn');
       const appendBtn = document.getElementById('import-append-btn');
-      const textArea = document.getElementById('import-text-area');
+      const textArea = window.ui.importTextArea; // Use cached element
+      const filterSelect = window.ui.importFilterSelect; // Use cached element
 
       if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeImportModal());
       if (confirmBtn) confirmBtn.addEventListener('click', () => this.confirmImport());
+      
+      // MODIFIED: Clear Button
       if (clearBtn) clearBtn.addEventListener('click', () => {
          if (textArea) textArea.value = '';
-         this.parseText();
+         this.originalPastedText = null; // <-- NEW
+         if (filterSelect) filterSelect.value = 'none'; // <-- NEW
+         this.parseText(); // Parse the empty string to clear viewport
       });
 
+      // MODIFIED: Append Button
       if (appendBtn) appendBtn.addEventListener('click', async () => {
          try {
-            let text = await navigator.clipboard.readText();
-            if (window.importCleaner && typeof window.importCleaner.cleanImportText === 'function') {
-               text = window.importCleaner.cleanImportText(text);
-            }
+            const text = await navigator.clipboard.readText();
+            // We append the raw text. The cleaning happens on process.
             if (textArea) {
-               textArea.value += (textArea.value ? '\n\n' : '') + text;
-               this.parseText();
+               this.originalPastedText = (this.originalPastedText || textArea.value) + (this.originalPastedText ? '\n\n' : '') + text;
+               textArea.value = this.originalPastedText; // Put raw text in text area
+               if (filterSelect) filterSelect.value = 'none'; // Reset filter
+               this.processTextForImport(); // Process the appended raw text
             }
          } catch (err) {
             console.error('Failed to read clipboard contents: ', err);
@@ -1046,31 +1037,31 @@ window.importer = {
          }
       });
 
+      // NEW: Filter Select Listener
+      if (filterSelect) {
+         filterSelect.addEventListener('change', () => {
+            this.processTextForImport();
+         });
+      }
+
       if (textArea) {
+         // MODIFIED: Paste Listener
          textArea.addEventListener('paste', (e) => {
             e.preventDefault();
-            let text = (e.clipboardData || window.clipboardData).getData('text/plain');
-
-            if (window.importCleaner && typeof window.importCleaner.cleanImportText === 'function') {
-               text = window.importCleaner.cleanImportText(text);
-            }
-
-            const start = textArea.selectionStart;
-            const end = textArea.selectionEnd;
-            textArea.value = textArea.value.substring(0, start) + text + textArea.value.substring(end);
-            textArea.selectionStart = textArea.selectionEnd = start + text.length;
-
-             this.parseText();
+            const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            
+            this.originalPastedText = text; // <-- NEW: Store raw text
+            textArea.value = text; // <-- NEW: Put raw text in text area
+            
+            if (filterSelect) filterSelect.value = 'none'; // <-- NEW: Reset filter
+            this.processTextForImport(); // <-- NEW: Run full process
          });
 
-         let debounceTimer;
-         textArea.addEventListener('input', () => {
-             clearTimeout(debounceTimer);
-             debounceTimer = setTimeout(() => {
-                 this.parseText();
-             }, 300);
-         });
+         // MODIFIED: Remove debounced input listener
+         // let debounceTimer;
+         // textArea.addEventListener('input', () => { ... });
 
+         // MODIFIED: Tweak hotkeys to re-run process
          textArea.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
                e.preventDefault();
@@ -1082,7 +1073,9 @@ window.importer = {
                   textArea.value = textArea.value.substring(0, start) + joinedText + textArea.value.substring(end);
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + joinedText.length;
-                  this.parseText();
+                  // Make manual edit permanent for subsequent filter runs
+                  this.originalPastedText = textArea.value; 
+                  this.processTextForImport(); // Re-process
                }
             }
             else if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
@@ -1095,7 +1088,9 @@ window.importer = {
                   textArea.value = textArea.value.substring(0, start) + cycledText + textArea.value.substring(end);
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + cycledText.length;
-                  this.parseText();
+                  // Make manual edit permanent
+                  this.originalPastedText = textArea.value;
+                  this.processTextForImport(); // Re-process
                }
             }
          });
@@ -1141,7 +1136,7 @@ window.importer = {
       if (species) { NPCTypeString += ` (${species})`; }
       if (alignment) { NPCTypeString += `, ${alignment}`; }
 
-      const NPCspeed = speed || ""; // Use the formatted speed string
+      const NPCspeed = speed || "";
       const NPCstr = strength || "10";
       const NPCstrbo = strengthBonus !== undefined ? (strengthBonus >= 0 ? `+${strengthBonus}` : strengthBonus) : "+?";
       const NPCdex = dexterity || "10";
@@ -1363,7 +1358,3 @@ window.importer = {
       importViewportElement.innerHTML = generatedHtml;
    }
 };
-
-// Ensure init is called when the DOM is ready (if not already handled in main.js)
-// document.addEventListener('DOMContentLoaded', () => window.importer.init());
-// ^^ This might be redundant if main.js calls importer.init() after ui.init()
