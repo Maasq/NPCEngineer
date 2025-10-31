@@ -131,7 +131,8 @@ window.importer = {
             currentItem = null;
             currentLineIndex++;
             let nextLine = peekLine(currentLineIndex-1); // Peek next line (raw)
-            if (nextLine && nextLine.trim() && !nextLine.trim().match(/^([\w\s().,'’–—\/]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/)) {
+            // FIXED: Explicitly check for boilerplate text
+            if (nextLine && nextLine.trim() && nextLine.trim().toLowerCase().startsWith("the ")) {
                 this.importNPC.legendaryBoilerplate = nextLine.trim();
                 currentLineIndex++; // Consume the boilerplate line
             }
@@ -201,7 +202,7 @@ window.importer = {
              }
          }
          else if (currentSection === 'traits') {
-            // MODIFIED: Added / to character class
+            // This is the regex from 0.13.37 (includes period)
             const traitMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (traitMatch) {
@@ -262,7 +263,7 @@ window.importer = {
          else if (currentSection === 'actions') {
             const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            // MODIFIED: Added / to character class
+            // This is the regex from 0.13.37 (includes period)
             const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (spellcastingHeaderMatch) {
@@ -325,7 +326,7 @@ window.importer = {
                   
                   // Check start of *next* line for patterns that signal a *new* action
                   const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) ||
-                                            nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/); // Added /
+                                            nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/); // 0.13.37 regex
 
                   // Stop if current line ends in punctuation AND next line looks like a new action
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
@@ -368,8 +369,8 @@ window.importer = {
             // --- END NEW LINE-JOINING LOGIC (Actions) ---
          }
           else if (currentSection === 'legendary') {
-             // MODIFIED: Added / to character class
-             const legendaryMatch = line.match(/^([\w\s().,'’–—\/]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+             // FIXED: Removed period . from the character class to stop it from consuming the delimiter
+             const legendaryMatch = line.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
 
              if (legendaryMatch) {
                  // If the line matches the pattern, it starts a new legendary action.
@@ -386,6 +387,7 @@ window.importer = {
              } else {
                  // Line does NOT match patterns, and no active item -> boilerplate or orphan.
                  if (!this.importNPC.legendaryBoilerplate && line.length > 50) { // Simple boilerplate check
+                     console.log(`Assuming line is legendary boilerplate: ${line}`);
                      this.importNPC.legendaryBoilerplate = line;
                  } else {
                      console.warn("Could not parse legendary action line (orphan line?):", line);
@@ -400,8 +402,8 @@ window.importer = {
                   const currentDesc = currentItem.desc.trim();
                   const nextLine = nextLineRaw.trim();
 
-                  // MODIFIED: Added / to character class
-                  const nextLineIsNewAction = nextLine.match(/^([\w\s().,'’–—\/]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
+                  // FIXED: Removed period . from the character class here as well
+                  const nextLineIsNewAction = nextLine.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
 
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
                      break;
