@@ -2,6 +2,7 @@
 window.importer = {
    importNPC: null,
    htmlLoaded: false,
+   originalClipboardText: "", // NEW: Store raw text
 
    // --- Helper Function ---
    /**
@@ -36,6 +37,7 @@ window.importer = {
       }
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
       this.importNPC.name = "Import Preview";
+      this.originalClipboardText = ""; // Clear stored text
 
       const textArea = document.getElementById('import-text-area');
       if (textArea) textArea.value = '';
@@ -49,6 +51,7 @@ window.importer = {
    closeImportModal() {
       window.app.closeModal('import-modal');
       this.importNPC = null;
+      this.originalClipboardText = ""; // Clear stored text
    },
 
    /**
@@ -60,15 +63,15 @@ window.importer = {
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
 
       const textArea = document.getElementById('import-text-area');
-      const text = textArea ? textArea.value : ''; // Don't trim yet, cleaner handles it
-      if (!text) {
+      // CHANGED: Read directly from textarea (it's already clean)
+      const cleanedText = textArea ? textArea.value : '';
+      if (!cleanedText) {
          this.importNPC.name = "Import Preview";
          this.updateImportViewport();
          return;
       }
 
-      // Use the cleaner function FIRST
-      const cleanedText = window.importCleaner.cleanImportText(text);
+      // REMOVED: Cleaner call was moved to paste/append listeners
       
       const lines = cleanedText.split('\n'); // Split cleaned text
       if (lines.length === 0 || lines.every(line => !line.trim())) {
@@ -1027,17 +1030,19 @@ window.importer = {
       if (confirmBtn) confirmBtn.addEventListener('click', () => this.confirmImport());
       if (clearBtn) clearBtn.addEventListener('click', () => {
          if (textArea) textArea.value = '';
+         this.originalClipboardText = ""; // CHANGED: Clear stored text
          this.parseText();
       });
 
       if (appendBtn) appendBtn.addEventListener('click', async () => {
          try {
             let text = await navigator.clipboard.readText();
+            this.originalClipboardText = text; // CHANGED: Store raw text
             if (window.importCleaner && typeof window.importCleaner.cleanImportText === 'function') {
-               text = window.importCleaner.cleanImportText(text);
+               text = window.importCleaner.cleanImportText(text); // Clean it
             }
             if (textArea) {
-               textArea.value += (textArea.value ? '\n\n' : '') + text;
+               textArea.value += (textArea.value ? '\n\n' : '') + text; // Append cleaned text
                this.parseText();
             }
          } catch (err) {
@@ -1050,14 +1055,16 @@ window.importer = {
          textArea.addEventListener('paste', (e) => {
             e.preventDefault();
             let text = (e.clipboardData || window.clipboardData).getData('text/plain');
+            
+            this.originalClipboardText = text; // CHANGED: Store raw text
 
             if (window.importCleaner && typeof window.importCleaner.cleanImportText === 'function') {
-               text = window.importCleaner.cleanImportText(text);
+               text = window.importCleaner.cleanImportText(text); // Clean it
             }
 
             const start = textArea.selectionStart;
             const end = textArea.selectionEnd;
-            textArea.value = textArea.value.substring(0, start) + text + textArea.value.substring(end);
+            textArea.value = textArea.value.substring(0, start) + text + textArea.value.substring(end); // Insert cleaned text
             textArea.selectionStart = textArea.selectionEnd = start + text.length;
 
              this.parseText();
@@ -1065,6 +1072,9 @@ window.importer = {
 
          let debounceTimer;
          textArea.addEventListener('input', () => {
+             // CHANGED: When user types manually, clear the stored original text
+             // as it no longer matches the paste/append action.
+             this.originalClipboardText = ""; 
              clearTimeout(debounceTimer);
              debounceTimer = setTimeout(() => {
                  this.parseText();
@@ -1082,6 +1092,7 @@ window.importer = {
                   textArea.value = textArea.value.substring(0, start) + joinedText + textArea.value.substring(end);
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + joinedText.length;
+                  this.originalClipboardText = ""; // Manual edit
                   this.parseText();
                }
             }
@@ -1095,6 +1106,7 @@ window.importer = {
                   textArea.value = textArea.value.substring(0, start) + cycledText + textArea.value.substring(end);
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + cycledText.length;
+                  this.originalClipboardText = ""; // Manual edit
                   this.parseText();
                }
             }
