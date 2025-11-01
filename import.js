@@ -2,7 +2,7 @@
 window.importer = {
    importNPC: null,
    htmlLoaded: false,
-   originalPastedText: null, // <-- To store the raw text
+   originalPastedText: null, // <-- NEW: To store the raw text
 
    // --- Helper Function ---
    /**
@@ -37,13 +37,13 @@ window.importer = {
       }
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
       this.importNPC.name = "Import Preview";
-      this.originalPastedText = null; // <-- Reset original text
+      this.originalPastedText = null; // <-- NEW: Reset original text
 
       const textArea = window.ui.importTextArea; // Use cached UI element
       if (textArea) textArea.value = '';
 
       const filterSelect = window.ui.importFilterSelect; // Use cached UI element
-      if (filterSelect) filterSelect.value = 'none'; // <-- Reset filter
+      if (filterSelect) filterSelect.value = 'none'; // <-- NEW: Reset filter
 
       this.updateImportViewport();
 
@@ -55,29 +55,23 @@ window.importer = {
    closeImportModal() {
       window.app.closeModal('import-modal');
       this.importNPC = null;
-      this.originalPastedText = null; // <-- Clear text on close
+      this.originalPastedText = null; // <-- NEW: Clear text on close
    },
 
    /**
     * NEW: Central function to process text using filters and cleaners.
     */
    processTextForImport() {
-      if (!this.htmlLoaded || !window.filters || !window.importCleaner) {
-         console.error("Importer dependencies not loaded (filters or importCleaner).");
-         return;
-      }
+      if (!this.htmlLoaded || !window.filters || !window.importCleaner) return;
 
       const textArea = window.ui.importTextArea;
       const filterSelect = window.ui.importFilterSelect;
 
-      if (!textArea || !filterSelect) {
-         console.error("Import modal UI elements not found.");
-         return;
-      }
+      if (!textArea || !filterSelect) return;
 
       const rawText = this.originalPastedText;
-      if (rawText === null || rawText === undefined) {
-         // If no original text, parse whatever is in the text area (e.g., after clearing)
+      if (rawText === null) {
+         // If no original text, just parse whatever is in the text area (e.g., after clearing)
          this.parseText();
          return;
       }
@@ -1023,19 +1017,17 @@ window.importer = {
          if (textArea) textArea.value = '';
          this.originalPastedText = null; // <-- NEW
          if (filterSelect) filterSelect.value = 'none'; // <-- NEW
-         this.processTextForImport(); // <-- MODIFIED: Call new function
+         this.parseText(); // Parse the empty string to clear viewport
       });
 
       // MODIFIED: Append Button
       if (appendBtn) appendBtn.addEventListener('click', async () => {
          try {
             const text = await navigator.clipboard.readText();
+            // We append the raw text. The cleaning happens on process.
             if (textArea) {
-               // *** THIS IS THE FIX ***
-               // Base the append action on the *current* original text, NOT the text area value
-               const baseText = this.originalPastedText || '';
-               this.originalPastedText = baseText + (baseText ? '\n\n' : '') + text;
-               
+               this.originalPastedText = (this.originalPastedText || textArea.value) + (this.originalPastedText ? '\n\n' : '') + text;
+               textArea.value = this.originalPastedText; // Put raw text in text area
                if (filterSelect) filterSelect.value = 'none'; // Reset filter
                this.processTextForImport(); // Process the appended raw text
             }
@@ -1059,12 +1051,13 @@ window.importer = {
             const text = (e.clipboardData || window.clipboardData).getData('text/plain');
             
             this.originalPastedText = text; // <-- NEW: Store raw text
+            textArea.value = text; // <-- NEW: Put raw text in text area
             
             if (filterSelect) filterSelect.value = 'none'; // <-- NEW: Reset filter
             this.processTextForImport(); // <-- NEW: Run full process
          });
 
-         // REMOVED: Debounced input listener
+         // MODIFIED: Remove debounced input listener
          // let debounceTimer;
          // textArea.addEventListener('input', () => { ... });
 
@@ -1313,7 +1306,7 @@ window.importer = {
          <div class="container">
             <div class="cap"></div>
             <div class="npcname"><b>${NPCName}</b></div>
-            <div class.npctype"><i>${NPCTypeString}</i></div>
+            <div class="npctype"><i>${NPCTypeString}</i></div>
             <div class="npcdiv">
                <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
             </div>
