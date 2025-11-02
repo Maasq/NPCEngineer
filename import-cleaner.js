@@ -109,6 +109,8 @@ function cleanImportText(inputText) {
       { find: /w ere /g, replace: 'were ' }, 
       { find: / wea pon /g, replace: ' weapon ' }, 
       { find: / wea pon\./g, replace: ' weapon.' }, 
+      { find: / followin g /g, replace: ' following ' }, 
+      { find: / followin g\./g, replace: ' following.' }, 
       { find: / xp/gi, replace: ' XP' }, 
       { find: /0XP/g, replace: '0 XP' }, 
       { find: /{/g, replace: '(' },
@@ -166,6 +168,7 @@ function cleanImportText(inputText) {
       { find: 'Challenges (1,800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'Challenges (1800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'Challenges (1 800 XP)', replace: 'Challenge 5 (1,800 XP)' },
+      { find: 'E~i/', replace: 'Evil' },
 
        // General cleanup & Whitespace around punctuation
       { find: /\s+([.,:;])/g, replace: '$1'}, // Remove space BEFORE .,:;
