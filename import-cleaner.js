@@ -7,13 +7,11 @@
  */
 function toTitleCase(str) {
    if (!str) return "";
-   // Basic Title Case, doesn't handle articles/prepositions specially.
    return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 }
 
 /**
  * Converts a string to Sentence case.
- * Capitalizes the first letter of the first word and keeps the rest lower.
  * @param {string} str - The string to convert.
  * @returns {string} The Sentence cased string.
  */
@@ -33,17 +31,11 @@ function cleanImportText(inputText) {
 
    let fixme = inputText;
 
-   // --- NEW: Colon Protection Logic (from AHK script) ---
-   // This section converts non-structural colons to periods to aid parsing.
-   // It first protects known structural colons by replacing them with a placeholder.
-   // Using global regex replacement (e.g., /find/g) is the JS equivalent of AHK's "All" flag.
-
    const protect = [
-      // From user's snippet
       { find: /components:/gi, replace: 'components~##~' },
       { find: /component:/gi, replace: 'component~##~' },
       { find: /spells:/gi, replace: 'spells~##~' },
-      { find: /Weapon Attack:\r\n/g, replace: 'Weapon Attack~##~ \r\n' }, // Specific case from snippet
+      { find: /Weapon Attack:\r\n/g, replace: 'Weapon Attack~##~ \r\n' },
       { find: /Weapon Attack:/gi, replace: 'Weapon Attack~##~' },
       { find: /Spell Attack:/gi, replace: 'Spell Attack~##~' },
       { find: /will:/gi, replace: 'will~##~' },
@@ -56,7 +48,7 @@ function cleanImportText(inputText) {
       { find: /slots\):/gi, replace: 'slots)~##~' },
       { find: /slot\):/g, replace: 'slot)~##~' },
       { find: /Hit:/gi, replace: 'Hit~##~' },
-      { find: /\/Day:/g, replace: '/day~##~' }, // Corrected case
+      { find: /\/Day:/g, replace: '/day~##~' },
       { find: /\/day:/g, replace: '/day~##~' },
    ];
 
@@ -64,15 +56,10 @@ function cleanImportText(inputText) {
    for (const { find, replace } of protect) {
       fixme = fixme.replace(find, replace);
    }
-
    // Replace all remaining (non-protected) colons with periods
    fixme = fixme.replace(/:/g, '.');
-
    // Restore protected colons
    fixme = fixme.replace(/~##~/g, ':');
-
-   // --- End of Colon Protection Logic ---
-
 
    // --- Ligatures & Special Characters ---
    const replacements = [
@@ -84,16 +71,16 @@ function cleanImportText(inputText) {
       { find: /\u00A0/g, replace: ' ' },
 
       // Normalize Dashes (En and Em)
-      { find: /[\u2013\u2014]/g, replace: '-' }, // En-dash (–), Em-dash (—) -> Hyphen (-)
+      { find: /[\u2013\u2014]/g, replace: '-' },
 
       // Standardize Ellipses
-      { find: /\.\.\./g, replace: '\u2026' }, // Three periods -> Ellipsis character (…)
-
+      { find: /\.\.\./g, replace: '\u2026' },
+      
       // Ligatures
       { find: /\uFB02/g, replace: 'fl' }, // liga_fl (ﬂ)
       { find: /\uFB01/g, replace: 'fi' }, // liga_fi (ﬁ)
-      { find: /\uFB00/g, replace: 'ff' }, // liga_ff (ﬀ) // Corrected AHK map
-      { find: /\u2010/g, replace: '-' }, // liga_hy (‐) - Hyphen (redundant but safe)
+      { find: /\uFB00/g, replace: 'ff' }, // liga_ff (ﬀ) 
+      { find: /\u2010/g, replace: '-' }, // liga_hy (‐) - Hyphen 
 
       // Smart Quotes / Primes -> Standard Quotes
       { find: /[\u2018\u2019\u201B\u2032]/g, replace: "'" }, // liga_sq1-4 (‘ ’ ‛ ′) -> '
@@ -104,7 +91,6 @@ function cleanImportText(inputText) {
 
       // --- Common OCR/Formatting Fixes ---
       // Normalize Headers (Remove colon, fix case variations)
-      // NOTE: User's script handles this by NOT protecting these.
       { find: /Armor Class:?/gi, replace: 'Armor Class' },
       { find: /Armour Class:?/gi, replace: 'Armor Class' },
       { find: /Hit Points:?/gi, replace: 'Hit Points' },
@@ -113,37 +99,38 @@ function cleanImportText(inputText) {
       { find: /Skills:?/gi, replace: 'Skills' },
       { find: /Senses:?/gi, replace: 'Senses' },
       { find: /Languages:?/gi, replace: 'Languages' },
-      { find: /Challenge:?/gi, replace: 'Challenge' }, // General Challenge normalization
-      { find: /Vulnerabilities:?/gi, replace: 'Vulnerabilities' }, // Added from AHK list
-      { find: /Resistances:?/gi, replace: 'Resistances' },         // Added from AHK list
-      { find: /Immunities:?/gi, replace: 'Immunities' },           // Added from AHK list
+      { find: /Challenge:?/gi, replace: 'Challenge' },
+      { find: /Vulnerabilities:?/gi, replace: 'Vulnerabilities' },
+      { find: /Resistances:?/gi, replace: 'Resistances' },
+      { find: /Immunities:?/gi, replace: 'Immunities' }, 
 
       // Word spacing / character errors
-      { find: /o f /g, replace: 'of ' }, // Note: Added trailing space
-      { find: /w ere /g, replace: 'were ' }, // Note: Added trailing space
-      { find: / xp/gi, replace: ' XP' }, // Ensure XP is uppercase
-      { find: /0XP/g, replace: '0 XP' }, // Add space after CR 0
+      { find: /o f /g, replace: 'of ' }, 
+      { find: /w ere /g, replace: 'were ' }, 
+      { find: / wea pon /g, replace: ' weapon ' }, 
+      { find: / wea pon\./g, replace: ' weapon.' }, 
+      { find: / xp/gi, replace: ' XP' }, 
+      { find: /0XP/g, replace: '0 XP' }, 
       { find: /{/g, replace: '(' },
       { find: /}/g, replace: ')' },
-      // Note: The colon-protection logic above should handle Weapon Attack:
-      // We still need these to fix cases where a period was used instead of a colon
-      { find: /Melee Weapon Attack\.(?=\s)/gi, replace: 'Melee Weapon Attack:' }, // Fix period to colon
-      { find: /Melee Weapon Attack\.\n/gi, replace: 'Melee Weapon Attack: ' }, // Fix period to colon with newline
-      { find: /Ranged Weapon Attack\.(?=\s)/gi, replace: 'Ranged Weapon Attack:' }, // Added for Ranged
-      { find: /Ranged Weapon Attack\.\n/gi, replace: 'Ranged Weapon Attack: ' }, // Added for Ranged
-      { find: /Melee Spell Attack\.(?=\s)/gi, replace: 'Melee Spell Attack:' }, // Added for Spell
-      { find: /Melee Spell Attack\.\n/gi, replace: 'Melee Spell Attack: ' }, // Added for Spell
-      { find: /Ranged Spell Attack\.(?=\s)/gi, replace: 'Ranged Spell Attack:' }, // Added for Spell
-      { find: /Ranged Spell Attack\.\n/gi, replace: 'Ranged Spell Attack: ' }, // Added for Spell
+      { find: /Melee Weapon Attack\.(?=\s)/gi, replace: 'Melee Weapon Attack:' }, 
+      { find: /Melee Weapon Attack\.\n/gi, replace: 'Melee Weapon Attack: ' }, 
+      { find: /Ranged Weapon Attack\.(?=\s)/gi, replace: 'Ranged Weapon Attack:' }, 
+      { find: /Ranged Weapon Attack\.\n/gi, replace: 'Ranged Weapon Attack: ' }, 
+      { find: /Melee Spell Attack\.(?=\s)/gi, replace: 'Melee Spell Attack:' }, 
+      { find: /Melee Spell Attack\.\n/gi, replace: 'Melee Spell Attack: ' },
+      { find: /Ranged Spell Attack\.(?=\s)/gi, replace: 'Ranged Spell Attack:' },
+      { find: /Ranged Spell Attack\.\n/gi, replace: 'Ranged Spell Attack: ' }, 
       { find: / fre /g, replace: ' fire ' },
       { find: /f re /g, replace: ' fire ' },
-      { find: / fi re /g, replace: ' fire ' }, // Need spaces around word
+      { find: / fi re /g, replace: ' fire ' }, 
       { find: /Dam age /g, replace: 'Damage ' },
-      { find: /ft\. ,/g, replace: 'ft.,' }, // Fix space before comma after ft.
-      { find: /ft \./g, replace: 'ft.' }, // Fix space before period
-      { find: /~/g, replace: 'r' }, // Often OCR error for 'r'
+      { find: /ft\. ,/g, replace: 'ft.,' }, 
+      { find: /ft \./g, replace: 'ft.' }, 
+      { find: /~/g, replace: 'r' }, 
       { find: /[Jjƒ]\/Day/gi, replace: '/Day' }, // J/f -> /
-      { find: /[Ll]1\/Day/gi, replace: '1/Day' }, // L/l -> 1 for 1/Day
+      { find: /[Ll]1\/Day/gi, replace: '1/Day' }, 
+      { find: /(\d)JDay/gi, replace: '$1/Day' },
       { find: /fitnd/gi, replace: 'fiend' },
       { find: /choolic/gi, replace: 'chaotic' },
       { find: /Armo\.r/gi, replace: 'Armor' },
@@ -170,10 +157,8 @@ function cleanImportText(inputText) {
       { find: /(Actions|ACTIONS)\s*\n/g, replace: '$1\n' }, // Remove space after ACTIONS before newline
 
       // Challenge Rating formatting (adjust if needed)
-      // (\d)\( -> $1 ( : Add space between digit and opening parenthesis
       { find: /(\d)\(/g, replace: '$1 (' },
-      // Challenge(.*)\((\d+)\) -> Challenge$1($2 XP) : Add XP inside parentheses
-      // Made robust: Handles existing XP, commas in XP, optional space before paren
+      // Add XP inside parentheses. Handles existing XP, commas in XP, optional space before parentheses
       { find: /Challenge(.*)\s*\((\d{1,3}(?:,\d{3})*)(?:\s*XP)?\)/gi, replace: 'Challenge$1($2 XP)' },
 
       // --- SPECIFIC OCR FIX: Using specific string replacements ---
@@ -193,28 +178,27 @@ function cleanImportText(inputText) {
       { find: /;;+/g, replace: ';'}, // Replace ';;' or more with ';'
 
       // Space before newline
-      { find: / +\n/g, replace: '\n'}, // Remove space(s) right before a newline
+      { find: / +\n/g, replace: '\n'},
 
       // Multiple Spaces / Blank Lines - Run near the end
-      { find: / {2,}/g, replace: ' ' }, // Replace multiple spaces with one
-      { find: /\n{2,}/g, replace: '\n' }, // Remove blank lines (replace multiple LFs with one)
+      { find: / {2,}/g, replace: ' ' }, 
+      { find: /\n{2,}/g, replace: '\n' },
    ];
-
+   
    for (const { find, replace } of replacements) {
       if (typeof find === 'string') {
-         fixme = fixme.replace(find, replace); // string replacement (first occurrence only)
+         fixme = fixme.split(find).join(replace); // This is a global replacement for simple strings
       } else {
          fixme = fixme.replace(find, replace); // Regex replacement (respects 'g' flag)
       }
    }
 
    // Final pass to ensure space after punctuation handles edge cases after multiple space removal
-   // --- MODIFIED REGEX: Now excludes digits \d in the negative lookahead ---
+   
    fixme = fixme.replace(/([.,:;])(?![\n\s.,:;)\d]|$) /g, '$1 ');
+   fixme = fixme.trim(); 
 
-   fixme = fixme.trim(); // Trim final result
-
-   // --- NEW: Title Case the first line (the Name) ---
+   // Title Case the first line (the Name) 
    let lines = fixme.split('\n');
    if (lines.length > 0) {
       lines[0] = toTitleCase(lines[0]); // Use the function defined in this file
@@ -230,12 +214,12 @@ function cleanImportText(inputText) {
  * @returns {string} The processed text as a single paragraph.
  */
 function joinSelectedLines(selectedText) {
-   if (!selectedText) return ''; // Return empty string if input is empty
-
+   if (!selectedText) return ''; 
+   
    // 1. Normalize line endings to LF (\n)
    let processed = selectedText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-   // 2. Remove blank lines within the selection (sequences of newline + whitespace + newline)
+   // 2. Remove blank lines within the selection
    processed = processed.replace(/\n\s*\n/g, '\n');
 
    // 3. Replace all remaining LF characters with a single space
@@ -262,11 +246,9 @@ function cycleSelectedTextCase(selectedText) {
    const firstChar = selectedText.charAt(0);
    const isLower = selectedText === selectedText.toLowerCase();
    const isUpper = selectedText === selectedText.toUpperCase();
-   // Improved Title Case check: Check if *most* words start with uppercase
    const words = selectedText.split(' ');
    const titleCaseWordCount = words.filter(word => word.length === 0 || word[0] === word[0].toUpperCase()).length;
    const isTitle = !isUpper && !isLower && titleCaseWordCount >= words.length / 2; // Heuristic
-   // Sentence case check: First char upper, rest mostly lower (simplistic)
    const isSentence = !isLower && !isUpper && !isTitle && firstChar === firstChar.toUpperCase() && selectedText.slice(1) === selectedText.slice(1).toLowerCase();
 
    if (isTitle) {

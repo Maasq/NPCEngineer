@@ -3,7 +3,7 @@ window.importer = {
    importNPC: null,
    htmlLoaded: false,
    originalClipboardText: "", // Store raw text
-   isDirty: false, // NEW: Track manual edits
+   isDirty: false, // Track manual edits
 
    // --- Helper Function ---
    /**
@@ -48,6 +48,10 @@ window.importer = {
       const filterSelect = document.getElementById('import-filter-select');
       if (filterSelect) filterSelect.value = 'noFilter';
       
+      // NEW: Reset filter status text
+      const filterStatus = document.getElementById('import-filter-status');
+      if (filterStatus) filterStatus.innerHTML = '&nbsp;';
+      
       this.updateImportViewport();
 
       window.app.openModal('import-modal');
@@ -71,23 +75,40 @@ window.importer = {
 
       const filterSelect = document.getElementById('import-filter-select');
       const textArea = document.getElementById('import-text-area');
+      const filterStatus = document.getElementById('import-filter-status'); // NEW
       const selectedFilter = filterSelect ? filterSelect.value : 'noFilter';
       
       let textToProcess = this.originalClipboardText; // Start with the raw stored text
       
       // 1. Apply the selected filter
       let filteredText;
+      let filterName = "No filter"; // NEW
       switch (selectedFilter) {
          case 'pdfFilter1':
             filteredText = window.filters.applyPdfFilter1(textToProcess);
+            filterName = "PDF Filter 1"; // NEW
             break;
          case 'pdfFilter2':
             filteredText = window.filters.applyPdfFilter2(textToProcess);
+            filterName = "PDF Filter 2"; // NEW
+            break;
+         case 'pdfFilter3':
+            filteredText = window.filters.applyPdfFilter3(textToProcess);
+            filterName = "PDF Filter 3"; // NEW
             break;
          case 'noFilter':
          default:
             filteredText = window.filters.applyNoFilter(textToProcess);
             break;
+      }
+      
+      // NEW: Update filter status text
+      if (filterStatus) {
+         if (selectedFilter !== 'noFilter') {
+            filterStatus.textContent = `${filterName} applied.`;
+         } else {
+            filterStatus.innerHTML = '&nbsp;';
+         }
       }
       
       // 2. Run filtered text through the main cleaner
@@ -182,6 +203,27 @@ window.importer = {
             currentSection = 'actions';
             currentItem = null;
             currentLineIndex++;
+            continue;
+         } else if (lowerLine === 'bonus actions') {
+            currentSection = 'bonusActions';
+            currentItem = null;
+            currentLineIndex++;
+            continue;
+         } else if (lowerLine === 'reactions') {
+            currentSection = 'reactions';
+            currentItem = null;
+            currentLineIndex++;
+            continue;
+         } else if (lowerLine === 'lair actions') {
+            currentSection = 'lairActions';
+            currentItem = null;
+            currentLineIndex++;
+            // Check for boilerplate
+            let nextLine = peekLine(currentLineIndex-1);
+            if (nextLine && nextLine.trim() && nextLine.trim().toLowerCase().startsWith("on initiative")) {
+                this.importNPC.lairBoilerplate = nextLine.trim();
+                currentLineIndex++; // Consume the boilerplate line
+            }
             continue;
          } else if (lowerLine === 'legendary actions') {
             currentSection = 'legendary';
@@ -425,7 +467,144 @@ window.importer = {
             }
             // --- END NEW LINE-JOINING LOGIC (Actions) ---
          }
-          else if (currentSection === 'legendary') {
+         // --- START NEW BLOCKS ---
+         else if (currentSection === 'bonusActions') {
+            const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
+            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+
+            if (standardAttackMatch) {
+               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
+               this.importNPC.actions['bonus-actions'].push(currentItem);
+            }
+            else if (actionMatch) {
+               currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
+               this.importNPC.actions['bonus-actions'].push(currentItem);
+            }
+            else if (currentItem) {
+               currentItem.desc += " " + line;
+            } else {
+               console.warn("Could not parse bonus action line (orphan line?):", line);
+               currentItem = null;
+            }
+            // Line joining
+            if (currentItem) {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) break;
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/);
+                  if (continuationMatch && !nextLineIsNewAction) { 
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  if (continuationMatch && nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  break;
+               }
+            }
+         }
+         else if (currentSection === 'reactions') {
+            const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
+            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+
+            if (standardAttackMatch) {
+               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
+               this.importNPC.actions.reactions.push(currentItem);
+            }
+            else if (actionMatch) {
+               currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
+               this.importNPC.actions.reactions.push(currentItem);
+            }
+            else if (currentItem) {
+               currentItem.desc += " " + line;
+            } else {
+               console.warn("Could not parse reaction line (orphan line?):", line);
+               currentItem = null;
+            }
+            // Line joining
+            if (currentItem) {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) break;
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/);
+                  if (continuationMatch && !nextLineIsNewAction) { 
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  if (continuationMatch && nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  break;
+               }
+            }
+         }
+         else if (currentSection === 'lairActions') {
+            const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
+            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+
+            if (standardAttackMatch) {
+               currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
+               this.importNPC.actions['lair-actions'].push(currentItem);
+            }
+            else if (actionMatch) {
+               currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
+               this.importNPC.actions['lair-actions'].push(currentItem);
+            }
+            else if (currentItem) {
+               currentItem.desc += " " + line;
+            } else {
+               console.warn("Could not parse lair action line (orphan line?):", line);
+               currentItem = null;
+            }
+            // Line joining
+            if (currentItem) {
+               let nextLineRaw = peekLine(currentLineIndex);
+               while (nextLineRaw !== null) {
+                  const currentDesc = currentItem.desc.trim();
+                  const nextLine = nextLineRaw.trim();
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+                  if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) break;
+                  const hyphenMatch = currentDesc.match(/(\w+)-$/);
+                  const nextLineLowerMatch = nextLine.match(/^([a-z])/);
+                  if (hyphenMatch && nextLineLowerMatch) {
+                     currentItem.desc = currentDesc.substring(0, currentDesc.length - 1) + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  const continuationMatch = nextLineRaw.match(/^( ?[a-z0-9])/);
+                  if (continuationMatch && !nextLineIsNewAction) { 
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  if (continuationMatch && nextLineIsNewAction) {
+                     currentItem.desc += " " + nextLine;
+                     currentLineIndex++; nextLineRaw = peekLine(currentLineIndex); continue;
+                  }
+                  break;
+               }
+            }
+         }
+         // --- END NEW BLOCKS ---
+         else if (currentSection === 'legendary') {
              // FIXED: Removed period . from the character class to stop it from consuming the delimiter
              const legendaryMatch = line.match(/^([\w\s(),'’–—\/-]+?)(?:\s*\((Costs\s+\d+\s+Actions?)\))?\.\s*(.*)/);
 
@@ -800,7 +979,7 @@ window.importer = {
                part.split(',').forEach(t => {
                    const cleanType = t.trim().toLowerCase();
                    if (window.app.damageTypes.includes(cleanType)) {
-                       npc[`${type}_${t}`] = true;
+                       npc[`${type}_${cleanType}`] = true;
                    } else if (cleanType) {
                        console.warn(`Unknown damage type "${cleanType}" encountered during ${type} parsing.`);
                    }
@@ -1080,6 +1259,7 @@ window.importer = {
       const appendBtn = document.getElementById('import-append-btn');
       const textArea = document.getElementById('import-text-area');
       const filterSelect = document.getElementById('import-filter-select');
+      const filterStatus = document.getElementById('import-filter-status'); // NEW
 
       if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeImportModal());
       if (confirmBtn) confirmBtn.addEventListener('click', () => this.confirmImport());
@@ -1087,8 +1267,9 @@ window.importer = {
       if (clearBtn) clearBtn.addEventListener('click', () => {
          if (textArea) textArea.value = '';
          this.originalClipboardText = "";
-         this.isDirty = false; // NEW
+         this.isDirty = false;
          if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
+         if (filterStatus) filterStatus.innerHTML = '&nbsp;'; // NEW: Reset status
          this.parseText();
       });
 
@@ -1097,7 +1278,7 @@ window.importer = {
             let text = await navigator.clipboard.readText();
             // Append raw text
             this.originalClipboardText = (this.originalClipboardText ? this.originalClipboardText + '\n\n' : '') + text;
-            this.isDirty = false; // NEW: Pasting is not a manual edit
+            this.isDirty = false;
             
             // Call the central function
             this.applyFilterAndParse(); 
@@ -1112,13 +1293,13 @@ window.importer = {
       if (filterSelect) {
          filterSelect.addEventListener('change', () => {
             if (this.isDirty) {
-               // NEW: Confirm before overwriting manual edits
+               // Confirm before overwriting manual edits
                window.app.showConfirm(
                   "Overwrite Manual Edits?",
                   "Changing the filter will re-process the original text and overwrite your manual edits. Are you sure?",
                   () => {
                      // On Confirm:
-                     this.isDirty = false; // Flag is reset by applyFilterAndParse
+                     this.isDirty = false; // Will be reset by applyFilterAndParse
                      this.applyFilterAndParse();
                   },
                   () => {
@@ -1139,7 +1320,7 @@ window.importer = {
             let text = (e.clipboardData || window.clipboardData).getData('text/plain');
             
             this.originalClipboardText = text; // Store raw text
-            this.isDirty = false; // NEW: Pasting is not a manual edit
+            this.isDirty = false;
 
             // Call the new central function
             this.applyFilterAndParse();
@@ -1147,11 +1328,15 @@ window.importer = {
 
          let debounceTimer;
          textArea.addEventListener('input', () => {
-             this.isDirty = true; // NEW: User is typing
+             this.isDirty = true; // User is typing
              
-             // NEW: Reset filter dropdown to 'No Filter' if user types manually
+             // Reset filter dropdown to 'No Filter' if user types manually
              if (filterSelect) {
                 filterSelect.value = 'noFilter';
+             }
+             // NEW: Clear status text on manual input
+             if (filterStatus) {
+                filterStatus.innerHTML = '&nbsp;';
              }
              
              clearTimeout(debounceTimer);
@@ -1175,6 +1360,7 @@ window.importer = {
                   
                   this.isDirty = true; // Manual edit
                   if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
+                  if (filterStatus) filterStatus.innerHTML = '&nbsp;'; // NEW: Reset status
                   this.parseText();
                }
             }
@@ -1191,6 +1377,7 @@ window.importer = {
 
                   this.isDirty = true; // Manual edit
                   if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
+                  if (filterStatus) filterStatus.innerHTML = '&nbsp;'; // NEW: Reset status
                   this.parseText();
                }
             }
@@ -1408,7 +1595,7 @@ window.importer = {
             <div class="cap"></div>
             <div class="npcname"><b>${NPCName}</b></div>
             <div class="npctype"><i>${NPCTypeString}</i></div>
-            <div classD="npcdiv">
+            <div class="npcdiv">
                <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
             </div>
             <div class="npctop"><b>Armor Class</b> ${NPCac}</div>

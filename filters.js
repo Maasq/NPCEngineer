@@ -16,11 +16,8 @@ function applyNoFilter(text) {
  */
 function applyPdfFilter1(text) {
    
-   // --- START DEBUG: Append filter name to NPC name ---
-   // Replaces the first newline sequence with the appended name and a newline.
-   // This correctly handles both \r\n and \n.
-   let processedText = text.replace(/(\r\n|\n)/, " PDF Filter 1$1");
-   // --- END DEBUG ---
+   // Normalize newlines first
+   let processedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
    // Find the multi-line stat block (STR...CHA).
    let statBlockMatch = processedText.match(/STR\n.*CHA\n/s);
@@ -76,10 +73,8 @@ function applyPdfFilter1(text) {
  */
 function applyPdfFilter2(text) {
 
-   // --- START DEBUG: Append filter name to NPC name ---
-   // Replaces the first newline sequence with the appended name and a newline.
-   let processedText = text.replace(/(\r\n|\n)/, " PDF Filter 2$1");
-   // --- END DEBUG ---
+   // Normalize newlines first
+   let processedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
    // General whitespace and alignment cleanup.
    processedText = processedText.replace(/  CHA /g, " CHA");
@@ -157,10 +152,88 @@ function applyPdfFilter2(text) {
    return processedText;
 }
 
+/**
+ * Applies 'PDF Filter 3'
+ * @param {string} text The raw text.
+ * @returns {string} The processed text.
+ */
+function applyPdfFilter3(text) {
+   // Normalize newlines first
+   let processedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+   const stats = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+   const statValues = [];
+   let statsFound = false;
+
+   for (const stat of stats) {
+      // Regex: ^[optional-whitespace]STAT[optional-whitespace]\n(CAPTURE_LINE)\n
+      // 'm' flag = ^ matches start of line
+      const statRegex = new RegExp('^\\s*' + stat + '\\s*\\n(.*?)\\n', 'm');
+      const match = processedText.match(statRegex);
+
+      if (match) {
+         statsFound = true;
+         // Clean up the stat value: "(- 2)" -> "(-2)"
+         const cleanedValue = match[1].trim().replace(/(\([+-])\s+(\d+\))/g, '$1$2');
+         statValues.push(cleanedValue);
+         // Remove the matched lines
+         processedText = processedText.replace(match[0], "");
+      } else {
+         // Handle case where stat is at the very end of the file
+         const statAtEndRegex = new RegExp('^\\s*' + stat + '\\s*\\n(.*?)$', 'm');
+         const endMatch = processedText.match(statAtEndRegex);
+         if (endMatch) {
+            statsFound = true;
+            // Clean up the stat value: "(- 2)" -> "(-2)"
+            const cleanedValue = endMatch[1].trim().replace(/(\([+-])\s+(\d+\))/g, '$1$2');
+            statValues.push(cleanedValue);
+            processedText = processedText.replace(endMatch[0], "");
+         } else {
+            // Stat not found, push a default
+            console.warn(`PDF Filter 3: Could not find stat ${stat}.`);
+            statValues.push("10 (+0)"); // Default fallback
+         }
+      }
+   }
+
+   // If we found any stats, reconstruct and insert them
+   if (statsFound) {
+      const statHeader = "STR DEX CON INT WIS CHA\n";
+      const statLine = statValues.join(' ') + "\n";
+      const newStatBlock = statHeader + statLine;
+      
+      // Find the 'Speed' line to insert after.
+      const speedLineMatch = processedText.match(/Speed.*?ft\.\n/);
+      
+      if (speedLineMatch) {
+         const speedLine = speedLineMatch[0];
+         const speedLineEndPos = speedLineMatch.index + speedLine.length;
+         
+         const headerPart = processedText.substring(0, speedLineEndPos);
+         const restOfText = processedText.substring(speedLineEndPos);
+         
+         // Reconstruct the text with the fixed stat line
+         processedText = headerPart + newStatBlock + restOfText;
+      } else {
+         console.warn("PDF Filter 3: Could not find 'Speed' line to insert stats after.");
+         // Fallback: insert it after the first line (name)
+         let firstLineEnd = processedText.indexOf('\n') + 1;
+         if (firstLineEnd > 0) {
+            processedText = processedText.substring(0, firstLineEnd) + newStatBlock + processedText.substring(firstLineEnd);
+         } else {
+            processedText = processedText + newStatBlock; // Append if no newline
+         }
+      }
+   }
+   
+   return processedText;
+}
+
 
 // Expose filters on the window object
 window.filters = {
    applyNoFilter,
    applyPdfFilter1,
-   applyPdfFilter2
+   applyPdfFilter2,
+   applyPdfFilter3
 };
