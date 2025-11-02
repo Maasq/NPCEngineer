@@ -15,14 +15,21 @@ function applyNoFilter(text) {
  * @returns {string} The processed text.
  */
 function applyPdfFilter1(text) {
+   
+   // --- START DEBUG: Append filter name to NPC name ---
+   // Replaces the first newline sequence with the appended name and a newline.
+   // This correctly handles both \r\n and \n.
+   let processedText = text.replace(/(\r\n|\n)/, " PDF Filter 1$1");
+   // --- END DEBUG ---
+
    // Find the multi-line stat block (STR...CHA).
-   let statBlockMatch = text.match(/STR\n.*CHA\n/s);
+   let statBlockMatch = processedText.match(/STR\n.*CHA\n/s);
    
    if (statBlockMatch) {
       let statBlock = statBlockMatch[0];
       
       // Remove the original malformed block.
-      text = text.replace(statBlock, "");
+      processedText = processedText.replace(statBlock, "");
       
       // Flatten the block by removing newlines.
       let flattenedStats = statBlock.replace(/\n/g, "");
@@ -39,27 +46,27 @@ function applyPdfFilter1(text) {
       let rebuiltStatLine = "STR DEX CON INT WIS CHA " + flattenedStats + "\n";
       
       // Find the 'Speed' line to insert after.
-      let speedLineMatch = text.match(/Speed.*?ft\.\n/);
+      let speedLineMatch = processedText.match(/Speed.*?ft\.\n/);
       
       if (speedLineMatch) {
          let speedLine = speedLineMatch[0];
          let speedLineEndPos = speedLineMatch.index + speedLine.length;
          
          // Get the text from the start to the end of the speed line.
-         let headerPart = text.substring(0, speedLineEndPos);
+         let headerPart = processedText.substring(0, speedLineEndPos);
          
          // Get the rest of the text.
-         let restOfText = text.substring(speedLineEndPos);
+         let restOfText = processedText.substring(speedLineEndPos);
          
          // Reconstruct the text with the fixed stat line.
-         text = headerPart + rebuiltStatLine + restOfText;
+         processedText = headerPart + rebuiltStatLine + restOfText;
       }
    }
    
    // Fix 'AC:' (first instance only).
-   text = text.replace("AC:", "Armor Class");
+   processedText = processedText.replace("AC:", "Armor Class");
    
-   return text;
+   return processedText;
 }
 
 /**
@@ -68,7 +75,11 @@ function applyPdfFilter1(text) {
  * @returns {string} The processed text.
  */
 function applyPdfFilter2(text) {
-   let processedText = text;
+
+   // --- START DEBUG: Append filter name to NPC name ---
+   // Replaces the first newline sequence with the appended name and a newline.
+   let processedText = text.replace(/(\r\n|\n)/, " PDF Filter 2$1");
+   // --- END DEBUG ---
 
    // General whitespace and alignment cleanup.
    processedText = processedText.replace(/  CHA /g, " CHA");

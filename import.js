@@ -3,6 +3,7 @@ window.importer = {
    importNPC: null,
    htmlLoaded: false,
    originalClipboardText: "", // Store raw text
+   isDirty: false, // NEW: Track manual edits
 
    // --- Helper Function ---
    /**
@@ -38,11 +39,12 @@ window.importer = {
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
       this.importNPC.name = "Import Preview";
       this.originalClipboardText = ""; // Clear stored text
+      this.isDirty = false; // Clear dirty flag
 
       const textArea = document.getElementById('import-text-area');
       if (textArea) textArea.value = '';
       
-      // NEW: Reset filter dropdown to 'No Filter' when modal opens
+      // Reset filter dropdown to 'No Filter' when modal opens
       const filterSelect = document.getElementById('import-filter-select');
       if (filterSelect) filterSelect.value = 'noFilter';
       
@@ -57,6 +59,7 @@ window.importer = {
       window.app.closeModal('import-modal');
       this.importNPC = null;
       this.originalClipboardText = ""; // Clear stored text
+      this.isDirty = false; // Clear dirty flag
    },
 
    /**
@@ -100,7 +103,10 @@ window.importer = {
          textArea.value = cleanedText;
       }
       
-      // 4. Call parseText()
+      // 4. Mark as 'not dirty' since text matches filter
+      this.isDirty = false;
+      
+      // 5. Call parseText()
       this.parseText();
    },
 
@@ -794,7 +800,7 @@ window.importer = {
                part.split(',').forEach(t => {
                    const cleanType = t.trim().toLowerCase();
                    if (window.app.damageTypes.includes(cleanType)) {
-                       npc[`${type}_${cleanType}`] = true;
+                       npc[`${type}_${t}`] = true;
                    } else if (cleanType) {
                        console.warn(`Unknown damage type "${cleanType}" encountered during ${type} parsing.`);
                    }
@@ -1073,14 +1079,15 @@ window.importer = {
       const clearBtn = document.getElementById('import-clear-btn');
       const appendBtn = document.getElementById('import-append-btn');
       const textArea = document.getElementById('import-text-area');
-      const filterSelect = document.getElementById('import-filter-select'); // NEW
+      const filterSelect = document.getElementById('import-filter-select');
 
       if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeImportModal());
       if (confirmBtn) confirmBtn.addEventListener('click', () => this.confirmImport());
       
       if (clearBtn) clearBtn.addEventListener('click', () => {
          if (textArea) textArea.value = '';
-         this.originalClipboardText = ""; // CHANGED: Clear stored text
+         this.originalClipboardText = "";
+         this.isDirty = false; // NEW
          if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
          this.parseText();
       });
@@ -1088,9 +1095,11 @@ window.importer = {
       if (appendBtn) appendBtn.addEventListener('click', async () => {
          try {
             let text = await navigator.clipboard.readText();
-            this.originalClipboardText = text; // CHANGED: Store raw text
+            // Append raw text
+            this.originalClipboardText = (this.originalClipboardText ? this.originalClipboardText + '\n\n' : '') + text;
+            this.isDirty = false; // NEW: Pasting is not a manual edit
             
-            // CHANGED: Call the new central function
+            // Call the central function
             this.applyFilterAndParse(); 
             
          } catch (err) {
@@ -1099,11 +1108,28 @@ window.importer = {
          }
       });
       
-      // NEW: Add listener for the filter dropdown
+      // Add listener for the filter dropdown
       if (filterSelect) {
          filterSelect.addEventListener('change', () => {
-            // When filter changes, re-run the process
-            this.applyFilterAndParse();
+            if (this.isDirty) {
+               // NEW: Confirm before overwriting manual edits
+               window.app.showConfirm(
+                  "Overwrite Manual Edits?",
+                  "Changing the filter will re-process the original text and overwrite your manual edits. Are you sure?",
+                  () => {
+                     // On Confirm:
+                     this.isDirty = false; // Flag is reset by applyFilterAndParse
+                     this.applyFilterAndParse();
+                  },
+                  () => {
+                     // On Cancel:
+                     filterSelect.value = 'noFilter'; // Revert dropdown
+                  }
+               );
+            } else {
+               // Not dirty, just apply the filter
+               this.applyFilterAndParse();
+            }
          });
       }
 
@@ -1112,16 +1138,16 @@ window.importer = {
             e.preventDefault();
             let text = (e.clipboardData || window.clipboardData).getData('text/plain');
             
-            this.originalClipboardText = text; // CHANGED: Store raw text
+            this.originalClipboardText = text; // Store raw text
+            this.isDirty = false; // NEW: Pasting is not a manual edit
 
-            // CHANGED: Call the new central function
+            // Call the new central function
             this.applyFilterAndParse();
          });
 
          let debounceTimer;
          textArea.addEventListener('input', () => {
-             // CHANGED: When user types manually, clear the stored original text
-             this.originalClipboardText = ""; 
+             this.isDirty = true; // NEW: User is typing
              
              // NEW: Reset filter dropdown to 'No Filter' if user types manually
              if (filterSelect) {
@@ -1130,6 +1156,7 @@ window.importer = {
              
              clearTimeout(debounceTimer);
              debounceTimer = setTimeout(() => {
+                 // Just parse the text, don't re-filter/clean
                  this.parseText();
              }, 300);
          });
@@ -1145,7 +1172,8 @@ window.importer = {
                   textArea.value = textArea.value.substring(0, start) + joinedText + textArea.value.substring(end);
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + joinedText.length;
-                  this.originalClipboardText = ""; // Manual edit
+                  
+                  this.isDirty = true; // Manual edit
                   if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
                   this.parseText();
                }
@@ -1160,7 +1188,8 @@ window.importer = {
                   textArea.value = textArea.value.substring(0, start) + cycledText + textArea.value.substring(end);
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + cycledText.length;
-                  this.originalClipboardText = ""; // Manual edit
+
+                  this.isDirty = true; // Manual edit
                   if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
                   this.parseText();
                }
@@ -1377,9 +1406,9 @@ window.importer = {
       const generatedHtml = `
          <div class="container">
             <div class="cap"></div>
-            <div class.npcname"><b>${NPCName}</b></div>
+            <div class="npcname"><b>${NPCName}</b></div>
             <div class="npctype"><i>${NPCTypeString}</i></div>
-            <div class="npcdiv">
+            <div classD="npcdiv">
                <svg width="100%" height="5"><use href="#divider-swoosh"></use></svg>
             </div>
             <div class="npctop"><b>Armor Class</b> ${NPCac}</div>
@@ -1407,7 +1436,7 @@ window.importer = {
             </div>
             ${saves ? `<div class="npctop"><b>Saving Throws</b> ${saves}</div>` : ''}
             ${npcSkills ? `<div class="npctop"><b>Skills</b> ${npcSkills}</div>` : ''}
-            ${vulnerabilities ? `<div class"npctop"><b>Damage Vulnerabilities</b> ${vulnerabilities}</div>` : ''}
+            ${vulnerabilities ? `<div class="npctop"><b>Damage Vulnerabilities</b> ${vulnerabilities}</div>` : ''}
             ${resistances ? `<div class="npctop"><b>Damage Resistances</b> ${resistances}</div>` : ''}
             ${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
             ${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
