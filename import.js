@@ -301,8 +301,8 @@ window.importer = {
              }
          }
          else if (currentSection === 'traits') {
-            // This is the regex from 0.13.37 (includes period)
-            const traitMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            // *** FIXED: Regex now requires trait to start with an uppercase letter ***
+            const traitMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (traitMatch) {
                // Always start a new trait when pattern matches
@@ -362,8 +362,8 @@ window.importer = {
          else if (currentSection === 'actions') {
             const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            // This is the regex from 0.13.37 (includes period)
-            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            // *** FIXED: Regex now requires action to start with an uppercase letter ***
+            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (spellcastingHeaderMatch) {
                 currentItem = null; // Spellcasting block always ends the previous item
@@ -425,7 +425,7 @@ window.importer = {
                   
                   // Check start of *next* line for patterns that signal a *new* action
                   const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) ||
-                                            nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/); // 0.13.37 regex
+                                            nextLine.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED: Use stricter regex ***
 
                   // Stop if current line ends in punctuation AND next line looks like a new action
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) {
@@ -470,7 +470,7 @@ window.importer = {
          // --- START NEW BLOCKS ---
          else if (currentSection === 'bonusActions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -492,7 +492,7 @@ window.importer = {
                while (nextLineRaw !== null) {
                   const currentDesc = currentItem.desc.trim();
                   const nextLine = nextLineRaw.trim();
-                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) break;
                   const hyphenMatch = currentDesc.match(/(\w+)-$/);
                   const nextLineLowerMatch = nextLine.match(/^([a-z])/);
@@ -515,7 +515,7 @@ window.importer = {
          }
          else if (currentSection === 'reactions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -537,7 +537,7 @@ window.importer = {
                while (nextLineRaw !== null) {
                   const currentDesc = currentItem.desc.trim();
                   const nextLine = nextLineRaw.trim();
-                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) break;
                   const hyphenMatch = currentDesc.match(/(\w+)-$/);
                   const nextLineLowerMatch = nextLine.match(/^([a-z])/);
@@ -560,7 +560,7 @@ window.importer = {
          }
          else if (currentSection === 'lairActions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -582,7 +582,7 @@ window.importer = {
                while (nextLineRaw !== null) {
                   const currentDesc = currentItem.desc.trim();
                   const nextLine = nextLineRaw.trim();
-                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([\w\s().,'’–—\/]+?)\.\s*(.*)/);
+                  const nextLineIsNewAction = nextLine.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):/i) || nextLine.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
                   if (/[.:]$/.test(currentDesc) && nextLineIsNewAction) break;
                   const hyphenMatch = currentDesc.match(/(\w+)-$/);
                   const nextLineLowerMatch = nextLine.match(/^([a-z])/);
