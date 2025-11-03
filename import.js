@@ -738,10 +738,26 @@ window.importer = {
          this.importNPC.traits.splice(traitIndex, 1); // Remove trait even if spells fail
          return;
       }
-      const spellsBlock = desc.substring(spellsStartIndex + 1).trim();
+      
+      // *** START FIX: Smarter spell block end detection ***
+      const sectionKeywords = [' ACTIONS', ' REACTIONS', ' LEGENDARY ACTIONS', ' LAIR ACTIONS', ' BONUS ACTIONS'];
+      let spellsEndIndex = desc.length;
+      
+      for (const keyword of sectionKeywords) {
+         const keywordIndex = desc.indexOf(keyword, spellsStartIndex);
+         if (keywordIndex !== -1 && keywordIndex < spellsEndIndex) {
+            spellsEndIndex = keywordIndex;
+         }
+      }
+      // *** END FIX ***
+
+      const spellsBlock = desc.substring(spellsStartIndex + 1, spellsEndIndex).trim();
 
       // --- Parse Spells Block ---
-      const spellGroupRegex = /([\w\s\/]+):\s*([\s\S]*?)(?=\n?[\w\s\/]+:|\Z)/gi; // Allow '/' in freq
+      // *** START FIX: Regex lookahead now accepts \s* (any whitespace) and stops at end of string ($) ***
+      // This regex is now more specific to only match valid frequencies and not "polymorph 1/day"
+      const spellGroupRegex = /(At will|(?:\d+\s*\/\s*day(?:\s+each)?)):\s*([\s\S]*?)(?=(\s*(?:At will|(?:\d+\s*\/\s*day(?:\s+each)?)):)|$)/gi;
+      // *** END FIX ***
       let match;
       let spellListIndex = 0;
       this.importNPC.innateSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.innateSpells)); // Deep copy defaults
@@ -750,16 +766,13 @@ window.importer = {
           const freq = match[1].trim();
           const spellsRaw = match[2].trim();
 
-          if (freq.toLowerCase() === 'at will' || freq.match(/^\d+\s*\/\s*day(?:\s+each)?/i)) {
-              this.importNPC.innateSpells[spellListIndex].freq = freq;
-              const spellNames = spellsRaw.split(',')
-                  .map(spell => spell.replace(/<\/?i>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/\*/g, '').trim().toLowerCase())
-                  .filter(spell => spell);
-              this.importNPC.innateSpells[spellListIndex].list = spellNames.join(', ');
-              spellListIndex++;
-          } else {
-             console.warn(`Skipping potentially invalid frequency line in innate spellcasting: "${freq}: ${spellsRaw}"`)
-          }
+          // Validation is now implicitly handled by the regex
+          this.importNPC.innateSpells[spellListIndex].freq = freq;
+          const spellNames = spellsRaw.split(',')
+              .map(spell => spell.replace(/<\/?i>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/\*/g, '').trim().toLowerCase())
+              .filter(spell => spell);
+          this.importNPC.innateSpells[spellListIndex].list = spellNames.join(', ');
+          spellListIndex++;
       }
       for (let i = spellListIndex; i < this.importNPC.innateSpells.length; i++) {
          this.importNPC.innateSpells[i].freq = window.app.defaultNPC.innateSpells[i]?.freq || "";
@@ -824,14 +837,41 @@ window.importer = {
          this.importNPC.traits.splice(traitIndex, 1);
          return;
       }
-      const markedSpellIndex = desc.lastIndexOf('\n*');
-      const spellsEndIndex = markedSpellIndex !== -1 ? markedSpellIndex : desc.length;
+      
+      // *** START FIX: Smarter spell block end detection ***
+      // Use regex to find the start of the *next* section, even if flattened
+      const sectionKeywords = [' ACTIONS', ' REACTIONS', ' LEGENDARY ACTIONS', ' LAIR ACTIONS', ' BONUS ACTIONS'];
+      let spellsEndIndex = desc.length;
+      let markedSpellIndex = -1;
+      
+      // Find the earliest occurrence of a new section keyword *after* the colon
+      for (const keyword of sectionKeywords) {
+         // Look for the keyword preceded by a space (since text is flattened)
+         const keywordIndex = desc.indexOf(keyword, spellsStartIndex);
+         if (keywordIndex !== -1 && keywordIndex < spellsEndIndex) {
+            spellsEndIndex = keywordIndex;
+         }
+      }
+
+      // Also check for marked spell descriptions (which can come *after* the list)
+      // Look for " *" (space followed by asterisk)
+      const lastMarkedSpellIndex = desc.lastIndexOf(' *');
+      if (lastMarkedSpellIndex !== -1 && lastMarkedSpellIndex > spellsStartIndex) {
+         // Check if this marked spell line is *before* the detected section keyword
+         if (lastMarkedSpellIndex < spellsEndIndex) {
+             spellsEndIndex = lastMarkedSpellIndex;
+         }
+         markedSpellIndex = lastMarkedSpellIndex; // Store this regardless
+      }
+      // *** END FIX ***
+      
       const spellsBlock = desc.substring(spellsStartIndex + 1, spellsEndIndex).trim();
 
       this.importNPC.traitCastingList = Array(10).fill('');
       this.importNPC.traitCastingSlots = Array(9).fill('0');
 
-      const cantripRegex = /Cantrips\s*\(at will\):\s*([\s\S]*?)(?=(\n?\d+(?:st|nd|rd|th)\s+level)|\Z)/i;
+      // *** START FIX: Regex lookahead now accepts \s* (any whitespace) and stops at end of string ($) ***
+      const cantripRegex = /Cantrips\s*\(at will\):\s*([\s\S]*?)(?=(\s*\n?\d+(?:st|nd|rd|th)\s+level)|$)/i;
       const cantripMatch = spellsBlock.match(cantripRegex);
       if (cantripMatch) {
           const spellsRaw = cantripMatch[1].trim();
@@ -843,7 +883,8 @@ window.importer = {
          console.warn("Could not find Cantrips line in spellcasting block.")
       }
 
-      const levelRegexGlobal = /(\d+)(?:st|nd|rd|th)\s+level\s*\((\d+)\s+slots?\):\s*([\s\S]*?)(?=(\n?\d+(?:st|nd|rd|th)\s+level)|\Z)/gi;
+      const levelRegexGlobal = /(\d+)(?:st|nd|rd|th)\s+level\s*\((\d+)\s+slots?\):\s*([\s\S]*?)(?=(\s*\n?\d+(?:st|nd|rd|th)\s+level)|$)/gi;
+      // *** END FIX ***
       let levelMatchGlobal;
 
       while ((levelMatchGlobal = levelRegexGlobal.exec(spellsBlock)) !== null) {
@@ -861,13 +902,15 @@ window.importer = {
       }
 
       this.importNPC.traitCastingMarked = '';
-      if (markedSpellIndex !== -1) {
+      if (markedSpellIndex !== -1) { // Check if we ever found a marked spell line
           this.importNPC.traitCastingMarked = desc.substring(markedSpellIndex).trim();
-      } else {
-          const lines = desc.split('\n');
-          const lastLine = lines[lines.length -1]?.trim();
-          if (lastLine?.startsWith('*')) {
-             this.importNPC.traitCastingMarked = lastLine;
+          // Clean up marked text so it doesn't include ACTIONS
+          const sectionKeywords = ['ACTIONS', 'REACTIONS', 'LEGENDARY ACTIONS', 'LAIR ACTIONS', 'BONUS ACTIONS'];
+          for (const keyword of sectionKeywords) {
+             const keywordIndex = this.importNPC.traitCastingMarked.indexOf(keyword);
+             if (keywordIndex !== -1) {
+                this.importNPC.traitCastingMarked = this.importNPC.traitCastingMarked.substring(0, keywordIndex).trim();
+             }
           }
       }
       
@@ -1446,7 +1489,9 @@ window.importer = {
 
       function formatSpellList(listString) {
           if (!listString) return "";
-          const spellRegex = /([\w\s'-]+)(\*?)/g;
+          // *** START FIX: Added () to the character class to include parentheses ***
+          const spellRegex = /([\w\s'()-]+)(\*?)/g;
+          // *** END FIX ***
           let match;
           let result = [];
           while ((match = spellRegex.exec(listString)) !== null) {

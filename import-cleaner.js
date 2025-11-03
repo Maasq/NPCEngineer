@@ -111,6 +111,7 @@ function cleanImportText(inputText) {
       { find: / wea pon\./g, replace: ' weapon.' }, 
       { find: / followin g /g, replace: ' following ' }, 
       { find: / followin g\./g, replace: ' following.' }, 
+      { find: /Med ium/g, replace: 'Medium' }, 
       { find: / xp/gi, replace: ' XP' }, 
       { find: /0XP/g, replace: '0 XP' }, 
       { find: /{/g, replace: '(' },
@@ -157,6 +158,7 @@ function cleanImportText(inputText) {
       { find: / savin g /g, replace: ' saving ' }, // Word spacing
       { find: /\.\s*\n/g, replace: '.\n' }, // Remove space after period before newline
       { find: /(Actions|ACTIONS)\s*\n/g, replace: '$1\n' }, // Remove space after ACTIONS before newline
+      { find: /(Challenge\s+[\d\/]+\s*\([\d,]+\s*XP\))\s*\n\s*(Proficiency Bonus\s*[+-]\d+)/gi, replace: '$1 $2' },
 
       // Challenge Rating formatting (adjust if needed)
       { find: /(\d)\(/g, replace: '$1 (' },
@@ -169,6 +171,10 @@ function cleanImportText(inputText) {
       { find: 'Challenges (1800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'Challenges (1 800 XP)', replace: 'Challenge 5 (1,800 XP)' },
       { find: 'E~i/', replace: 'Evil' },
+      { find: 'Eri/', replace: 'Evil' },
+      { find: '(+O)', replace: '(+0)' },
+      { find: '(+l)', replace: '(+1)' },
+      { find: '(-l)', replace: '(-1)' },
 
        // General cleanup & Whitespace around punctuation
       { find: /\s+([.,:;])/g, replace: '$1'}, // Remove space BEFORE .,:;

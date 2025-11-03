@@ -67,7 +67,9 @@ function updateViewport() {
 	function formatSpellList(listString) {
 		if (!listString) return "";
 		// Match spells that might have asterisks for marking
-		const spellRegex = /([\w\s'-]+)(\*?)/g;
+		// *** START FIX: Added () to the character class to include parentheses ***
+		const spellRegex = /([\w\s'()-]+)(\*?)/g;
+		// *** END FIX ***
 		let match;
 		let result = [];
 		while ((match = spellRegex.exec(listString)) !== null) {
