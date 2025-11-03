@@ -229,11 +229,145 @@ function applyPdfFilter3(text) {
    return processedText;
 }
 
+/**
+ * Applies 'PDF Filter 4'
+ * @param {string} text The raw text.
+ * @returns {string} The processed text.
+ */
+function applyPdfFilter4(text) {
+   let processedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+   // 1. Define the regex to find the 12-line malformed block
+   // This captures the 6 stat values in groups $1 to $6
+   const statBlockRegex = /(?:^\s*STR\s*\n\s*DEX\s*\n\s*CON\s*\n\s*INT\s*\n\s*WIS\s*\n\s*CHA\s*$\n\s*)^\s*(\d+\s*\([+-]?\d+\))\s*\n\s*(\d+\s*\([+-]?\d+\))\s*\n\s*(\d+\s*\([+-]?\d+\))\s*\n\s*(\d+\s*\([+-]?\d+\))\s*\n\s*(\d+\s*\([+-]?\d+\))\s*\n\s*(\d+\s*\([+-]?\d+\))\s*$/gm;
+
+   let newStatBlock = "";
+
+   // 2. Use replace() with a function to find the block, capture its parts, and remove it
+   processedText = processedText.replace(statBlockRegex, (match, str, dex, con, intl, wis, cha) => {
+      // 3. Store the newly formatted block in an outer variable
+      newStatBlock = `STR DEX CON INT WIS CHA\n${str} ${dex} ${con} ${intl} ${wis} ${cha}\n`;
+      // 4. Remove the old block by returning an empty string from the replace
+      return ""; 
+   });
+
+   // 5. If we successfully created a new stat block, insert it
+   if (newStatBlock) {
+      // Find the 'Speed' line to insert after.
+      // We look for a line ending in 'ft.' followed by a newline.
+      let speedLineMatch = processedText.match(/^(Speed.*?ft\.)\n/im); // 'i' for case-insensitive, 'm' for ^
+
+      if (speedLineMatch) {
+         let speedLine = speedLineMatch[1]; // This is the "Speed 25ft." part
+         
+         // 6. Reconstruct the text
+         // Replace the original "Speed 25ft.\n" with "Speed 25ft.\n[NEW_STAT_BLOCK]"
+         processedText = processedText.replace(speedLineMatch[0], `${speedLine}\n${newStatBlock}`);
+      } else {
+         // Fallback: If 'Speed' line not found (e.g., "Speed 25ft. Skills..."),
+         // try to insert it after the Type/Alignment line (line 2).
+         console.warn("PDF Filter 4: Could not find 'Speed' line. Inserting after Type/Alignment line.");
+         let lines = processedText.split('\n');
+         if (lines.length > 2) {
+            lines.splice(2, 0, newStatBlock.trim()); // Insert after line 2
+            processedText = lines.join('\n');
+         } else {
+            processedText += newStatBlock; // Append if file is very short
+         }
+      }
+   }
+   
+   // --- START: New Rules ---
+
+   // Rule 1: Swap Proficiency Bonus and Challenge lines
+   processedText = processedText.replace(
+      /(Proficiency Bonus\s*[+-]\d+)\s*\n\s*(Challenge\s+[\d\/]+\s*\([\d,]+\s*xp\))/gi,
+      '$2 $1'
+   );
+
+   // Rule 2: Fix "Exhausted" only in "Condition Immunities" line
+   const ciRegex = /(Condition Immunities[^\n]*)Exhausted/i;
+   while (ciRegex.test(processedText)) {
+       processedText = processedText.replace(ciRegex, '$1Exhaustion');
+   }
+   
+   // --- END: New Rules ---
+
+   // 7. Return the processed (or unprocessed) text
+   return processedText;
+}
+
+/**
+ * Applies 'PDF Filter 5'
+ * @param {string} text The raw text.
+ * @returns {string} The processed text.
+ */
+function applyPdfFilter5(text) {
+   let processedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+   // 1. Define the regex to find the 7-line malformed block
+   // This captures the 6 stat values (all on one line) in groups $1 to $6
+   const statBlockRegex = /(?:^\s*STR\s*\n\s*DEX\s*\n\s*CON\s*\n\s*INT\s*\n\s*WIS\s*\n\s*CHA\s*$\n\s*)^\s*(\d+\s*\([+-]?\d+\))\s+(\d+\s*\([+-]?\d+\))\s+(\d+\s*\([+-]?\d+\))\s+(\d+\s*\([+-]?\d+\))\s+(\d+\s*\([+-]?\d+\))\s+(\d+\s*\([+-]?\d+\))\s*$/gm;
+
+   let newStatBlock = "";
+
+   // 2. Use replace() with a function to find the block, capture its parts, and remove it
+   processedText = processedText.replace(statBlockRegex, (match, str, dex, con, intl, wis, cha) => {
+      // 3. Store the newly formatted block in an outer variable
+      newStatBlock = `STR DEX CON INT WIS CHA\n${str} ${dex} ${con} ${intl} ${wis} ${cha}\n`;
+      // 4. Remove the old block by returning an empty string from the replace
+      return ""; 
+   });
+
+   // 5. If we successfully created a new stat block, insert it
+   if (newStatBlock) {
+      // Find the 'Speed' line to insert after.
+      let speedLineMatch = processedText.match(/^(Speed.*?ft\.)\n/im); // 'i' for case-insensitive, 'm' for ^
+
+      if (speedLineMatch) {
+         let speedLine = speedLineMatch[1]; // This is the "Speed 25ft." part
+         // 6. Reconstruct the text
+         processedText = processedText.replace(speedLineMatch[0], `${speedLine}\n${newStatBlock}`);
+      } else {
+         // Fallback: If 'Speed' line not found
+         console.warn("PDF Filter 5: Could not find 'Speed' line. Inserting after Type/Alignment line.");
+         let lines = processedText.split('\n');
+         if (lines.length > 2) {
+            lines.splice(2, 0, newStatBlock.trim()); // Insert after line 2
+            processedText = lines.join('\n');
+         } else {
+            processedText += newStatBlock; // Append if file is very short
+         }
+      }
+   }
+   
+   // --- START: Copied Rules from Filter 4 ---
+
+   // Rule 1: Swap Proficiency Bonus and Challenge lines
+   processedText = processedText.replace(
+      /(Proficiency Bonus\s*[+-]\d+)\s*\n\s*(Challenge\s+[\d\/]+\s*\([\d,]+\s*xp\))/gi,
+      '$2 $1'
+   );
+
+   // Rule 2: Fix "Exhausted" only in "Condition Immunities" line
+   const ciRegex = /(Condition Immunities[^\n]*)Exhausted/i;
+   while (ciRegex.test(processedText)) {
+       processedText = processedText.replace(ciRegex, '$1Exhaustion');
+   }
+   
+   // --- END: Copied Rules ---
+
+   // 7. Return the processed (or unprocessed) text
+   return processedText;
+}
+
 
 // Expose filters on the window object
 window.filters = {
    applyNoFilter,
    applyPdfFilter1,
    applyPdfFilter2,
-   applyPdfFilter3
+   applyPdfFilter3,
+   applyPdfFilter4,
+   applyPdfFilter5
 };

@@ -96,6 +96,14 @@ window.importer = {
             filteredText = window.filters.applyPdfFilter3(textToProcess);
             filterName = "PDF Filter 3"; // NEW
             break;
+         case 'pdfFilter4':
+            filteredText = window.filters.applyPdfFilter4(textToProcess);
+            filterName = "PDF Filter 4"; // NEW
+            break;
+         case 'pdfFilter5':
+            filteredText = window.filters.applyPdfFilter5(textToProcess);
+            filterName = "PDF Filter 5"; // NEW
+            break;
          case 'noFilter':
          default:
             filteredText = window.filters.applyNoFilter(textToProcess);
@@ -198,6 +206,8 @@ window.importer = {
          line = getLine(currentLineIndex);
          if (!line) { currentLineIndex++; continue; } // Skip effectively blank lines after trimming
 
+         const headerKeywordRegex = /^(Armor Class|Hit Points|Speed|STR DEX CON INT WIS CHA|Saving Throws|Skills|Damage Vulnerabilities|Damage Resistances|Damage Immunities|Condition Immunities|Senses|Languages|Challenge|Proficiency Bonus)/i;
+         
          const lowerLine = line.toLowerCase();
          if (lowerLine === 'actions') {
             currentSection = 'actions';
@@ -260,14 +270,27 @@ window.importer = {
             } else if ((match = line.match(/^Damage Immunities\s+(.*)/i))) {
                this.parseDamageModifiers(match[1], 'immunity');
             } else if ((match = line.match(/^Condition Immunities\s+(.*)/i))) {
-               this.parseConditionImmunities(match[1]);
+               let ciString = match[1].trim();
+               let nextLine = peekLine(currentLineIndex); // Peek at the raw next line. Check if line ends with a comma and the next line exists and is not a new header
+               if (ciString.endsWith(',') && nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                 ciString += " " + nextLine.trim(); // Append the next line
+                 currentLineIndex++; // Consume the next line
+               }
+              this.parseConditionImmunities(ciString);
             } else if (line.match(/^Senses\s+/i)) { // Check more generally
                let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); // Trim peeked line for logic
                currentLineIndex += linesConsumed; // Advance index by lines consumed in parseSenses
                currentLineIndex++; // Increment index for the current line itself
                continue; // Continue loop AFTER advancing index
             } else if ((match = line.match(/^Languages\s+(.*)/i))) {
-               this.parseLanguages(match[1]);
+               let langString = match[1].trim();
+              let nextLine = peekLine(currentLineIndex); // Peek at the raw next line
+              // Check if line does NOT end with a period/dash and the next line exists and is not a new header
+              if (!/[.—]$/.test(langString) && nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                 langString += " " + nextLine.trim(); // Append the next line
+                 currentLineIndex++; // Consume the next line
+              }
+              this.parseLanguages(langString);
             } else if ((match = line.match(/^Challenge\s+([\d\/]+)\s*\((\d{1,3}(?:,?\d{3})*)\s*XP\)(?:\s*Proficiency Bonus\s*([+-]\d+))?/i))) {
                this.importNPC.challenge = match[1];
                this.importNPC.experience = match[2]; // Keep comma
