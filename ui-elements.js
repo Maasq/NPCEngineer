@@ -27,8 +27,8 @@ window.ui = {
    menuDeleteNpc: null,
    menuSettings: null,
    menuExportFg: null,
-   menuExportDb: null, // NEW
-   menuImportDb: null, // NEW
+   menuExportDb: null,
+   menuImportDb: null,
    npcSelector: null,
    npcOptionsContainer: null,
    modalOverlay: null,
@@ -42,7 +42,8 @@ window.ui = {
    attackHelperModal: null,
    alertModal: null,
    firstUseModal: null,
-   importDbConfirmModal: null, // NEW
+   importDbConfirmModal: null,
+   clipboardModal: null, // NEW
    createBestiaryBtn: null,
    newBestiaryNameInput: null,
    bestiaryListDiv: null,
@@ -99,8 +100,14 @@ window.ui = {
    actionSpellcastingFields: null,
    firstUseOkBtn: null,
    settingDisableUnloadWarning: null,
-   importDbCancelBtn: null, // NEW
-   importDbConfirmBtn: null, // NEW
+   importDbCancelBtn: null,
+   importDbConfirmBtn: null,
+   manageClipboardBtn: null, // NEW
+   clipboardTextArea: null, // NEW
+   clipboardAppendBtn: null, // NEW
+   clipboardClearBtn: null, // NEW
+   clipboardCancelBtn: null, // NEW
+   clipboardPasteBtn: null, // NEW
    bestiarySettingsCheckboxes: {},
    npcSettingsCheckboxes: {},
    inputs: {},
@@ -135,8 +142,8 @@ window.ui = {
       this.menuDeleteNpc = document.getElementById('menu-delete-npc');
       this.menuSettings = document.getElementById('menu-settings');
       this.menuExportFg = document.getElementById('menu-export-fg');
-      this.menuExportDb = document.getElementById('menu-export-db'); // NEW
-      this.menuImportDb = document.getElementById('menu-import-db'); // NEW
+      this.menuExportDb = document.getElementById('menu-export-db');
+      this.menuImportDb = document.getElementById('menu-import-db');
       this.npcSelector = document.getElementById("npc-selector");
       this.npcOptionsContainer = document.getElementById('npc-options-container');
       this.modalOverlay = document.getElementById("modal-overlay");
@@ -150,7 +157,8 @@ window.ui = {
       this.attackHelperModal = document.getElementById('attack-helper-modal');
       this.alertModal = document.getElementById('alert-modal');
       this.firstUseModal = document.getElementById('first-use-modal');
-      this.importDbConfirmModal = document.getElementById('import-db-confirm-modal'); // NEW
+      this.importDbConfirmModal = document.getElementById('import-db-confirm-modal');
+      this.clipboardModal = document.getElementById('clipboard-modal'); // NEW
       this.createBestiaryBtn = document.getElementById("create-bestiary-btn");
       this.newBestiaryNameInput = document.getElementById("new-bestiary-name");
       this.bestiaryListDiv = document.getElementById("bestiary-list");
@@ -207,8 +215,14 @@ window.ui = {
       this.actionSpellcastingFields = document.getElementById('action-spellcasting-fields');
       this.firstUseOkBtn = document.getElementById('first-use-ok-btn');
       this.settingDisableUnloadWarning = document.getElementById('setting-disable-unload-warning');
-      this.importDbCancelBtn = document.getElementById('import-db-cancel-btn'); // NEW
-      this.importDbConfirmBtn = document.getElementById('import-db-confirm-btn'); // NEW
+      this.importDbCancelBtn = document.getElementById('import-db-cancel-btn');
+      this.importDbConfirmBtn = document.getElementById('import-db-confirm-btn');
+      this.manageClipboardBtn = document.getElementById('manage-clipboard-btn'); // NEW
+      this.clipboardTextArea = document.getElementById('clipboard-text-area'); // NEW
+      this.clipboardAppendBtn = document.getElementById('clipboard-append-btn'); // NEW
+      this.clipboardClearBtn = document.getElementById('clipboard-clear-btn'); // NEW
+      this.clipboardCancelBtn = document.getElementById('clipboard-cancel-btn'); // NEW
+      this.clipboardPasteBtn = document.getElementById('clipboard-paste-btn'); // NEW
 
       this.bestiarySettingsCheckboxes = {
          addDescription: document.getElementById('bestiary-add-description'),
@@ -713,6 +727,7 @@ window.ui = {
       if (typeof this.setupLanguageListeners === 'function') this.setupLanguageListeners();
       if (typeof this.setupTraitListeners === 'function') this.setupTraitListeners();
       if (typeof this.setupActionListeners === 'function') this.setupActionListeners();
+      if (typeof this.setupClipboardModalListeners === 'function') this.setupClipboardModalListeners(); // NEW
    },
 
    // Placeholder for methods defined in ui-updates.js
@@ -737,6 +752,7 @@ window.ui = {
    setupLanguageListeners: () => console.warn("ui-updates.js not loaded yet"),
    setupTraitListeners: () => console.warn("ui-updates.js not loaded yet"),
    setupActionListeners: () => console.warn("ui-updates.js not loaded yet"),
+   setupClipboardModalListeners: () => console.warn("ui-updates.js not loaded yet"), // NEW
    setupDragAndDrop: () => console.warn("ui-updates.js not loaded yet"),
    showNewBestiaryModal: () => console.warn("ui-updates.js not loaded yet"),
    hideAllModals: () => console.warn("ui-updates.js not loaded yet"),

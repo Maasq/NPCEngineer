@@ -36,6 +36,8 @@ Object.assign(window.app, {
    createDiceSelector,
    updateDiceString,
    updateBonus,
+   openClipboardModal, // NEW
+   pasteFromClipboardModal, // NEW
 
    // --- Token Processing ---
    processTraitString
@@ -1037,3 +1039,44 @@ async function showDialog(title, message, showCancel = false) { // Make the func
    setTimeout(() => window.ui.alertOkBtn.focus(), 50); // Focus OK button
 }
 // --- End Updated showDialog Function ---
+
+// --- NEW CLIPBOARD MODAL FUNCTIONS ---
+async function openClipboardModal() {
+   if (!window.ui.clipboardTextArea) {
+      console.error("Clipboard modal text area not found!");
+      return;
+   }
+   // *** FIX 1: REMOVED AUTO-PASTE ***
+   // Clear text area and set placeholder
+   window.ui.clipboardTextArea.value = '';
+   window.ui.clipboardTextArea.placeholder = "Click 'Paste from Clipboard' or paste text here to clean it...";
+   
+   window.app.openModal('clipboard-modal'); // openModal is in helpers.js
+   window.ui.clipboardTextArea.focus();
+}
+
+function pasteFromClipboardModal() {
+   if (!window.ui.clipboardTextArea) {
+      console.error("Clipboard modal text area not found!");
+      return;
+   }
+   
+   const textToPaste = window.ui.clipboardTextArea.value;
+   
+   // *** FIX 2: Correctly select the Trix Editor element ***
+   const trixEditorElement = document.querySelector("trix-editor[input='npc-description']");
+   const trixEditor = trixEditorElement?.editor;
+
+   if (trixEditor) {
+      // Use Trix API to insert text at the current cursor position
+      trixEditor.insertString(textToPaste);
+      trixEditor.element.focus(); // Focus the Trix editor after pasting
+   } else {
+      console.error("Trix editor element not found!");
+      window.app.showAlert("Error: Could not find the description editor.");
+      return; // Don't close modal if pasting failed
+   }
+   
+   window.app.closeModal('clipboard-modal'); // closeModal is in helpers.js
+}
+// --- END NEW CLIPBOARD MODAL FUNCTIONS ---

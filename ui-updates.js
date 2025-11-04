@@ -200,8 +200,7 @@ function _updateFormFromActiveNPC() {
          // Skip fields handled specifically later
          if (key.startsWith('common') || key === 'attackDamageDice') continue;
          if (element.type === 'radio') continue;
-         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-')) continue;
-         if (key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') continue;
+         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') continue;
          // Skip specific trait spell list inputs (handled in loop below)
          if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') continue;
 
@@ -1031,7 +1030,7 @@ function _showSettingsModal() {
       const checkbox = window.ui.bestiarySettingsCheckboxes[key];
       if (checkbox) checkbox.checked = window.app.activeBestiary.metadata[key] ?? true;
    }
-   // Update the unload warning checkbox based on global state
+   // Update the unload warning checkbox based on loaded global setting
    if (window.ui.settingDisableUnloadWarning) {
       window.ui.settingDisableUnloadWarning.checked = window.app.disableUnloadWarning;
    }
@@ -1624,6 +1623,91 @@ function _populateDamageTypes(elementId) {
    }
 }
 
+// --- NEW CLIPBOARD MODAL LISTENERS ---
+function _setupClipboardModalListeners() {
+   if (window.ui.manageClipboardBtn) {
+      window.ui.manageClipboardBtn.addEventListener('click', () => {
+         // Call the new helper function
+         if (window.app.openClipboardModal) {
+            window.app.openClipboardModal();
+         }
+      });
+   }
+
+   // Add listeners for the modal's internal buttons
+   if (window.ui.clipboardCancelBtn) {
+      window.ui.clipboardCancelBtn.addEventListener('click', () => {
+         if (window.app.closeModal) {
+            window.app.closeModal('clipboard-modal');
+         }
+      });
+   }
+
+   if (window.ui.clipboardPasteBtn) {
+      window.ui.clipboardPasteBtn.addEventListener('click', () => {
+         // Call the new helper function
+         if (window.app.pasteFromClipboardModal) {
+            window.app.pasteFromClipboardModal();
+         }
+      });
+   }
+
+   if (window.ui.clipboardClearBtn) {
+      window.ui.clipboardClearBtn.addEventListener('click', () => {
+         if (window.ui.clipboardTextArea) {
+            window.ui.clipboardTextArea.value = '';
+            window.ui.clipboardTextArea.focus();
+         }
+      });
+   }
+
+   if (window.ui.clipboardAppendBtn) {
+      window.ui.clipboardAppendBtn.addEventListener('click', async () => {
+         if (!window.ui.clipboardTextArea) return;
+         try {
+            let text = await navigator.clipboard.readText();
+            window.ui.clipboardTextArea.value += (window.ui.clipboardTextArea.value ? '\n\n' : '') + text;
+            window.ui.clipboardTextArea.focus();
+         } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+            window.app.showAlert("Could not read from clipboard. Check browser permissions.");
+         }
+      });
+   }
+
+   // Add CTRL-J and CTRL-E listeners, copied from import.js
+   if (window.ui.clipboardTextArea) {
+      window.ui.clipboardTextArea.addEventListener('keydown', (e) => {
+         if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
+            e.preventDefault();
+            const textArea = window.ui.clipboardTextArea;
+            const start = textArea.selectionStart;
+            const end = textArea.selectionEnd;
+            if (start !== end && window.importCleaner?.joinSelectedLines) {
+               const selectedText = textArea.value.substring(start, end);
+               const joinedText = window.importCleaner.joinSelectedLines(selectedText);
+               textArea.value = textArea.value.substring(0, start) + joinedText + textArea.value.substring(end);
+               textArea.selectionStart = start;
+               textArea.selectionEnd = start + joinedText.length;
+            }
+         }
+         else if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+            e.preventDefault();
+            const textArea = window.ui.clipboardTextArea;
+            const start = textArea.selectionStart;
+            const end = textArea.selectionEnd;
+            if (start !== end && window.importCleaner?.cycleSelectedTextCase) {
+               const selectedText = textArea.value.substring(start, end);
+               const cycledText = window.importCleaner.cycleSelectedTextCase(selectedText);
+               textArea.value = textArea.value.substring(0, start) + cycledText + textArea.value.substring(end);
+               textArea.selectionStart = start;
+               textArea.selectionEnd = start + cycledText.length;
+            }
+         }
+      });
+   }
+}
+
 
 // --- Assign functions to window.ui object ---
 // Make sure this runs AFTER ui-elements.js has defined window.ui
@@ -1651,6 +1735,7 @@ if (window.ui) {
    window.ui.setupLanguageListeners = _setupLanguageListeners;
    window.ui.setupTraitListeners = _setupTraitListeners;
    window.ui.setupActionListeners = _setupActionListeners;
+   window.ui.setupClipboardModalListeners = _setupClipboardModalListeners; // NEW
    window.ui.setupDragAndDrop = _setupDragAndDrop;
    window.ui.showLoadBestiaryModal = _showLoadBestiaryModal;
    window.ui.showManageGroupsModal = _showManageGroupsModal;
