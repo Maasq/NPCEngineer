@@ -43,7 +43,7 @@ window.ui = {
    alertModal: null,
    firstUseModal: null,
    importDbConfirmModal: null,
-   clipboardModal: null, // NEW
+   clipboardModal: null,
    createBestiaryBtn: null,
    newBestiaryNameInput: null,
    bestiaryListDiv: null,
@@ -102,12 +102,13 @@ window.ui = {
    settingDisableUnloadWarning: null,
    importDbCancelBtn: null,
    importDbConfirmBtn: null,
-   manageClipboardBtn: null, // NEW
-   clipboardTextArea: null, // NEW
-   clipboardAppendBtn: null, // NEW
-   clipboardClearBtn: null, // NEW
-   clipboardCancelBtn: null, // NEW
-   clipboardPasteBtn: null, // NEW
+   manageClipboardBtn: null,
+   clipboardTextArea: null,
+   clipboardAppendBtn: null, // Will be null
+   clipboardClearBtn: null,
+   clipboardCancelBtn: null,
+   clipboardProcessBtn: null, // Renamed
+   bestiaryPickOutTitles: null, // NEW
    bestiarySettingsCheckboxes: {},
    npcSettingsCheckboxes: {},
    inputs: {},
@@ -158,7 +159,7 @@ window.ui = {
       this.alertModal = document.getElementById('alert-modal');
       this.firstUseModal = document.getElementById('first-use-modal');
       this.importDbConfirmModal = document.getElementById('import-db-confirm-modal');
-      this.clipboardModal = document.getElementById('clipboard-modal'); // NEW
+      this.clipboardModal = document.getElementById('clipboard-modal');
       this.createBestiaryBtn = document.getElementById("create-bestiary-btn");
       this.newBestiaryNameInput = document.getElementById("new-bestiary-name");
       this.bestiaryListDiv = document.getElementById("bestiary-list");
@@ -217,18 +218,20 @@ window.ui = {
       this.settingDisableUnloadWarning = document.getElementById('setting-disable-unload-warning');
       this.importDbCancelBtn = document.getElementById('import-db-cancel-btn');
       this.importDbConfirmBtn = document.getElementById('import-db-confirm-btn');
-      this.manageClipboardBtn = document.getElementById('manage-clipboard-btn'); // NEW
-      this.clipboardTextArea = document.getElementById('clipboard-text-area'); // NEW
-      this.clipboardAppendBtn = document.getElementById('clipboard-append-btn'); // NEW
-      this.clipboardClearBtn = document.getElementById('clipboard-clear-btn'); // NEW
-      this.clipboardCancelBtn = document.getElementById('clipboard-cancel-btn'); // NEW
-      this.clipboardPasteBtn = document.getElementById('clipboard-paste-btn'); // NEW
+      this.manageClipboardBtn = document.getElementById('manage-clipboard-btn');
+      this.clipboardTextArea = document.getElementById('clipboard-text-area');
+      this.clipboardAppendBtn = null; // REMOVED
+      this.clipboardClearBtn = document.getElementById('clipboard-clear-btn');
+      this.clipboardCancelBtn = document.getElementById('clipboard-cancel-btn');
+      this.clipboardProcessBtn = document.getElementById('clipboard-process-btn'); // Renamed
+      this.bestiaryPickOutTitles = document.getElementById('bestiary-pick-out-titles'); // NEW
 
       this.bestiarySettingsCheckboxes = {
          addDescription: document.getElementById('bestiary-add-description'),
          addTitle: document.getElementById('bestiary-add-title'),
          addImageLink: document.getElementById('bestiary-add-image-link'),
          useDropCap: document.getElementById('bestiary-use-drop-cap'),
+         pickOutTitles: document.getElementById('bestiary-pick-out-titles'), // NEW
       };
       this.npcSettingsCheckboxes = {
          addDescription: document.getElementById('npc-add-description'),

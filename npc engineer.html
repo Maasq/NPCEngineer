@@ -5,8 +5,8 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="author" content="Maasq" />
       <meta name="description" content="A tool for creating and managing NPCs." />
-      <meta name="version" content="0.15.02" />
-      <meta name="date" content="2025-11-03" />
+      <meta name="version" content="0.15.03" />
+      <meta name="date" content="2025-11-04" />
 
       <title>NPC Engineer</title>
 
@@ -1435,15 +1435,18 @@
                <button title="Close" class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
             </div>
             <div class="h-full flex flex-col">
-               <textarea id="clipboard-text-area" class="w-full h-full info-input rounded-xl custom-shadow bordered-container p-4" style="min-height: 400px; resize: none;" placeholder="Pasting from clipboard..."></textarea>
+               <textarea id="clipboard-text-area" class="w-full h-full info-input rounded-xl custom-shadow bordered-container p-4" style="min-height: 400px; resize: none;" placeholder="Paste text here (Ctrl+V) to clean and process it..." title="Paste text here. You can use Ctrl+J to join selected lines and Ctrl+E to cycle text case."></textarea>
                <div class="flex justify-between items-center mt-4">
-                  <div class="flex space-x-2">
-                     <button id="clipboard-append-btn" class="btn-primary">Paste from Clipboard</button>
-                     <button id="clipboard-clear-btn" class="btn-primary">Clear Text Window</button>
+                  <div>
+                     <button id="clipboard-clear-btn" class="btn-primary" title="Clear all text from this window.">Clear Text Window</button>
                   </div>
-                  <div class="flex items-center space-x-2">
-                     <button id="clipboard-cancel-btn" title="Close" class="btn-secondary">Cancel</button>
-                     <button id="clipboard-paste-btn" class="btn-primary">Paste Text</button>
+                  <div class="flex items-center space-x-4">
+                     <div class="flex items-center">
+                        <input type="checkbox" id="bestiary-pick-out-titles" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Check this to automatically bold the first sentence of any paragraph that is 4 words or less.">
+                        <label for="bestiary-pick-out-titles" class="ml-2 label-text text-xs">Pick out titles</label>
+                     </div>
+                     <button id="clipboard-cancel-btn" title="Close this modal without pasting." class="btn-secondary">Cancel</button>
+                     <button id="clipboard-process-btn" class="btn-primary" title="Process the text (applying title formatting if checked) and paste it into the NPC description at the current cursor position.">Process & Paste Text</button>
                   </div>
                </div>
             </div>

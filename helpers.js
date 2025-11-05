@@ -36,8 +36,8 @@ Object.assign(window.app, {
    createDiceSelector,
    updateDiceString,
    updateBonus,
-   openClipboardModal, // NEW
-   pasteFromClipboardModal, // NEW
+   openClipboardModal, // MODIFIED
+   processAndPasteFromClipboardModal, // NEW (replaces pasteFromClipboardModal)
 
    // --- Token Processing ---
    processTraitString
@@ -1040,43 +1040,98 @@ async function showDialog(title, message, showCancel = false) { // Make the func
 }
 // --- End Updated showDialog Function ---
 
-// --- NEW CLIPBOARD MODAL FUNCTIONS ---
+// --- NEW/MODIFIED CLIPBOARD MODAL FUNCTIONS ---
 async function openClipboardModal() {
    if (!window.ui.clipboardTextArea) {
       console.error("Clipboard modal text area not found!");
       return;
    }
-   // *** FIX 1: REMOVED AUTO-PASTE ***
-   // Clear text area and set placeholder
+   
+   // Clear text area and set new placeholder
    window.ui.clipboardTextArea.value = '';
-   window.ui.clipboardTextArea.placeholder = "Click 'Paste from Clipboard' or paste text here to clean it...";
+   window.ui.clipboardTextArea.placeholder = "Paste text here (Ctrl+V) to clean and process it...";
+   
+   // Set the checkbox state based on bestiary metadata
+   if (window.ui.bestiaryPickOutTitles && window.app.activeBestiary) {
+      window.ui.bestiaryPickOutTitles.checked = window.app.activeBestiary.metadata.pickOutTitles ?? true;
+   } else if (window.ui.bestiaryPickOutTitles) {
+      window.ui.bestiaryPickOutTitles.checked = true; // Default to on if no bestiary
+   }
    
    window.app.openModal('clipboard-modal'); // openModal is in helpers.js
    window.ui.clipboardTextArea.focus();
 }
 
-function pasteFromClipboardModal() {
+function processAndPasteFromClipboardModal() {
    if (!window.ui.clipboardTextArea) {
       console.error("Clipboard modal text area not found!");
       return;
    }
    
    const textToPaste = window.ui.clipboardTextArea.value;
+   const shouldProcessTitles = window.ui.bestiaryPickOutTitles?.checked ?? false; // Check the new checkbox
    
-   // *** FIX 2: Correctly select the Trix Editor element ***
    const trixEditorElement = document.querySelector("trix-editor[input='npc-description']");
    const trixEditor = trixEditorElement?.editor;
 
-   if (trixEditor) {
-      // Use Trix API to insert text at the current cursor position
-      trixEditor.insertString(textToPaste);
-      trixEditor.element.focus(); // Focus the Trix editor after pasting
-   } else {
+   if (!trixEditor) {
       console.error("Trix editor element not found!");
       window.app.showAlert("Error: Could not find the description editor.");
       return; // Don't close modal if pasting failed
    }
-   
+
+   if (shouldProcessTitles) {
+      // Process the text for titles
+      const paragraphs = textToPaste.split('\n');
+      let finalHtml = '';
+
+      paragraphs.forEach(paragraph => {
+         // Sanitize paragraph to prevent unwanted HTML injection
+         const sanitizedParagraph = paragraph.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+         
+         if (sanitizedParagraph.trim() === '') {
+            finalHtml += '<div><br></div>'; // Handle empty lines as breaks
+            return;
+         }
+
+         // Find the first sentence (ends with ., !, or ?)
+         const sentenceEndMatch = sanitizedParagraph.match(/^([^.!?]+[.!?])/);
+         
+         if (sentenceEndMatch) {
+            const firstSentence = sentenceEndMatch[1];
+            const remainingText = sanitizedParagraph.substring(firstSentence.length);
+            
+            // Count words in the first sentence
+            const words = firstSentence.trim().split(/\s+/);
+            
+            if (words.length <= 4 && words[0] !== '') {
+               // Bold the sentence
+               finalHtml += `<div><strong>${firstSentence}</strong>${remainingText}</div>`;
+            } else {
+               // Don't bold
+               finalHtml += `<div>${sanitizedParagraph}</div>`;
+            }
+         } else {
+            // No sentence-ending punctuation found, check word count of the whole paragraph
+            const words = sanitizedParagraph.trim().split(/\s+/);
+            if (words.length <= 4 && words[0] !== '') {
+               // Bold the whole paragraph
+               finalHtml += `<div><strong>${sanitizedParagraph}</strong></div>`;
+            } else {
+               // Don't bold
+               finalHtml += `<div>${sanitizedParagraph}</div>`;
+            }
+         }
+      });
+      
+      trixEditor.insertHTML(finalHtml); // Insert processed HTML
+      
+   } else {
+      // Just paste plain text
+      trixEditor.insertString(textToPaste);
+   }
+
+   trixEditor.element.focus(); // Focus the Trix editor after pasting
    window.app.closeModal('clipboard-modal'); // closeModal is in helpers.js
 }
-// --- END NEW CLIPBOARD MODAL FUNCTIONS ---
+// --- END NEW/MODIFIED CLIPBOARD MODAL FUNCTIONS ---

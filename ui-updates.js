@@ -1643,11 +1643,12 @@ function _setupClipboardModalListeners() {
       });
    }
 
-   if (window.ui.clipboardPasteBtn) {
-      window.ui.clipboardPasteBtn.addEventListener('click', () => {
+   // Renamed from clipboardPasteBtn to clipboardProcessBtn
+   if (window.ui.clipboardProcessBtn) {
+      window.ui.clipboardProcessBtn.addEventListener('click', () => {
          // Call the new helper function
-         if (window.app.pasteFromClipboardModal) {
-            window.app.pasteFromClipboardModal();
+         if (window.app.processAndPasteFromClipboardModal) { // Point to new function
+            window.app.processAndPasteFromClipboardModal();
          }
       });
    }
@@ -1661,16 +1662,12 @@ function _setupClipboardModalListeners() {
       });
    }
 
-   if (window.ui.clipboardAppendBtn) {
-      window.ui.clipboardAppendBtn.addEventListener('click', async () => {
-         if (!window.ui.clipboardTextArea) return;
-         try {
-            let text = await navigator.clipboard.readText();
-            window.ui.clipboardTextArea.value += (window.ui.clipboardTextArea.value ? '\n\n' : '') + text;
-            window.ui.clipboardTextArea.focus();
-         } catch (err) {
-            console.error('Failed to read clipboard contents: ', err);
-            window.app.showAlert("Could not read from clipboard. Check browser permissions.");
+   // NEW: Listener for the 'Pick out titles' checkbox
+   if (window.ui.bestiaryPickOutTitles) {
+      window.ui.bestiaryPickOutTitles.addEventListener('change', () => {
+         if (window.app.activeBestiary) {
+            window.app.activeBestiary.metadata.pickOutTitles = window.ui.bestiaryPickOutTitles.checked;
+            window.app.saveActiveBestiaryToDB(); // Save the setting
          }
       });
    }

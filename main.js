@@ -295,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
          metadata: {
             createdAt: new Date(),
             addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
+            pickOutTitles: true, // NEW
             fg_groups: [], userDefinedLanguages: [], savedTraits: []
          },
          npcs: [{ ...defaultNPC, name: "New NPC", fg_group: bestiaryName }]
@@ -320,10 +321,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!Array.isArray(bestiary.metadata.savedTraits)) bestiary.metadata.savedTraits = [];
       if (!Array.isArray(bestiary.metadata.fg_groups)) bestiary.metadata.fg_groups = [];
 
-      const metadataPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
+      const metadataPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap', 'pickOutTitles']; // ADDED
       metadataPropsToConvert.forEach(prop => {
          if (typeof bestiary.metadata[prop] === 'number') bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
-         else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true;
+         else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true; // Default all to true
       });
 
       // --- NPC Healing ---
