@@ -5,8 +5,8 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="author" content="Maasq" />
       <meta name="description" content="A tool for creating and managing NPCs." />
-      <meta name="version" content="0.15.03" />
-      <meta name="date" content="2025-11-04" />
+      <meta name="version" content="0.15.07" />
+      <meta name="date" content="2025-11-05" />
 
       <title>NPC Engineer</title>
 
@@ -1442,7 +1442,7 @@
                   </div>
                   <div class="flex items-center space-x-4">
                      <div class="flex items-center">
-                        <input type="checkbox" id="bestiary-pick-out-titles" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Check this to automatically bold the first sentence of any paragraph that is 4 words or less.">
+                        <input type="checkbox" id="bestiary-pick-out-titles" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" title="Check this to automatically bold the first sentence of a paragraph if the sentence is 4 words or less, as this is likely to be a title.">
                         <label for="bestiary-pick-out-titles" class="ml-2 label-text text-xs">Pick out titles</label>
                      </div>
                      <button id="clipboard-cancel-btn" title="Close this modal without pasting." class="btn-secondary">Cancel</button>
@@ -1460,35 +1460,46 @@
             </div>
 
             <div class="flex gap-6 h-[calc(100%-80px)]">
-               <div class="w-1/2 h-full flex flex-col relative">
-                  <span id="import-filter-status" class="absolute top-3 right-6 z-10 text-sm text-red-700" style="height: 1.25rem;">&nbsp;</span>
+               
+               <div class="w-1/2 h-full flex flex-col">
                   
-                  <textarea id="import-text-area" class="w-full h-full info-input rounded-xl custom-shadow bordered-container p-4" style="min-height: 600px; resize: none;" placeholder="Paste raw NPC text here..."></textarea>
+                  <div id="import-pane-raw" class="h-full flex flex-col">
+                     <label for="import-source-area" class="label-text mb-1 font-semibold">Raw Text</label>
+                     <textarea id="import-source-area" class="w-full h-full info-input rounded-xl custom-shadow bordered-container p-4" style="min-height: 400px; resize: none;" placeholder="Paste raw NPC text here..."></textarea>
+                  </div>
+
+                  <div id="import-pane-filtered" class="h-full flex flex-col hidden relative">
+                     <label for="import-text-area" class="label-text mb-1 font-semibold">Filtered Text (Read-only)</label>
+                     <span id="import-filter-status" class="absolute top-8 right-6 z-10 text-sm text-red-700" style="height: 1.25rem;">&nbsp;</span>
+                     <textarea id="import-text-area" class="w-full h-full info-input rounded-xl custom-shadow bordered-container p-4" style="min-height: 400px; resize: none;" placeholder="Filtered text will appear here..." readonly></textarea>
+                  </div>
+
                   <div class="flex justify-between items-center mt-4">
                      <div class="flex space-x-2">
-                        <button id="import-append-btn" class="btn-primary">Append Clipboard</button>
-                        <button id="import-clear-btn" class="btn-primary">Clear Text Window</button>
+                        <button id="import-clear-btn" class="btn-primary" title="Clear the raw text area.">Clear Text Window</button>
+                        <button id="import-toggle-view-btn" class="btn-primary" title="Toggle between raw and filtered text.">View Filtered Text</button>
                      </div>
                      <div class="flex items-center space-x-2">
                         <label for="import-filter-select" class="label-text">Filter:</label>
-                        <select id="import-filter-select" class="info-select h-8" style="min-width: 150px;">
+                        <select id="import-filter-select" class="info-select h-8" style="min-width: 150px;" title="Apply a pre-defined filter to clean up common PDF copy/paste errors.">
                            <option value="noFilter" selected>No Filter</option>
                            <option value="pdfFilter1">PDF Filter 1</option>
                            <option value="pdfFilter2">PDF Filter 2</option>
                            <option value="pdfFilter3">PDF Filter 3</option>
-									<option value="pdfFilter4">PDF Filter 4</option>
-									<option value="pdfFilter5">PDF Filter 5</option>
-								</select>
+                           <option value="pdfFilter4">PDF Filter 4</option>
+                           <option value="pdfFilter5">PDF Filter 5</option>
+                        </select>
                      </div>
                   </div>
                </div>
 
                <div class="w-1/2 h-full flex flex-col">
+                  <label class="label-text mb-1 font-semibold">Preview</label>
                   <div id="import-viewport" class="w-full h-full bg-cover bg-center rounded-xl custom-shadow overflow-auto bordered-container" style="padding-top: 10px; background-image: url('graphics/viewport.jpg');">
                   </div>
                   <div class="flex justify-end items-center mt-4 space-x-2">
                      <button id="import-cancel-btn" title="Close" class="btn-secondary">Cancel</button>
-                     <button id="import-confirm-btn" class="btn-primary">Import NPC</button>
+                     <button id="import-confirm-btn" class="btn-primary" title="Import the parsed NPC into your bestiary.">Import NPC</button>
                   </div>
                </div>
             </div>

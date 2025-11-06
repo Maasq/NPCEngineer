@@ -653,3 +653,13 @@ table.spell td {
 #npc-buttons button:disabled:hover svg {
     color: white; /* Or original color */
 }
+
+/* --- Import Modal Pane Styles --- */
+#import-source-area {
+   font-family: monospace;
+   font-size: 10pt;
+}
+
+#import-text-area[readonly] {
+   background-color: #F1FBEA; /* Light green, same as card headers */
+}

@@ -2,8 +2,7 @@
 window.importer = {
    importNPC: null,
    htmlLoaded: false,
-   originalClipboardText: "", // Store raw text
-   isDirty: false, // Track manual edits
+   processTextDebounceTimer: null, // Timer for debouncing
 
    // --- Helper Function ---
    /**
@@ -25,6 +24,7 @@ window.importer = {
     */
    init() {
       this.htmlLoaded = true;
+      // Get elements from window.ui, which should be populated by ui-elements.js
       this.setupEventListeners();
    },
 
@@ -38,71 +38,70 @@ window.importer = {
       }
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
       this.importNPC.name = "Import Preview";
-      this.originalClipboardText = ""; // Clear stored text
-      this.isDirty = false; // Clear dirty flag
 
-      const textArea = document.getElementById('import-text-area');
-      if (textArea) textArea.value = '';
+      // Set initial state (State 1: Raw Text visible)
+      if (window.ui.importPaneRaw) window.ui.importPaneRaw.classList.remove('hidden');
+      if (window.ui.importPaneFiltered) window.ui.importPaneFiltered.classList.add('hidden');
+      if (window.ui.importToggleViewBtn) window.ui.importToggleViewBtn.textContent = 'View Filtered Text';
+
+      // Clear both text areas
+      if (window.ui.importSourceArea) window.ui.importSourceArea.value = '';
+      if (window.ui.importTextArea) window.ui.importTextArea.value = '';
       
       // Reset filter dropdown to 'No Filter' when modal opens
-      const filterSelect = document.getElementById('import-filter-select');
-      if (filterSelect) filterSelect.value = 'noFilter';
+      if (window.ui.importFilterSelect) window.ui.importFilterSelect.value = 'noFilter';
       
-      // NEW: Reset filter status text
-      const filterStatus = document.getElementById('import-filter-status');
-      if (filterStatus) filterStatus.innerHTML = '&nbsp;';
+      // Reset filter status text
+      if (window.ui.importFilterStatus) window.ui.importFilterStatus.innerHTML = '&nbsp;';
       
       this.updateImportViewport();
 
       window.app.openModal('import-modal');
-      // Focus textarea after modal opens
-      setTimeout(() => textArea?.focus(), 50);
+      // Focus the new source textarea after modal opens
+      setTimeout(() => window.ui.importSourceArea?.focus(), 50);
    },
 
    closeImportModal() {
       window.app.closeModal('import-modal');
       this.importNPC = null;
-      this.originalClipboardText = ""; // Clear stored text
-      this.isDirty = false; // Clear dirty flag
    },
 
    /**
-    * Applies the selected filter and the main cleaner to the original text,
-    * then updates the textarea and triggers a parse.
+    * Reads text from the source window, applies the selected filter and cleaner,
+    * puts the result in the cleaned window, and then triggers a parse.
+    * This is the new central processing function.
     */
-   applyFilterAndParse() {
+   processSourceText() {
       if (!this.htmlLoaded) return;
 
-      const filterSelect = document.getElementById('import-filter-select');
-      const textArea = document.getElementById('import-text-area');
-      const filterStatus = document.getElementById('import-filter-status'); // NEW
-      const selectedFilter = filterSelect ? filterSelect.value : 'noFilter';
+      const sourceText = window.ui.importSourceArea ? window.ui.importSourceArea.value : '';
+      const selectedFilter = window.ui.importFilterSelect ? window.ui.importFilterSelect.value : 'noFilter';
       
-      let textToProcess = this.originalClipboardText; // Start with the raw stored text
+      let textToProcess = sourceText;
       
       // 1. Apply the selected filter
       let filteredText;
-      let filterName = "No filter"; // NEW
+      let filterName = "No filter";
       switch (selectedFilter) {
          case 'pdfFilter1':
             filteredText = window.filters.applyPdfFilter1(textToProcess);
-            filterName = "PDF Filter 1"; // NEW
+            filterName = "PDF Filter 1";
             break;
          case 'pdfFilter2':
             filteredText = window.filters.applyPdfFilter2(textToProcess);
-            filterName = "PDF Filter 2"; // NEW
+            filterName = "PDF Filter 2";
             break;
          case 'pdfFilter3':
             filteredText = window.filters.applyPdfFilter3(textToProcess);
-            filterName = "PDF Filter 3"; // NEW
+            filterName = "PDF Filter 3";
             break;
          case 'pdfFilter4':
             filteredText = window.filters.applyPdfFilter4(textToProcess);
-            filterName = "PDF Filter 4"; // NEW
+            filterName = "PDF Filter 4";
             break;
          case 'pdfFilter5':
             filteredText = window.filters.applyPdfFilter5(textToProcess);
-            filterName = "PDF Filter 5"; // NEW
+            filterName = "PDF Filter 5";
             break;
          case 'noFilter':
          default:
@@ -110,12 +109,12 @@ window.importer = {
             break;
       }
       
-      // NEW: Update filter status text
-      if (filterStatus) {
+      // Update filter status text
+      if (window.ui.importFilterStatus) {
          if (selectedFilter !== 'noFilter') {
-            filterStatus.textContent = `${filterName} applied.`;
+            window.ui.importFilterStatus.textContent = `${filterName} applied.`;
          } else {
-            filterStatus.innerHTML = '&nbsp;';
+            window.ui.importFilterStatus.innerHTML = '&nbsp;';
          }
       }
       
@@ -127,29 +126,27 @@ window.importer = {
          cleanedText = filteredText; // Fallback
       }
       
-      // 3. Insert into textarea
-      if (textArea) {
-         textArea.value = cleanedText;
+      // 3. Insert into the (now read-only) cleaned textarea
+      if (window.ui.importTextArea) {
+         window.ui.importTextArea.value = cleanedText;
+         // Adjust scroll to top
+         window.ui.importTextArea.scrollTop = 0;
       }
       
-      // 4. Mark as 'not dirty' since text matches filter
-      this.isDirty = false;
-      
-      // 5. Call parseText()
+      // 4. Call parseText() (which reads from the cleaned textarea)
       this.parseText();
    },
 
    /**
-    * Parses the text in #import-text-area and updates this.importNPC.
+    * Parses the text in #import-text-area (the CLEANED window) and updates this.importNPC.
     */
    parseText() {
       if (!this.htmlLoaded) return;
       
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
 
-      const textArea = document.getElementById('import-text-area');
-      // Read directly from textarea (it's already clean)
-      const cleanedText = textArea ? textArea.value : '';
+      // This function correctly reads from the cleaned text area
+      const cleanedText = window.ui.importTextArea ? window.ui.importTextArea.value : '';
       if (!cleanedText) {
          this.importNPC.name = "Import Preview";
          this.updateImportViewport();
@@ -1318,101 +1315,77 @@ window.importer = {
 
 // --- Event Listeners ---
    setupEventListeners() {
-      // ... (Event listeners remain the same)
-      const cancelBtn = document.getElementById('import-cancel-btn');
-      const confirmBtn = document.getElementById('import-confirm-btn');
-      const clearBtn = document.getElementById('import-clear-btn');
-      const appendBtn = document.getElementById('import-append-btn');
-      const textArea = document.getElementById('import-text-area');
-      const filterSelect = document.getElementById('import-filter-select');
-      const filterStatus = document.getElementById('import-filter-status'); // NEW
+      // Get all elements from window.ui
+      const {
+         importCancelBtn,
+         importConfirmBtn,
+         importClearBtn,
+         importSourceArea, // The new "Raw Text" window
+         importTextArea, // The "Filtered Text" window
+         importFilterSelect,
+         importToggleViewBtn, // The new toggle button
+         importPaneRaw,
+         importPaneFiltered
+      } = window.ui;
 
-      if (cancelBtn) cancelBtn.addEventListener('click', () => this.closeImportModal());
-      if (confirmBtn) confirmBtn.addEventListener('click', () => this.confirmImport());
+      if (importCancelBtn) importCancelBtn.addEventListener('click', () => this.closeImportModal());
+      if (importConfirmBtn) importConfirmBtn.addEventListener('click', () => this.confirmImport());
       
-      if (clearBtn) clearBtn.addEventListener('click', () => {
-         if (textArea) textArea.value = '';
-         this.originalClipboardText = "";
-         this.isDirty = false;
-         if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
-         if (filterStatus) filterStatus.innerHTML = '&nbsp;'; // NEW: Reset status
-         this.parseText();
+      if (importClearBtn) importClearBtn.addEventListener('click', () => {
+         if (importSourceArea) importSourceArea.value = '';
+         if (importFilterSelect) importFilterSelect.value = 'noFilter'; // Reset filter
+         this.processSourceText(); // Re-process the (now empty) source
       });
 
-      if (appendBtn) appendBtn.addEventListener('click', async () => {
-         try {
-            let text = await navigator.clipboard.readText();
-            // Append raw text
-            this.originalClipboardText = (this.originalClipboardText ? this.originalClipboardText + '\n\n' : '') + text;
-            this.isDirty = false;
-            
-            // Call the central function
-            this.applyFilterAndParse(); 
-            
-         } catch (err) {
-            console.error('Failed to read clipboard contents: ', err);
-            window.app.showAlert("Could not read from clipboard. Check browser permissions.");
-         }
-      });
-      
       // Add listener for the filter dropdown
-      if (filterSelect) {
-         filterSelect.addEventListener('change', () => {
-            if (this.isDirty) {
-               // Confirm before overwriting manual edits
-               window.app.showConfirm(
-                  "Overwrite Manual Edits?",
-                  "Changing the filter will re-process the original text and overwrite your manual edits. Are you sure?",
-                  () => {
-                     // On Confirm:
-                     this.isDirty = false; // Will be reset by applyFilterAndParse
-                     this.applyFilterAndParse();
-                  },
-                  () => {
-                     // On Cancel:
-                     filterSelect.value = 'noFilter'; // Revert dropdown
-                  }
-               );
+      if (importFilterSelect) {
+         importFilterSelect.addEventListener('change', () => {
+            this.processSourceText();
+            // Switch to filtered view when filter is changed
+            if (importPaneRaw) importPaneRaw.classList.add('hidden');
+            if (importPaneFiltered) importPaneFiltered.classList.remove('hidden');
+            if (importToggleViewBtn) importToggleViewBtn.textContent = 'View Raw Text';
+         });
+      }
+
+      // Add listener for the new toggle button
+      if (importToggleViewBtn) {
+         importToggleViewBtn.addEventListener('click', () => {
+            const isRawVisible = !importPaneRaw.classList.contains('hidden');
+            if (isRawVisible) {
+               // Switch to Filtered view
+               importPaneRaw.classList.add('hidden');
+               importPaneFiltered.classList.remove('hidden');
+               importToggleViewBtn.textContent = 'View Raw Text';
             } else {
-               // Not dirty, just apply the filter
-               this.applyFilterAndParse();
+               // Switch to Raw view
+               importPaneRaw.classList.remove('hidden');
+               importPaneFiltered.classList.add('hidden');
+               importToggleViewBtn.textContent = 'View Filtered Text';
             }
          });
       }
 
-      if (textArea) {
-         textArea.addEventListener('paste', (e) => {
-            e.preventDefault();
-            let text = (e.clipboardData || window.clipboardData).getData('text/plain');
-            
-            this.originalClipboardText = text; // Store raw text
-            this.isDirty = false;
-
-            // Call the new central function
-            this.applyFilterAndParse();
+      // Listen to the new SOURCE text area for input
+      if (importSourceArea) {
+         importSourceArea.addEventListener('paste', (e) => {
+            // Let the paste happen naturally
+            // Then trigger the processing shortly after
+            setTimeout(() => {
+               this.processSourceText();
+            }, 50); // Small delay to ensure text is in the textarea
          });
 
-         let debounceTimer;
-         textArea.addEventListener('input', () => {
-             this.isDirty = true; // User is typing
-             
-             // Reset filter dropdown to 'No Filter' if user types manually
-             if (filterSelect) {
-                filterSelect.value = 'noFilter';
-             }
-             // NEW: Clear status text on manual input
-             if (filterStatus) {
-                filterStatus.innerHTML = '&nbsp;';
-             }
-             
-             clearTimeout(debounceTimer);
-             debounceTimer = setTimeout(() => {
-                 // Just parse the text, don't re-filter/clean
-                 this.parseText();
-             }, 300);
+         importSourceArea.addEventListener('input', () => {
+             clearTimeout(this.processTextDebounceTimer);
+             this.processTextDebounceTimer = setTimeout(() => {
+                 this.processSourceText();
+             }, 300); // 300ms debounce
          });
 
-         textArea.addEventListener('keydown', (e) => {
+         // Move hotkeys to the source text area
+         importSourceArea.addEventListener('keydown', (e) => {
+            const textArea = importSourceArea; // Target this textarea
             if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
                e.preventDefault();
                const start = textArea.selectionStart;
@@ -1424,10 +1397,7 @@ window.importer = {
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + joinedText.length;
                   
-                  this.isDirty = true; // Manual edit
-                  if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
-                  if (filterStatus) filterStatus.innerHTML = '&nbsp;'; // NEW: Reset status
-                  this.parseText();
+                  this.processSourceText(); // Re-process after manual edit
                }
             }
             else if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
@@ -1441,10 +1411,7 @@ window.importer = {
                   textArea.selectionStart = start;
                   textArea.selectionEnd = start + cycledText.length;
 
-                  this.isDirty = true; // Manual edit
-                  if (filterSelect) filterSelect.value = 'noFilter'; // Reset filter
-                  if (filterStatus) filterStatus.innerHTML = '&nbsp;'; // NEW: Reset status
-                  this.parseText();
+                  this.processSourceText(); // Re-process after manual edit
                }
             }
          });
@@ -1696,7 +1663,7 @@ window.importer = {
             ${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
             ${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
             ${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
-            ${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
+            ${languages ? `<div class.npctop"><b>Languages</b> ${languages}</div>` : ''}
             ${challengeLineHtml}
             ${allTraitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
             ${allTraitsHtml}

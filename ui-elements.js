@@ -44,6 +44,17 @@ window.ui = {
    firstUseModal: null,
    importDbConfirmModal: null,
    clipboardModal: null,
+   importModal: null, // NEW
+   importPaneRaw: null, // NEW
+   importPaneFiltered: null, // NEW
+   importSourceArea: null, // NEW
+   importTextArea: null, // NEW (the cleaned one)
+   importFilterSelect: null, // NEW
+   importFilterStatus: null, // NEW
+   importCancelBtn: null, // NEW
+   importConfirmBtn: null, // NEW
+   importClearBtn: null, // NEW
+   importToggleViewBtn: null, // NEW
    createBestiaryBtn: null,
    newBestiaryNameInput: null,
    bestiaryListDiv: null,
@@ -108,7 +119,7 @@ window.ui = {
    clipboardClearBtn: null,
    clipboardCancelBtn: null,
    clipboardProcessBtn: null, // Renamed
-   bestiaryPickOutTitles: null, // NEW
+   bestiaryPickOutTitles: null,
    bestiarySettingsCheckboxes: {},
    npcSettingsCheckboxes: {},
    inputs: {},
@@ -160,6 +171,17 @@ window.ui = {
       this.firstUseModal = document.getElementById('first-use-modal');
       this.importDbConfirmModal = document.getElementById('import-db-confirm-modal');
       this.clipboardModal = document.getElementById('clipboard-modal');
+      this.importModal = document.getElementById('import-modal'); // NEW
+      this.importPaneRaw = document.getElementById('import-pane-raw'); // NEW
+      this.importPaneFiltered = document.getElementById('import-pane-filtered'); // NEW
+      this.importSourceArea = document.getElementById('import-source-area'); // NEW
+      this.importTextArea = document.getElementById('import-text-area'); // NEW
+      this.importFilterSelect = document.getElementById('import-filter-select'); // NEW
+      this.importFilterStatus = document.getElementById('import-filter-status'); // NEW
+      this.importCancelBtn = document.getElementById('import-cancel-btn'); // NEW
+      this.importConfirmBtn = document.getElementById('import-confirm-btn'); // NEW
+      this.importClearBtn = document.getElementById('import-clear-btn'); // NEW
+      this.importToggleViewBtn = document.getElementById('import-toggle-view-btn'); // NEW
       this.createBestiaryBtn = document.getElementById("create-bestiary-btn");
       this.newBestiaryNameInput = document.getElementById("new-bestiary-name");
       this.bestiaryListDiv = document.getElementById("bestiary-list");
@@ -212,7 +234,7 @@ window.ui = {
       this.spellcastingHeader = document.getElementById('spellcasting-header');
       this.spellcastingFields = document.getElementById('spellcasting-fields');
       this.spellcastingDivider = document.getElementById('spellcasting-divider');
-      this.traitSpellcastingFields = document.getElementById('trait-spellcasting-fields'); // NEW
+      this.traitSpellcastingFields = document.getElementById('trait-spellcasting-fields');
       this.actionSpellcastingFields = document.getElementById('action-spellcasting-fields');
       this.firstUseOkBtn = document.getElementById('first-use-ok-btn');
       this.settingDisableUnloadWarning = document.getElementById('setting-disable-unload-warning');
@@ -224,14 +246,13 @@ window.ui = {
       this.clipboardClearBtn = document.getElementById('clipboard-clear-btn');
       this.clipboardCancelBtn = document.getElementById('clipboard-cancel-btn');
       this.clipboardProcessBtn = document.getElementById('clipboard-process-btn'); // Renamed
-      this.bestiaryPickOutTitles = document.getElementById('bestiary-pick-out-titles'); // NEW
-
+      this.bestiaryPickOutTitles = document.getElementById('bestiary-pick-out-titles');
       this.bestiarySettingsCheckboxes = {
          addDescription: document.getElementById('bestiary-add-description'),
          addTitle: document.getElementById('bestiary-add-title'),
          addImageLink: document.getElementById('bestiary-add-image-link'),
          useDropCap: document.getElementById('bestiary-use-drop-cap'),
-         pickOutTitles: document.getElementById('bestiary-pick-out-titles'), // NEW
+         pickOutTitles: document.getElementById('bestiary-pick-out-titles'),
       };
       this.npcSettingsCheckboxes = {
          addDescription: document.getElementById('npc-add-description'),
@@ -289,7 +310,7 @@ window.ui = {
          traitCastingBonus: document.getElementById('npc-trait-casting-bonus'),
          traitCastingClass: document.getElementById('npc-trait-casting-class'),
          traitCastingFlavor: document.getElementById('npc-trait-casting-flavor'),
-         traitCastingMarked: document.getElementById('npc-trait-casting-marked'), // NEW
+         traitCastingMarked: document.getElementById('npc-trait-casting-marked'),
          // Action Casting Inputs
          actionCastingAbility: document.getElementById('npc-action-casting-ability'),
          actionCastingDC: document.getElementById('npc-action-casting-dc'),
@@ -730,7 +751,7 @@ window.ui = {
       if (typeof this.setupLanguageListeners === 'function') this.setupLanguageListeners();
       if (typeof this.setupTraitListeners === 'function') this.setupTraitListeners();
       if (typeof this.setupActionListeners === 'function') this.setupActionListeners();
-      if (typeof this.setupClipboardModalListeners === 'function') this.setupClipboardModalListeners(); // NEW
+      if (typeof this.setupClipboardModalListeners === 'function') this.setupClipboardModalListeners();
    },
 
    // Placeholder for methods defined in ui-updates.js
@@ -755,7 +776,7 @@ window.ui = {
    setupLanguageListeners: () => console.warn("ui-updates.js not loaded yet"),
    setupTraitListeners: () => console.warn("ui-updates.js not loaded yet"),
    setupActionListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupClipboardModalListeners: () => console.warn("ui-updates.js not loaded yet"), // NEW
+   setupClipboardModalListeners: () => console.warn("ui-updates.js not loaded yet"),
    setupDragAndDrop: () => console.warn("ui-updates.js not loaded yet"),
    showNewBestiaryModal: () => console.warn("ui-updates.js not loaded yet"),
    hideAllModals: () => console.warn("ui-updates.js not loaded yet"),
