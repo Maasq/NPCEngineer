@@ -64,6 +64,8 @@ window.ui = {
    newGroupNameInput: null,
    groupListDiv: null,
    settingsOkBtn: null,
+   bestiarySettingsGroup: null, // NEW
+   settingSoloCardMode: null, // NEW
    manageLanguagesBtn: null,
    newLanguageNameInput: null,
    addLanguageBtn: null,
@@ -120,6 +122,8 @@ window.ui = {
    clipboardCancelBtn: null,
    clipboardProcessBtn: null, // Renamed
    bestiaryPickOutTitles: null,
+   quickJumpTitle: null, // NEW
+   menuSoloCardMode: null, // NEW
    bestiarySettingsCheckboxes: {},
    npcSettingsCheckboxes: {},
    inputs: {},
@@ -191,6 +195,8 @@ window.ui = {
       this.newGroupNameInput = document.getElementById('new-group-name');
       this.groupListDiv = document.getElementById('group-list');
       this.settingsOkBtn = document.getElementById('settings-ok-btn');
+      this.bestiarySettingsGroup = document.getElementById('bestiary-settings-group'); // NEW
+      this.settingSoloCardMode = document.getElementById('setting-solo-card-mode'); // NEW
       this.manageLanguagesBtn = document.getElementById('manage-languages-btn');
       this.newLanguageNameInput = document.getElementById('new-language-name');
       this.addLanguageBtn = document.getElementById('add-language-btn');
@@ -247,12 +253,15 @@ window.ui = {
       this.clipboardCancelBtn = document.getElementById('clipboard-cancel-btn');
       this.clipboardProcessBtn = document.getElementById('clipboard-process-btn'); // Renamed
       this.bestiaryPickOutTitles = document.getElementById('bestiary-pick-out-titles');
+      this.quickJumpTitle = document.getElementById('quick-jump-title'); // NEW
+      this.menuSoloCardMode = document.getElementById('menu-solo-card-mode'); // NEW
       this.bestiarySettingsCheckboxes = {
          addDescription: document.getElementById('bestiary-add-description'),
          addTitle: document.getElementById('bestiary-add-title'),
          addImageLink: document.getElementById('bestiary-add-image-link'),
          useDropCap: document.getElementById('bestiary-use-drop-cap'),
          pickOutTitles: document.getElementById('bestiary-pick-out-titles'),
+         // soloCardMode is global, so it's removed from here
       };
       this.npcSettingsCheckboxes = {
          addDescription: document.getElementById('npc-add-description'),
@@ -315,6 +324,7 @@ window.ui = {
          actionCastingAbility: document.getElementById('npc-action-casting-ability'),
          actionCastingDC: document.getElementById('npc-action-casting-dc'),
          actionCastingComponents: document.getElementById('npc-action-casting-components'),
+         menuSoloCardMode: document.getElementById('menu-solo-card-mode'), // NEW
       };
       // Loop for Innate and Action casting freq/list fields
       for (let i = 0; i < 4; i++) {
@@ -399,7 +409,7 @@ window.ui = {
       if (this.menuImportText) this.menuImportText.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuImportText.classList.contains('disabled')) window.importer.openImportModal(); this.mainMenu.classList.add('hidden'); });
       if (this.menuExportNpc) this.menuExportNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportNpc.classList.contains('disabled')) window.app.exportNpc(); this.mainMenu.classList.add('hidden'); });
       if (this.menuDeleteNpc) this.menuDeleteNpc.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuDeleteNpc.classList.contains('disabled')) window.app.deleteCurrentNpc(); this.mainMenu.classList.add('hidden'); });
-      if (this.menuSettings) this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuSettings.classList.contains('disabled')) this.showSettingsModal(); this.mainMenu.classList.add('hidden'); });
+      if (this.menuSettings) this.menuSettings.addEventListener('click', (e) => { e.preventDefault(); this.showSettingsModal(); this.mainMenu.classList.add('hidden'); }); // Changed: No disabled check, always allow settings
       if (this.menuExportFg) this.menuExportFg.addEventListener('click', (e) => { e.preventDefault(); if(!this.menuExportFg.classList.contains('disabled')) window.app.exportBestiaryToFG(); this.mainMenu.classList.add('hidden'); });
       // NEW: Database export/import menu items
       if (this.menuExportDb) this.menuExportDb.addEventListener('click', (e) => { e.preventDefault(); window.app.exportFullDatabase(); this.mainMenu.classList.add('hidden'); });
@@ -451,6 +461,21 @@ window.ui = {
          });
       }
 
+      // NEW: Listener for Solo Card Mode checkbox in settings
+      if (this.settingSoloCardMode) {
+         this.settingSoloCardMode.addEventListener('change', (e) => {
+            window.app.setSoloCardMode(e.target.checked); // Update global setting in DB
+         });
+      }
+
+      // NEW: Listener for Solo Card Mode checkbox in *menu*
+      if (this.menuSoloCardMode) {
+         this.menuSoloCardMode.addEventListener('change', (e) => {
+            window.app.setSoloCardMode(e.target.checked); // Update global setting in DB
+         });
+      }
+
+
       // NEW: Listeners for Import DB confirmation modal
       if (this.importDbCancelBtn) this.importDbCancelBtn.addEventListener('click', () => this.hideAllModals());
       if (this.importDbConfirmBtn) this.importDbConfirmBtn.addEventListener('click', () => {
@@ -487,15 +512,27 @@ window.ui = {
             }
             const cardBody = header.nextElementSibling;
             if (cardBody && cardBody.classList.contains('card-body')) {
-               if (cardBody.classList.contains('open')) {
-                  cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; // Set current height explicitly
-                  requestAnimationFrame(() => { // Allow browser to render current height
-                     cardBody.classList.remove('open');
-                     cardBody.style.maxHeight = '0';
-                     cardBody.style.paddingTop = '0';
-                     cardBody.style.paddingBottom = '0';
+               
+               // --- NEW SOLO CARD MODE LOGIC ---
+               const isOpening = !cardBody.classList.contains('open');
+               if (isOpening && window.app.soloCardMode) {
+                  // Close all other open cards first
+                  document.querySelectorAll('.card-body.open').forEach(openCard => {
+                     if (openCard !== cardBody) {
+                        // Close it
+                        openCard.style.maxHeight = openCard.scrollHeight + 'px';
+                        requestAnimationFrame(() => {
+                           openCard.classList.remove('open');
+                           openCard.style.maxHeight = '0';
+                           openCard.style.paddingTop = '0';
+                           openCard.style.paddingBottom = '0';
+                        });
+                     }
                   });
-               } else {
+               }
+               // --- END SOLO CARD MODE LOGIC ---
+
+               if (isOpening) {
                   cardBody.classList.add('open');
                   cardBody.style.paddingTop = '0.5rem';
                   cardBody.style.paddingBottom = '0.5rem';
@@ -509,6 +546,35 @@ window.ui = {
                      }
                      cardBody.removeEventListener('transitionend', handler); // Clean up listener
                   }, { once: true });
+               } else {
+                  cardBody.style.maxHeight = cardBody.scrollHeight + 'px'; // Set current height explicitly
+                  requestAnimationFrame(() => { // Allow browser to render current height
+                     cardBody.classList.remove('open');
+                     cardBody.style.maxHeight = '0';
+                     cardBody.style.paddingTop = '0';
+                     cardBody.style.paddingBottom = '0';
+                  });
+               }
+            }
+         });
+      });
+
+      // --- NEW: Quick Jump Menu Listener ---
+      document.querySelectorAll('#quick-jump-menu a').forEach(anchor => {
+         anchor.addEventListener('click', (e) => {
+            e.preventDefault(); // Stop the default anchor jump
+            const href = anchor.getAttribute('href');
+            if (!href || href === '#') return;
+            const targetId = href.substring(1); // Get "info-card" from "#info-card"
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+               // Manually trigger the scroll
+               targetElement.scrollIntoView({ behavior: 'smooth' });
+               
+               // Call the new card opening logic
+               if (typeof this.openCardAndHandleSoloMode === 'function') {
+                  this.openCardAndHandleSoloMode(targetId);
                }
             }
          });
@@ -517,7 +583,7 @@ window.ui = {
 
       // Centralized input listener for most fields
       Object.values(this.inputs).forEach((input) => {
-         if (input && input.id && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice') {
+         if (input && input.id && input.id !== 'npc-description' && !input.id.startsWith('common-') && input.id !== 'attack-damage-dice' && input.id !== 'menu-solo-card-mode') {
             // Ability scores, challenge rating, spellcasting abilities, and caster level need extra recalc
             const recalcNeededIds = [
                'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma', 'challenge',
@@ -799,8 +865,4 @@ window.ui = {
    deleteSavedTrait: () => console.warn("ui-updates.js not loaded yet"),
    parseHpStringToModal: () => console.warn("ui-updates.js not loaded yet"),
    populateDamageTypes: () => console.warn("ui-updates.js not loaded yet"),
-   // Calculation functions are no longer needed here as logic moved to main.js
-   // updateInnateCalculatedFields: () => console.warn("Calculation moved to main.js"),
-   // updateTraitCalculatedFields: () => console.warn("Calculation moved to main.js"),
-   // updateActionCalculatedFields: () => console.warn("Calculation moved to main.js")
 };

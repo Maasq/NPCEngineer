@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
    let confirmCallback = null; // Still needed for state tracking
    let changesMadeSinceExport = false; // Track changes for unload warning
    let disableUnloadWarning = false; // User preference for unload warning
+   let soloCardMode = false; // NEW global setting
 
    const baseDefaultNPC = {
       name: "", size: "", type: "", species: "", alignment: "",
@@ -204,12 +205,14 @@ document.addEventListener("DOMContentLoaded", () => {
       pronounSets,
       changesMadeSinceExport,
       disableUnloadWarning,
+      soloCardMode, // NEW
       currentlyEditingAction, // Keep state reference
       boilerplateTarget,      // Keep state reference
       confirmCallback,        // Keep state reference
 
       // Core Functions
       setDisableUnloadWarning,
+      setSoloCardMode, // NEW
       markFirstUseComplete,
       exportFullDatabase,
       importFullDatabase,
@@ -295,7 +298,8 @@ document.addEventListener("DOMContentLoaded", () => {
          metadata: {
             createdAt: new Date(),
             addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
-            pickOutTitles: true, // NEW
+            pickOutTitles: true,
+            soloCardMode: false, // Default to false
             fg_groups: [], userDefinedLanguages: [], savedTraits: []
          },
          npcs: [{ ...defaultNPC, name: "New NPC", fg_group: bestiaryName }]
@@ -321,11 +325,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!Array.isArray(bestiary.metadata.savedTraits)) bestiary.metadata.savedTraits = [];
       if (!Array.isArray(bestiary.metadata.fg_groups)) bestiary.metadata.fg_groups = [];
 
-      const metadataPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap', 'pickOutTitles']; // ADDED
+      const metadataPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap', 'pickOutTitles'];
       metadataPropsToConvert.forEach(prop => {
          if (typeof bestiary.metadata[prop] === 'number') bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
-         else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true; // Default all to true
+         else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true; // Default to true
       });
+      // Heal soloCardMode separately (default false)
+      if (typeof bestiary.metadata.soloCardMode === 'number') bestiary.metadata.soloCardMode = bestiary.metadata.soloCardMode === 1;
+      else if (bestiary.metadata.soloCardMode === undefined) bestiary.metadata.soloCardMode = false; // Default to false
+
 
       // --- NPC Healing ---
       if (!Array.isArray(bestiary.npcs)) bestiary.npcs = [];
@@ -884,7 +892,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
          const defaultValue = defaultNPC[key]; // Use local defaultNPC
 
-         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') {
+         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting' || key === 'menuSoloCardMode') {
             // Spellcasting fields handled specifically later
          } else if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') {
              // Trait spell lists/slots handled later
@@ -1135,10 +1143,19 @@ document.addEventListener("DOMContentLoaded", () => {
          console.log("Database opened successfully.");
          const firstUse = await db.settings.get('firstUseCompleted');
          if (!firstUse || !firstUse.value) window.app.openModal('first-use-modal'); // Use helper
+         
          const unloadWarning = await db.settings.get('disableUnloadWarning');
          disableUnloadWarning = (unloadWarning && unloadWarning.value === true);
          window.app.disableUnloadWarning = disableUnloadWarning; // Use window.app reference
          if(window.ui.settingDisableUnloadWarning) window.ui.settingDisableUnloadWarning.checked = disableUnloadWarning;
+         
+         // NEW: Load Solo Card Mode setting
+         const soloModeSetting = await db.settings.get('soloCardMode');
+         soloCardMode = (soloModeSetting && soloModeSetting.value === true);
+         window.app.soloCardMode = soloCardMode;
+         if(window.ui.settingSoloCardMode) window.ui.settingSoloCardMode.checked = soloCardMode;
+         if(window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = soloCardMode; // NEW
+
       } catch (error) {
          console.error("Error loading settings or opening DB:", error);
          if (error.name === 'OpenFailedError') window.app.showAlert("Database could not be opened..."); // Use helper
@@ -1146,6 +1163,8 @@ document.addEventListener("DOMContentLoaded", () => {
          else window.app.showAlert("Error loading application settings..."); // Use helper
          disableUnloadWarning = false;
          window.app.disableUnloadWarning = false; // Use window.app reference
+         soloCardMode = false; // NEW
+         window.app.soloCardMode = false; // NEW
          if (error.name !== 'OpenFailedError' && error.name !== 'VersionError') window.app.openModal('first-use-modal'); // Use helper
       }
    }
@@ -1164,6 +1183,27 @@ document.addEventListener("DOMContentLoaded", () => {
          console.error("Error saving unload warning setting:", error);
       }
    }
+   
+   // NEW: Save Solo Card Mode setting
+   async function setSoloCardMode(isEnabled) {
+      try {
+         await db.settings.put({ key: 'soloCardMode', value: isEnabled });
+         soloCardMode = isEnabled;
+         window.app.soloCardMode = isEnabled;
+         
+         // NEW: Sync both checkboxes
+         if (window.ui.settingSoloCardMode) {
+            window.ui.settingSoloCardMode.checked = isEnabled;
+         }
+         if (window.ui.menuSoloCardMode) {
+            window.ui.menuSoloCardMode.checked = isEnabled;
+         }
+
+      } catch (error) {
+         console.error("Error saving solo card mode setting:", error);
+      }
+   }
+
 
    // --- Before Unload Warning ---
    window.addEventListener('beforeunload', (event) => {

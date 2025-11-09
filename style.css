@@ -1,4 +1,8 @@
 /* style.css */
+html {
+   scroll-behavior: smooth;
+   scroll-padding-top: 152px; /* 148px header height + 4px buffer */
+}
 body { /* A simple style for our application font */
    font-family: "Lexend", sans-serif;
 }
@@ -19,10 +23,29 @@ body { /* A simple style for our application font */
    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
 }
 .input-field {
-   @apply w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
+   width: 100%;
+   background-color: #F3F4F6; /* bg-gray-100 */
+   border-width: 1px;
+   border-color: #D1D5DB; /* border-gray-300 */
+   border-radius: 0.375rem; /* rounded-md */
+   padding-left: 0.75rem; /* px-3 */
+   padding-right: 0.75rem; /* px-3 */
+   padding-top: 0.25rem; /* py-1 */
+   padding-bottom: 0.25rem; /* py-1 */
+   font-size: 0.875rem; /* text-sm */
+   line-height: 1.25rem;
+}
+.input-field:focus {
+   border-color: #6366F1; /* focus:border-indigo-500 */
+   outline: 2px solid #6366F1; /* focus:ring-2 */
+   outline-offset: 2px;
 }
 .label-text {
-   @apply block text-sm font-medium text-gray-700;
+   display: block; /* block */
+   font-size: 0.875rem; /* text-sm */
+   line-height: 1.25rem;
+   font-weight: 500; /* font-medium */
+   color: #374151; /* text-gray-700 */
 }
 .bordered-container { /* A reusable class for black borders */
    border: 1px solid black;
@@ -775,4 +798,130 @@ trix-toolbar .trix-button-group .trix-button--icon-increase-nesting-level {
 }
 trix-toolbar .trix-button-group--file-tools {
     display: none !important;
+}
+
+/* --- Quick Jump Menu --- */
+#quick-jump-menu {
+   position: fixed;
+   top: 180px; /* Position below header */
+   left: 10px;
+   width: 40px; /* Narrow default width */
+   
+   /* --- NEW: Default state (closed) styled like .btn-dark --- */
+   background: linear-gradient(to bottom, #333333 0%, #000000 100%);
+   border: 1px solid #444444;
+   box-shadow:
+     inset 0 1px 0 rgba(255, 255, 255, 0.4),
+     4px 4px 8px rgba(0, 0, 0, 0.4);
+   /* --- End new styles --- */
+   
+   border-radius: 12px; /* rounded-xl */
+   z-index: 40; /* Below modals (50) but above content */
+   overflow: hidden; /* Hide text when collapsed */
+   transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out, background 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+#quick-jump-menu:hover {
+   width: 200px; /* Expanded width */
+   
+   /* --- NEW: Hover state (open) styled like old default --- */
+   background: rgba(255, 255, 255, 0.95);
+   backdrop-filter: blur(5px);
+   border: 1px solid #CBD5E1; /* border-slate-300 */
+   /* --- End new styles --- */
+}
+#quick-jump-menu ul {
+   list-style: none;
+   padding: 0.5rem; /* p-2 */
+   margin: 0;
+   white-space: nowrap; /* Prevent text from wrapping */
+}
+#quick-jump-menu a {
+   display: block;
+   padding: 4px 12px;
+   font-size: 0.875rem; /* text-sm */
+   font-weight: 500; /* font-medium */
+   color: #374151; /* text-gray-700 */
+   text-decoration: none;
+   border-radius: 6px; /* rounded-md */
+   transition: all 0.15s ease-in-out;
+   opacity: 0; /* Hidden by default */
+}
+#quick-jump-menu:hover a {
+   opacity: 1; /* Visible on hover */
+   transition-delay: 0.15s; /* Delay appearance */
+}
+#quick-jump-menu a:hover {
+   background-color: #F1FBEA; /* Your light green card header */
+   color: #1F2937; /* text-gray-800 */
+}
+
+/* --- NEW: Styles for Quick Jump Menu Title --- */
+.quick-jump-title {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   height: 100%;
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 40px; /* Match collapsed width */
+   
+   /* Vertical text */
+   writing-mode: vertical-rl;
+   transform: rotate(180deg);
+   
+   /* Style like .btn-dark text */
+   color: #A6E33C;
+   font-weight: 600;
+   font-size: 0.875rem;
+   letter-spacing: 1px;
+   
+   pointer-events: none; /* Allow hover to pass through */
+   transition: opacity 0.3s ease-in-out;
+   opacity: 1; /* Visible by default */
+}
+#quick-jump-menu:hover .quick-jump-title {
+   opacity: 0; /* Fade out on hover */
+}
+
+/* --- NEW: Styles for Quick Jump Menu Setting --- */
+.quick-jump-divider {
+   opacity: 0;
+   transition: opacity 0.3s ease-in-out;
+}
+.quick-jump-divider hr {
+   border-top: 1px solid #CBD5E1; /* border-slate-300 */
+   margin-top: 0.5rem;
+   margin-bottom: 0.5rem;
+}
+.quick-jump-setting {
+   display: flex;
+   align-items: center;
+   padding: 4px 12px;
+   opacity: 0; /* Hidden by default */
+   transition: opacity 0.3s ease-in-out;
+}
+#quick-jump-menu:hover .quick-jump-setting,
+#quick-jump-menu:hover .quick-jump-divider {
+   opacity: 1; /* Visible on hover */
+   transition-delay: 0.15s;
+}
+.quick-jump-setting label {
+   font-size: 0.875rem;
+   font-weight: 500;
+   color: #374151;
+   margin-left: 0.5rem; /* ml-2 */
+   cursor: pointer;
+}
+.quick-jump-setting input[type="checkbox"] {
+   height: 1rem; /* h-4 */
+   width: 1rem; /* w-4 */
+   border-radius: 0.25rem; /* rounded */
+   border-color: #94A3B8; /* border-slate-400 */
+   color: #87CC24; /* text-green-500 */
+   cursor: pointer;
+}
+.quick-jump-setting input[type="checkbox"]:focus {
+   ring: 0;
+   outline: 0;
 }

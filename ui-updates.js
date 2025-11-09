@@ -7,6 +7,52 @@
 // function _updateTraitCalculatedFields() { ... }
 // function _updateActionCalculatedFields() { ... }
 
+// --- NEW Card Open Helper Function ---
+function _openCardAndHandleSoloMode(cardId) {
+   const targetCard = document.getElementById(cardId);
+   if (!targetCard) return;
+
+   const cardBody = targetCard.querySelector('.card-body');
+   if (!cardBody) return;
+
+   const isOpening = !cardBody.classList.contains('open');
+
+   // --- Solo Card Mode Logic ---
+   if (isOpening && window.app.soloCardMode) {
+      // Close all other open cards first
+      document.querySelectorAll('.card-body.open').forEach(openCard => {
+         if (openCard !== cardBody) {
+            // Close it
+            openCard.style.maxHeight = openCard.scrollHeight + 'px';
+            requestAnimationFrame(() => {
+               openCard.classList.remove('open');
+               openCard.style.maxHeight = '0';
+               openCard.style.paddingTop = '0';
+               openCard.style.paddingBottom = '0';
+            });
+         }
+      });
+   }
+   // --- End Solo Card Mode Logic ---
+
+   // --- Open the target card if it was closed ---
+   if (isOpening) {
+      cardBody.classList.add('open');
+      cardBody.style.paddingTop = '0.5rem';
+      cardBody.style.paddingBottom = '0.5rem';
+      const scrollHeight = cardBody.scrollHeight; // Get full height
+      cardBody.style.maxHeight = scrollHeight + 'px'; // Set to full height for transition
+
+      // Use a transitionend listener to set maxHeight to 'none' after transition
+      cardBody.addEventListener('transitionend', function handler() {
+         if (cardBody.classList.contains('open')) { // Only if still open
+            cardBody.style.maxHeight = 'none'; // Allow content reflow
+         }
+         cardBody.removeEventListener('transitionend', handler); // Clean up listener
+      }, { once: true });
+   }
+}
+
 
 function _showNewBestiaryModal() {
    if (window.ui.newBestiaryModal) {
@@ -200,7 +246,7 @@ function _updateFormFromActiveNPC() {
          // Skip fields handled specifically later
          if (key.startsWith('common') || key === 'attackDamageDice') continue;
          if (element.type === 'radio') continue;
-         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting') continue;
+         if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting' || key === 'menuSoloCardMode') continue;
          // Skip specific trait spell list inputs (handled in loop below)
          if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') continue;
 
@@ -332,7 +378,7 @@ function _updateFormFromActiveNPC() {
        const actionSpells = window.app.activeNPC.actionCastingSpells || window.app.defaultNPC.actionCastingSpells;
        for (let i = 0; i < 4; i++) {
          const freqInput = window.ui.inputs[`action-casting-freq-${i}`];
-         const listInput = window.ui.inputs[`action-casting-list-${i}`];
+         const listInput = window.ui.inputs[`action-list-${i}`];
          const defaultSlot = window.app.defaultNPC.actionCastingSpells[i] || { freq: "", list: "" };
           if (freqInput) freqInput.value = actionSpells[i]?.freq ?? defaultSlot.freq;
           if (listInput) listInput.value = actionSpells[i]?.list ?? defaultSlot.list;
@@ -469,6 +515,36 @@ function _updateFormFromActiveNPC() {
       if (window.ui.settingDisableUnloadWarning) {
           window.ui.settingDisableUnloadWarning.checked = window.app.disableUnloadWarning;
       }
+      // NEW: Update solo card mode checkbox based on loaded global setting
+      if (window.ui.settingSoloCardMode) {
+         window.ui.settingSoloCardMode.checked = window.app.soloCardMode;
+      }
+      // NEW: Update menu solo card mode checkbox based on loaded global setting
+      if (window.ui.menuSoloCardMode) {
+         window.ui.menuSoloCardMode.checked = window.app.soloCardMode;
+      }
+
+      // --- NEW: Handle Solo Card Mode on NPC Load ---
+      if (window.app.soloCardMode) {
+         // Close all cards first
+         document.querySelectorAll('.card-body.open').forEach(openCard => {
+            // Check if it's not already the info card, which we are about to open
+            const parentCardId = openCard.closest('.bg-white')?.id;
+            if (parentCardId !== 'info-card') {
+               openCard.style.maxHeight = openCard.scrollHeight + 'px';
+               requestAnimationFrame(() => {
+                  openCard.classList.remove('open');
+                  openCard.style.maxHeight = '0';
+                  openCard.style.paddingTop = '0';
+                  openCard.style.paddingBottom = '0';
+               });
+            }
+         });
+         // Open the info card
+         _openCardAndHandleSoloMode('info-card');
+      }
+      // --- END NEW ---
+
 
    } finally {
       window.app.isUpdatingForm = false;
@@ -805,7 +881,7 @@ function _setupTraitListeners() {
          const savedTraits = window.app.activeBestiary?.metadata?.savedTraits || [];
          const matchedTrait = savedTraits.find(t => t?.name === traitName);
          if (matchedTrait && window.ui.newTraitDescription) {
-            window.ui.newTraitDescription.value = matchedTrait.description || '';
+            window.ui.newTraitDescription.value = matchedTrait.desc || '';
          }
       });
    }
@@ -1024,15 +1100,28 @@ async function _showManageGroupsModal() {
 }
 
 function _showSettingsModal() {
-   if (!window.app.activeBestiary || !window.ui.settingsModal) return;
+   if (!window.ui.settingsModal) return; // Allow opening settings even without a bestiary
 
-   for (const key in window.ui.bestiarySettingsCheckboxes) {
-      const checkbox = window.ui.bestiarySettingsCheckboxes[key];
-      if (checkbox) checkbox.checked = window.app.activeBestiary.metadata[key] ?? true;
+   // Handle Bestiary-specific settings
+   if (window.app.activeBestiary) {
+      if(window.ui.bestiarySettingsGroup) window.ui.bestiarySettingsGroup.classList.remove('hidden');
+      for (const key in window.ui.bestiarySettingsCheckboxes) {
+         const checkbox = window.ui.bestiarySettingsCheckboxes[key];
+         if (checkbox) checkbox.checked = window.app.activeBestiary.metadata[key] ?? true;
+      }
+   } else {
+      if(window.ui.bestiarySettingsGroup) window.ui.bestiarySettingsGroup.classList.add('hidden');
    }
-   // Update the unload warning checkbox based on loaded global setting
+   
+   // Handle Global settings
    if (window.ui.settingDisableUnloadWarning) {
       window.ui.settingDisableUnloadWarning.checked = window.app.disableUnloadWarning;
+   }
+   if (window.ui.settingSoloCardMode) { // NEW
+      window.ui.settingSoloCardMode.checked = window.app.soloCardMode;
+   }
+   if (window.ui.menuSoloCardMode) { // NEW - Sync menu checkbox
+      window.ui.menuSoloCardMode.checked = window.app.soloCardMode;
    }
 
    window.app.openModal('settings-modal');
@@ -1751,6 +1840,7 @@ if (window.ui) {
    window.ui.addNewSavedTrait = _addNewSavedTrait;
    window.ui.deleteSavedTrait = _deleteSavedTrait;
    window.ui.parseHpStringToModal = _parseHpStringToModal;
+   window.ui.openCardAndHandleSoloMode = _openCardAndHandleSoloMode; // NEW
    window.ui.populateDamageTypes = _populateDamageTypes;
 } else {
    console.error("window.ui object not found! Ensure ui-elements.js loads before ui-updates.js.");
