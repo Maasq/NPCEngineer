@@ -44,17 +44,22 @@ window.ui = {
    firstUseModal: null,
    importDbConfirmModal: null,
    clipboardModal: null,
-   importModal: null, // NEW
-   importPaneRaw: null, // NEW
-   importPaneFiltered: null, // NEW
-   importSourceArea: null, // NEW
-   importTextArea: null, // NEW (the cleaned one)
-   importFilterSelect: null, // NEW
-   importFilterStatus: null, // NEW
-   importCancelBtn: null, // NEW
-   importConfirmBtn: null, // NEW
-   importClearBtn: null, // NEW
-   importToggleViewBtn: null, // NEW
+   importModal: null,
+   importPaneRaw: null,
+   importPaneFiltered: null,
+   importSourceArea: null,
+   importTextArea: null,
+   importFilterSelect: null,
+   importFilterStatus: null,
+   importCancelBtn: null,
+   importConfirmBtn: null,
+   importClearBtn: null,
+   importToggleViewBtn: null,
+   fgExportModal: null, // NEW
+   fgExportCancelBtn: null, // NEW
+   fgExportSaveBtn: null, // NEW
+   fgCoverImageEl: null, // NEW
+   fgCoverClearBtn: null, // NEW
    createBestiaryBtn: null,
    newBestiaryNameInput: null,
    bestiaryListDiv: null,
@@ -64,8 +69,8 @@ window.ui = {
    newGroupNameInput: null,
    groupListDiv: null,
    settingsOkBtn: null,
-   bestiarySettingsGroup: null, // NEW
-   settingSoloCardMode: null, // NEW
+   bestiarySettingsGroup: null,
+   settingSoloCardMode: null,
    manageLanguagesBtn: null,
    newLanguageNameInput: null,
    addLanguageBtn: null,
@@ -122,8 +127,8 @@ window.ui = {
    clipboardCancelBtn: null,
    clipboardProcessBtn: null, // Renamed
    bestiaryPickOutTitles: null,
-   quickJumpTitle: null, // NEW
-   menuSoloCardMode: null, // NEW
+   quickJumpTitle: null,
+   menuSoloCardMode: null,
    bestiarySettingsCheckboxes: {},
    npcSettingsCheckboxes: {},
    inputs: {},
@@ -175,17 +180,22 @@ window.ui = {
       this.firstUseModal = document.getElementById('first-use-modal');
       this.importDbConfirmModal = document.getElementById('import-db-confirm-modal');
       this.clipboardModal = document.getElementById('clipboard-modal');
-      this.importModal = document.getElementById('import-modal'); // NEW
-      this.importPaneRaw = document.getElementById('import-pane-raw'); // NEW
-      this.importPaneFiltered = document.getElementById('import-pane-filtered'); // NEW
-      this.importSourceArea = document.getElementById('import-source-area'); // NEW
-      this.importTextArea = document.getElementById('import-text-area'); // NEW
-      this.importFilterSelect = document.getElementById('import-filter-select'); // NEW
-      this.importFilterStatus = document.getElementById('import-filter-status'); // NEW
-      this.importCancelBtn = document.getElementById('import-cancel-btn'); // NEW
-      this.importConfirmBtn = document.getElementById('import-confirm-btn'); // NEW
-      this.importClearBtn = document.getElementById('import-clear-btn'); // NEW
-      this.importToggleViewBtn = document.getElementById('import-toggle-view-btn'); // NEW
+      this.importModal = document.getElementById('import-modal');
+      this.importPaneRaw = document.getElementById('import-pane-raw');
+      this.importPaneFiltered = document.getElementById('import-pane-filtered');
+      this.importSourceArea = document.getElementById('import-source-area');
+      this.importTextArea = document.getElementById('import-text-area');
+      this.importFilterSelect = document.getElementById('import-filter-select');
+      this.importFilterStatus = document.getElementById('import-filter-status');
+      this.importCancelBtn = document.getElementById('import-cancel-btn');
+      this.importConfirmBtn = document.getElementById('import-confirm-btn');
+      this.importClearBtn = document.getElementById('import-clear-btn');
+      this.importToggleViewBtn = document.getElementById('import-toggle-view-btn');
+      this.fgExportModal = document.getElementById('fg-export-modal'); // NEW
+      this.fgExportCancelBtn = document.getElementById('fg-export-cancel-btn'); // NEW
+      this.fgExportSaveBtn = document.getElementById('fg-export-save-btn'); // NEW
+      this.fgCoverImageEl = document.getElementById('fg-cover-image'); // NEW
+      this.fgCoverClearBtn = document.getElementById('fg-cover-clear-btn'); // NEW
       this.createBestiaryBtn = document.getElementById("create-bestiary-btn");
       this.newBestiaryNameInput = document.getElementById("new-bestiary-name");
       this.bestiaryListDiv = document.getElementById("bestiary-list");
@@ -195,8 +205,8 @@ window.ui = {
       this.newGroupNameInput = document.getElementById('new-group-name');
       this.groupListDiv = document.getElementById('group-list');
       this.settingsOkBtn = document.getElementById('settings-ok-btn');
-      this.bestiarySettingsGroup = document.getElementById('bestiary-settings-group'); // NEW
-      this.settingSoloCardMode = document.getElementById('setting-solo-card-mode'); // NEW
+      this.bestiarySettingsGroup = document.getElementById('bestiary-settings-group');
+      this.settingSoloCardMode = document.getElementById('setting-solo-card-mode');
       this.manageLanguagesBtn = document.getElementById('manage-languages-btn');
       this.newLanguageNameInput = document.getElementById('new-language-name');
       this.addLanguageBtn = document.getElementById('add-language-btn');
@@ -253,8 +263,8 @@ window.ui = {
       this.clipboardCancelBtn = document.getElementById('clipboard-cancel-btn');
       this.clipboardProcessBtn = document.getElementById('clipboard-process-btn'); // Renamed
       this.bestiaryPickOutTitles = document.getElementById('bestiary-pick-out-titles');
-      this.quickJumpTitle = document.getElementById('quick-jump-title'); // NEW
-      this.menuSoloCardMode = document.getElementById('menu-solo-card-mode'); // NEW
+      this.quickJumpTitle = document.getElementById('quick-jump-title');
+      this.menuSoloCardMode = document.getElementById('menu-solo-card-mode');
       this.bestiarySettingsCheckboxes = {
          addDescription: document.getElementById('bestiary-add-description'),
          addTitle: document.getElementById('bestiary-add-title'),
@@ -324,7 +334,16 @@ window.ui = {
          actionCastingAbility: document.getElementById('npc-action-casting-ability'),
          actionCastingDC: document.getElementById('npc-action-casting-dc'),
          actionCastingComponents: document.getElementById('npc-action-casting-components'),
-         menuSoloCardMode: document.getElementById('menu-solo-card-mode'), // NEW
+         menuSoloCardMode: document.getElementById('menu-solo-card-mode'),
+         // FG Export Modal Inputs // NEW
+         fgBestiaryTitle: document.getElementById('fg-bestiary-title'),
+         fgBestiaryAuthor: document.getElementById('fg-bestiary-author'),
+         fgBestiaryFilename: document.getElementById('fg-bestiary-filename'),
+         fgBestiaryDisplayname: document.getElementById('fg-bestiary-displayname'),
+         fgCoverUpload: document.getElementById('fg-cover-upload'),
+         fgModLock: document.getElementById('fg-mod-lock'),
+         fgGmView: document.getElementById('fg-gm-view'),
+         fgPlayerView: document.getElementById('fg-player-view'),
       };
       // Loop for Innate and Action casting freq/list fields
       for (let i = 0; i < 4; i++) {
@@ -864,5 +883,6 @@ window.ui = {
    addNewSavedTrait: () => console.warn("ui-updates.js not loaded yet"),
    deleteSavedTrait: () => console.warn("ui-updates.js not loaded yet"),
    parseHpStringToModal: () => console.warn("ui-updates.js not loaded yet"),
+   openCardAndHandleSoloMode: () => console.warn("ui-updates.js not loaded yet"),
    populateDamageTypes: () => console.warn("ui-updates.js not loaded yet"),
 };

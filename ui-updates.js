@@ -53,6 +53,17 @@ function _openCardAndHandleSoloMode(cardId) {
    }
 }
 
+// --- NEW FG Export Modal Function ---
+function _openFgExportModal() {
+   // This function is now defined in export-fg.js and attached to window.fgExporter
+   // This call assumes export-fg.js has loaded and attached its object
+   if (window.fgExporter && typeof window.fgExporter.openExportModal === 'function') {
+      window.fgExporter.openExportModal();
+   } else {
+      console.error("FG Exporter is not initialized.");
+      window.app.showAlert("Error: FG Export module is not loaded.");
+   }
+}
 
 function _showNewBestiaryModal() {
    if (window.ui.newBestiaryModal) {
@@ -247,6 +258,7 @@ function _updateFormFromActiveNPC() {
          if (key.startsWith('common') || key === 'attackDamageDice') continue;
          if (element.type === 'radio') continue;
          if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting' || key === 'menuSoloCardMode') continue;
+         if (key.startsWith('fg-')) continue; // Skip FG modal inputs
          // Skip specific trait spell list inputs (handled in loop below)
          if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') continue;
 
@@ -955,6 +967,19 @@ function _setupActionListeners() {
       window.app.createDiceSelector(primaryDiceSelector, attackDamageDiceInput);
    }
 }
+
+// --- NEW: FG Export Modal Listeners Setup ---
+function _setupFgExportModalListeners() {
+   // This logic is now handled by export-fg.js in its own init()
+   // This function is kept here to be added to the ui export,
+   // but its functionality is deferred to the fgExporter object.
+   // The call inside ui-elements.js setupEventListeners will
+   // trigger this, which will in turn trigger fgExporter.init()
+   // ... or rather, fgExporter.init() is called by main.js
+   // so this function is actually no longer needed here.
+   // We will remove it.
+}
+
 
 function _setupDragAndDrop(box, validTypes, npcKey, updateFn) {
    if (!box) return;
@@ -1794,6 +1819,14 @@ function _setupClipboardModalListeners() {
    }
 }
 
+// --- NEW: FG Export Modal Listeners Setup ---
+function _setupFgExportModalListeners() {
+   // This function is now defined in export-fg.js and attached to window.fgExporter
+   // This call assumes export-fg.js has loaded and attached its object
+   // We will rely on the listener setup in export-fg.js's init() method
+   // This function can be a placeholder or removed if init is called elsewhere
+}
+
 
 // --- Assign functions to window.ui object ---
 // Make sure this runs AFTER ui-elements.js has defined window.ui
@@ -1821,7 +1854,8 @@ if (window.ui) {
    window.ui.setupLanguageListeners = _setupLanguageListeners;
    window.ui.setupTraitListeners = _setupTraitListeners;
    window.ui.setupActionListeners = _setupActionListeners;
-   window.ui.setupClipboardModalListeners = _setupClipboardModalListeners; // NEW
+   window.ui.setupClipboardModalListeners = _setupClipboardModalListeners;
+   window.ui.setupFgExportModalListeners = _setupFgExportModalListeners; // NEW
    window.ui.setupDragAndDrop = _setupDragAndDrop;
    window.ui.showLoadBestiaryModal = _showLoadBestiaryModal;
    window.ui.showManageGroupsModal = _showManageGroupsModal;
@@ -1840,7 +1874,8 @@ if (window.ui) {
    window.ui.addNewSavedTrait = _addNewSavedTrait;
    window.ui.deleteSavedTrait = _deleteSavedTrait;
    window.ui.parseHpStringToModal = _parseHpStringToModal;
-   window.ui.openCardAndHandleSoloMode = _openCardAndHandleSoloMode; // NEW
+   window.ui.openCardAndHandleSoloMode = _openCardAndHandleSoloMode;
+   window.ui.openFgExportModal = _openFgExportModal; // NEW
    window.ui.populateDamageTypes = _populateDamageTypes;
 } else {
    console.error("window.ui object not found! Ensure ui-elements.js loads before ui-updates.js.");

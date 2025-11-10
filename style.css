@@ -5,6 +5,8 @@ html {
 }
 body { /* A simple style for our application font */
    font-family: "Lexend", sans-serif;
+   position: relative; /* Required for pseudo-element positioning */
+   overflow-x: hidden; /* Prevent horizontal scroll from large blobs */
 }
 .card-body { /* Custom styles for the card collapse/expand transition */
    max-height: 0;
@@ -924,4 +926,26 @@ trix-toolbar .trix-button-group--file-tools {
 .quick-jump-setting input[type="checkbox"]:focus {
    ring: 0;
    outline: 0;
+}
+
+/* --- NEW: Styles for FG Export Modal --- */
+#fg-cover-image {
+   padding: 0;
+   position: relative; /* For clear button positioning */
+}
+#fg-cover-image span {
+   padding: 0.5rem; /* Give placeholder text padding */
+}
+#fg-cover-clear-btn {
+   position: absolute;
+   top: 0.25rem;
+   right: 0.25rem;
+   background-color: rgba(255, 255, 255, 0.7);
+   border-radius: 99px;
+   padding: 0.1rem 0.25rem;
+   font-size: 8pt;
+}
+#fg-cover-clear-btn:hover {
+   background-color: #9fd650;
+   color: black;
 }

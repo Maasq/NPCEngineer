@@ -333,6 +333,15 @@ document.addEventListener("DOMContentLoaded", () => {
       // Heal soloCardMode separately (default false)
       if (typeof bestiary.metadata.soloCardMode === 'number') bestiary.metadata.soloCardMode = bestiary.metadata.soloCardMode === 1;
       else if (bestiary.metadata.soloCardMode === undefined) bestiary.metadata.soloCardMode = false; // Default to false
+      
+      // NEW: Heal FG export fields
+      if (bestiary.metadata.fgBestiaryTitle === undefined) bestiary.metadata.fgBestiaryTitle = null;
+      if (bestiary.metadata.fgBestiaryAuthor === undefined) bestiary.metadata.fgBestiaryAuthor = null;
+      if (bestiary.metadata.fgBestiaryFilename === undefined) bestiary.metadata.fgBestiaryFilename = null;
+      if (bestiary.metadata.fgBestiaryDisplayname === undefined) bestiary.metadata.fgBestiaryDisplayname = null;
+      if (bestiary.metadata.fgCoverImage === undefined) bestiary.metadata.fgCoverImage = null;
+      if (bestiary.metadata.fgModLock === undefined) bestiary.metadata.fgModLock = false; // Default to false
+      if (bestiary.metadata.fgGMonly === undefined) bestiary.metadata.fgGMonly = true; // Default to true
 
 
       // --- NPC Healing ---
@@ -816,12 +825,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
    async function exportBestiaryToFG() {
-      if (!window.app.activeBestiary) { // Use window.app reference
-         window.app.showAlert("No active bestiary to export."); // Use helper
+      if (!window.app.activeBestiary) {
+         window.app.showAlert("No active bestiary to export.");
          return;
       }
-      window.app.showAlert("Fantasy Grounds export is not yet implemented."); // Use helper
-      console.log("Placeholder: Exporting Bestiary to FG format...");
+      // NEW: Open the modal instead of showing an alert
+      if (window.ui.openFgExportModal) {
+         window.ui.openFgExportModal();
+      } else {
+         console.error("openFgExportModal function not found on UI object.");
+         window.app.showAlert("Error opening export settings. Function not found.");
+      }
    }
 
 
@@ -879,6 +893,7 @@ document.addEventListener("DOMContentLoaded", () => {
             continue;
          }
          if (key.startsWith('common') || key === 'attackDamageDice') continue; // Skip action editor fields
+         if (key.startsWith('fg-')) continue; // NEW: Skip FG modal inputs
          if (element.type === 'radio') { // Handle radio groups
             if(element.checked) {
                // Special handling for spellcasting placement
@@ -1219,6 +1234,7 @@ document.addEventListener("DOMContentLoaded", () => {
    // --- INITIALIZATION ---
    window.ui.init();
    window.importer.init();
+   // window.fgExporter.init(); // This is now called from export-fg.js itself
    loadSettings();
    window.ui.updateUIForActiveBestiary();
 
