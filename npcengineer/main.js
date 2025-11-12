@@ -70,6 +70,17 @@ document.addEventListener("DOMContentLoaded", () => {
    let changesMadeSinceExport = false; // Track changes for unload warning
    let disableUnloadWarning = false; // User preference for unload warning
    let soloCardMode = false; // NEW global setting
+   // NEW: Global Graphics Settings
+   let settingConvertWebp = false;
+   let settingWebpQuality = 80;
+   let settingResizePortrait = false;
+   let settingPortraitMaxWidth = 1000;
+   let settingPortraitMaxHeight = 1000;
+   let settingResizeToken = false;
+   let settingTokenSize = 300;
+   let settingResizeCameraToken = false; // For future use
+   let settingCameraTokenMaxWidth = 1000; // For future use
+   let settingCameraTokenMaxHeight = 1000; // For future use
 
    const baseDefaultNPC = {
       name: "", size: "", type: "", species: "", alignment: "",
@@ -206,6 +217,17 @@ document.addEventListener("DOMContentLoaded", () => {
       changesMadeSinceExport,
       disableUnloadWarning,
       soloCardMode, // NEW
+      // NEW: Graphics Settings state
+      settingConvertWebp,
+      settingWebpQuality,
+      settingResizePortrait,
+      settingPortraitMaxWidth,
+      settingPortraitMaxHeight,
+      settingResizeToken,
+      settingTokenSize,
+      settingResizeCameraToken,
+      settingCameraTokenMaxWidth,
+      settingCameraTokenMaxHeight,
       currentlyEditingAction, // Keep state reference
       boilerplateTarget,      // Keep state reference
       confirmCallback,        // Keep state reference
@@ -213,6 +235,17 @@ document.addEventListener("DOMContentLoaded", () => {
       // Core Functions
       setDisableUnloadWarning,
       setSoloCardMode, // NEW
+      // NEW: Graphics Settings setters
+      setConvertWebp,
+      setWebpQuality,
+      setResizePortrait,
+      setPortraitMaxWidth,
+      setPortraitMaxHeight,
+      setResizeToken,
+      setTokenSize,
+      setResizeCameraToken,
+      setCameraTokenMaxWidth,
+      setCameraTokenMaxHeight,
       markFirstUseComplete,
       exportFullDatabase,
       importFullDatabase,
@@ -894,6 +927,7 @@ document.addEventListener("DOMContentLoaded", () => {
          }
          if (key.startsWith('common') || key === 'attackDamageDice') continue; // Skip action editor fields
          if (key.startsWith('fg-')) continue; // NEW: Skip FG modal inputs
+         if (key.startsWith('setting-')) continue; // NEW: Skip global settings inputs
          if (element.type === 'radio') { // Handle radio groups
             if(element.checked) {
                // Special handling for spellcasting placement
@@ -1152,34 +1186,101 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
    // --- Settings Persistence ---
+   
+   // --- NEW: Helper to load and save a setting ---
+   /**
+    * Fetches a setting from DB, applies default, and saves default if not present.
+    * @param {string} key - The setting key.
+    * @param {*} defaultValue - The default value if not found.
+    * @param {string} [globalVarName] - The name of the global variable in window.app to update.
+    * @param {HTMLElement} [uiElement] - The UI element to update.
+    */
+   async function loadAndSetSetting(key, defaultValue, globalVarName, uiElement) {
+      let setting = await db.settings.get(key);
+      let value;
+
+      if (setting === undefined) {
+         value = defaultValue;
+         // Save the default back to Dexie if it wasn't found
+         await db.settings.put({ key, value });
+      } else {
+         value = setting.value;
+      }
+
+      // Update the global state
+      if (globalVarName) {
+         window.app[globalVarName] = value;
+         
+         // Dynamically update the local-scope variable if it exists
+         // This relies on local variable names matching globalVarName
+         try {
+            if (eval(`typeof ${globalVarName}`) !== 'undefined') {
+               eval(`${globalVarName} = value;`);
+            }
+         } catch (e) {
+             console.warn(`Could not set local-scope variable ${globalVarName}:`, e);
+         }
+      }
+      
+      // Update the UI
+      if (uiElement) {
+         if (uiElement.type === 'checkbox') {
+            uiElement.checked = value;
+         } else {
+            uiElement.value = value;
+         }
+      }
+   }
+   
    async function loadSettings() {
       try {
          await db.open();
          console.log("Database opened successfully.");
-         const firstUse = await db.settings.get('firstUseCompleted');
-         if (!firstUse || !firstUse.value) window.app.openModal('first-use-modal'); // Use helper
-         
-         const unloadWarning = await db.settings.get('disableUnloadWarning');
-         disableUnloadWarning = (unloadWarning && unloadWarning.value === true);
-         window.app.disableUnloadWarning = disableUnloadWarning; // Use window.app reference
-         if(window.ui.settingDisableUnloadWarning) window.ui.settingDisableUnloadWarning.checked = disableUnloadWarning;
-         
-         // NEW: Load Solo Card Mode setting
-         const soloModeSetting = await db.settings.get('soloCardMode');
-         soloCardMode = (soloModeSetting && soloModeSetting.value === true);
-         window.app.soloCardMode = soloCardMode;
-         if(window.ui.settingSoloCardMode) window.ui.settingSoloCardMode.checked = soloCardMode;
-         if(window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = soloCardMode; // NEW
+
+         // --- Load settings using the new helper ---
+         const firstUseSetting = await db.settings.get('firstUseCompleted');
+         if (!firstUseSetting || !firstUseSetting.value) {
+            window.app.openModal('first-use-modal');
+            // Don't save default for firstUse, let user action do it
+         }
+
+         await loadAndSetSetting('disableUnloadWarning', false, 'disableUnloadWarning', window.ui.settingDisableUnloadWarning);
+         await loadAndSetSetting('soloCardMode', false, 'soloCardMode', window.ui.settingSoloCardMode);
+         if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = window.app.soloCardMode; // Sync menu
+
+         // --- Graphics Settings ---
+         await loadAndSetSetting('settingConvertWebp', false, 'settingConvertWebp', window.ui.inputs.settingConvertWebp);
+         await loadAndSetSetting('settingWebpQuality', 80, 'settingWebpQuality', window.ui.inputs.settingWebpQuality);
+         await loadAndSetSetting('settingResizePortrait', false, 'settingResizePortrait', window.ui.inputs.settingResizePortrait);
+         await loadAndSetSetting('settingPortraitMaxWidth', 1000, 'settingPortraitMaxWidth', window.ui.inputs.settingPortraitMaxWidth);
+         await loadAndSetSetting('settingPortraitMaxHeight', 1000, 'settingPortraitMaxHeight', window.ui.inputs.settingPortraitMaxHeight);
+         await loadAndSetSetting('settingResizeToken', false, 'settingResizeToken', window.ui.inputs.settingResizeToken);
+         await loadAndSetSetting('settingTokenSize', 300, 'settingTokenSize', window.ui.inputs.settingTokenSize);
+         await loadAndSetSetting('settingResizeCameraToken', false, 'settingResizeCameraToken', window.ui.inputs.settingResizeCameraToken);
+         await loadAndSetSetting('settingCameraTokenMaxWidth', 1000, 'settingCameraTokenMaxWidth', window.ui.inputs.settingCameraTokenMaxWidth);
+         await loadAndSetSetting('settingCameraTokenMaxHeight', 1000, 'settingCameraTokenMaxHeight', window.ui.inputs.settingCameraTokenMaxHeight);
+         // --- End Graphics Settings ---
 
       } catch (error) {
          console.error("Error loading settings or opening DB:", error);
          if (error.name === 'OpenFailedError') window.app.showAlert("Database could not be opened..."); // Use helper
          else if (error.name === 'VersionError') window.app.showAlert("Database version conflict..."); // Use helper
          else window.app.showAlert("Error loading application settings..."); // Use helper
-         disableUnloadWarning = false;
-         window.app.disableUnloadWarning = false; // Use window.app reference
-         soloCardMode = false; // NEW
-         window.app.soloCardMode = false; // NEW
+         
+         // Manually set all defaults on error
+         disableUnloadWarning = false; window.app.disableUnloadWarning = false;
+         soloCardMode = false; window.app.soloCardMode = false;
+         settingConvertWebp = false; window.app.settingConvertWebp = false;
+         settingWebpQuality = 80; window.app.settingWebpQuality = 80;
+         settingResizePortrait = false; window.app.settingResizePortrait = false;
+         settingPortraitMaxWidth = 1000; window.app.settingPortraitMaxWidth = 1000;
+         settingPortraitMaxHeight = 1000; window.app.settingPortraitMaxHeight = 1000;
+         settingResizeToken = false; window.app.settingResizeToken = false;
+         settingTokenSize = 300; window.app.settingTokenSize = 300;
+         settingResizeCameraToken = false; window.app.settingResizeCameraToken = false;
+         settingCameraTokenMaxWidth = 1000; window.app.settingCameraTokenMaxWidth = 1000;
+         settingCameraTokenMaxHeight = 1000; window.app.settingCameraTokenMaxHeight = 1000;
+
          if (error.name !== 'OpenFailedError' && error.name !== 'VersionError') window.app.openModal('first-use-modal'); // Use helper
       }
    }
@@ -1189,35 +1290,84 @@ document.addEventListener("DOMContentLoaded", () => {
       catch (error) { console.error("Error saving first use setting:", error); }
    }
 
-   async function setDisableUnloadWarning(isDisabled) {
+   // --- NEW: Generic Setting Saver ---
+   async function saveSetting(key, value) {
       try {
-         await db.settings.put({ key: 'disableUnloadWarning', value: isDisabled });
-         disableUnloadWarning = isDisabled;
-         window.app.disableUnloadWarning = isDisabled; // Use window.app reference
+         await db.settings.put({ key, value });
+         // Update the global state variable
+         if (window.app.hasOwnProperty(key)) {
+            window.app[key] = value;
+         } else {
+            console.warn(`Global state key ${key} not found in window.app.`);
+         }
       } catch (error) {
-         console.error("Error saving unload warning setting:", error);
+         console.error(`Error saving setting ${key}:`, error);
       }
+   }
+
+   async function setDisableUnloadWarning(isDisabled) {
+      disableUnloadWarning = isDisabled; // Update local scope
+      await saveSetting('disableUnloadWarning', isDisabled);
    }
    
-   // NEW: Save Solo Card Mode setting
    async function setSoloCardMode(isEnabled) {
-      try {
-         await db.settings.put({ key: 'soloCardMode', value: isEnabled });
-         soloCardMode = isEnabled;
-         window.app.soloCardMode = isEnabled;
-         
-         // NEW: Sync both checkboxes
-         if (window.ui.settingSoloCardMode) {
-            window.ui.settingSoloCardMode.checked = isEnabled;
-         }
-         if (window.ui.menuSoloCardMode) {
-            window.ui.menuSoloCardMode.checked = isEnabled;
-         }
-
-      } catch (error) {
-         console.error("Error saving solo card mode setting:", error);
-      }
+      soloCardMode = isEnabled; // Update local scope
+      await saveSetting('soloCardMode', isEnabled);
+      // Sync both checkboxes
+      if (window.ui.settingSoloCardMode) window.ui.settingSoloCardMode.checked = isEnabled;
+      if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = isEnabled;
    }
+
+   // --- NEW: Graphics Settings Savers ---
+   async function setConvertWebp(isEnabled) {
+      settingConvertWebp = isEnabled; // Update local scope
+      await saveSetting('settingConvertWebp', isEnabled);
+   }
+   async function setResizePortrait(isEnabled) {
+      settingResizePortrait = isEnabled; // Update local scope
+      await saveSetting('settingResizePortrait', isEnabled);
+   }
+   async function setResizeToken(isEnabled) {
+      settingResizeToken = isEnabled; // Update local scope
+      await saveSetting('settingResizeToken', isEnabled);
+   }
+   async function setResizeCameraToken(isEnabled) {
+      settingResizeCameraToken = isEnabled; // Update local scope
+      await saveSetting('settingResizeCameraToken', isEnabled);
+   }
+   
+   // Number value setters
+   async function setWebpQuality(value) {
+      const numValue = parseInt(value, 10) || 80;
+      settingWebpQuality = numValue; // Update local scope
+      await saveSetting('settingWebpQuality', numValue);
+   }
+   async function setPortraitMaxWidth(value) {
+      const numValue = parseInt(value, 10) || 1000;
+      settingPortraitMaxWidth = numValue; // Update local scope
+      await saveSetting('settingPortraitMaxWidth', numValue);
+   }
+   async function setPortraitMaxHeight(value) {
+      const numValue = parseInt(value, 10) || 1000;
+      settingPortraitMaxHeight = numValue; // Update local scope
+      await saveSetting('settingPortraitMaxHeight', numValue);
+   }
+   async function setTokenSize(value) {
+      const numValue = parseInt(value, 10) || 300;
+      settingTokenSize = numValue; // Update local scope
+      await saveSetting('settingTokenSize', numValue);
+   }
+   async function setCameraTokenMaxWidth(value) {
+      const numValue = parseInt(value, 10) || 1000;
+      settingCameraTokenMaxWidth = numValue; // Update local scope
+      await saveSetting('settingCameraTokenMaxWidth', numValue);
+   }
+   async function setCameraTokenMaxHeight(value) {
+      const numValue = parseInt(value, 10) || 1000;
+      settingCameraTokenMaxHeight = numValue; // Update local scope
+      await saveSetting('settingCameraTokenMaxHeight', numValue);
+   }
+   // --- END Graphics Settings Savers ---
 
 
    // --- Before Unload Warning ---

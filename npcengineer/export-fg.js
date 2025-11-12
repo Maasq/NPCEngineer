@@ -139,7 +139,13 @@ window.fgExporter = {
       }
 
       try {
-         const resizedDataUrl = await this.resizeImage(file, 100, 100);
+         // --- MODIFIED: Call the new global graphics utility ---
+         const resizedDataUrl = await window.graphicsUtils.processImage(file, { 
+            maxWidth: 100, 
+            maxHeight: 100, 
+            outputFormat: 'image/png' 
+         });
+         // --- END MODIFICATION ---
          
          // Save to active bestiary
          if (window.app.activeBestiary) {
@@ -191,57 +197,8 @@ window.fgExporter = {
    },
 
    /**
-    * Resizes an image file to fit within a max width/height.
-    * @param {File} file The image file.
-    * @param {number} maxWidth Max width.
-    * @param {number} maxHeight Max height.
-    * @returns {Promise<string>} A promise that resolves with the resized image as a PNG data URL.
+    * --- REMOVED resizeImage function ---
     */
-   resizeImage(file, maxWidth, maxHeight) {
-      return new Promise((resolve, reject) => {
-         const reader = new FileReader();
-         reader.onload = (event) => {
-            const img = new Image();
-            img.onload = () => {
-               const canvas = document.createElement('canvas');
-               const ctx = canvas.getContext('2d');
-
-               let width = img.width;
-               let height = img.height;
-
-               // Calculate new dimensions while maintaining aspect ratio
-               if (width > height) {
-                  if (width > maxWidth) {
-                     height = Math.round(height * (maxWidth / width));
-                     width = maxWidth;
-                  }
-               } else {
-                  if (height > maxHeight) {
-                     width = Math.round(width * (maxHeight / height));
-                     height = maxHeight;
-                  }
-               }
-
-               canvas.width = width;
-               canvas.height = height;
-               
-               // Draw the image onto the canvas
-               ctx.drawImage(img, 0, 0, width, height);
-               
-               // Get the resized image as a PNG data URL
-               resolve(canvas.toDataURL('image/png'));
-            };
-            img.onerror = (error) => {
-               reject(error);
-            };
-            img.src = event.target.result;
-         };
-         reader.onerror = (error) => {
-            reject(error);
-         };
-         reader.readAsDataURL(file);
-      });
-   },
    
    /**
     * Sets up all event listeners for the FG Export Modal.

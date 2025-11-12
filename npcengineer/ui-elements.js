@@ -344,6 +344,17 @@ window.ui = {
          fgModLock: document.getElementById('fg-mod-lock'),
          fgGmView: document.getElementById('fg-gm-view'),
          fgPlayerView: document.getElementById('fg-player-view'),
+         // NEW Graphics Settings Inputs
+         settingConvertWebp: document.getElementById('setting-convert-webp'),
+         settingWebpQuality: document.getElementById('setting-webp-quality'),
+         settingResizePortrait: document.getElementById('setting-resize-portrait'),
+         settingPortraitMaxWidth: document.getElementById('setting-portrait-max-width'),
+         settingPortraitMaxHeight: document.getElementById('setting-portrait-max-height'),
+         settingResizeToken: document.getElementById('setting-resize-token'),
+         settingTokenSize: document.getElementById('setting-token-size'),
+         settingResizeCameraToken: document.getElementById('setting-resize-camera-token'),
+         settingCameraTokenMaxWidth: document.getElementById('setting-camera-token-max-width'),
+         settingCameraTokenMaxHeight: document.getElementById('setting-camera-token-max-height'),
       };
       // Loop for Innate and Action casting freq/list fields
       for (let i = 0; i < 4; i++) {
@@ -686,8 +697,27 @@ window.ui = {
             const file = event.target.files[0];
             if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp")) {
                const reader = new FileReader();
-               reader.onload = (e) => {
-                  window.app.activeNPC.token = e.target.result;
+               reader.onload = async (e) => {
+                  try {
+                     const options = {
+                        outputFormat: window.app.settingConvertWebp ? 'image/webp' : file.type,
+                        quality: window.app.settingWebpQuality || 80,
+                     };
+                     if (window.app.settingResizeToken) {
+                        const size = window.app.settingTokenSize || 300;
+                        options.maxWidth = size;
+                        options.maxHeight = size;
+                     }
+
+                     const processedDataUrl = await window.graphicsUtils.processImage(e.target.result, options);
+                     window.app.activeNPC.token = processedDataUrl;
+                     
+                  } catch (error) {
+                     console.error("Error processing token image:", error);
+                     window.app.showAlert("Error processing token image. Saving original.");
+                     window.app.activeNPC.token = e.target.result;
+                  }
+                  
                   this.updateTokenDisplay(); // Use 'this'
                   window.app.saveActiveBestiaryToDB();
                };
@@ -704,8 +734,26 @@ window.ui = {
             const file = event.target.files[0];
             if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp" || file.type === "image/jpeg")) {
                const reader = new FileReader();
-               reader.onload = (e) => {
-                  window.app.activeNPC.image = e.target.result;
+               reader.onload = async (e) => {
+                  try {
+                     const options = {
+                        outputFormat: window.app.settingConvertWebp ? 'image/webp' : file.type,
+                        quality: window.app.settingWebpQuality || 80,
+                     };
+                     if (window.app.settingResizePortrait) {
+                        options.maxWidth = window.app.settingPortraitMaxWidth || 1000;
+                        options.maxHeight = window.app.settingPortraitMaxHeight || 1000;
+                     }
+                     
+                     const processedDataUrl = await window.graphicsUtils.processImage(e.target.result, options);
+                     window.app.activeNPC.image = processedDataUrl;
+
+                  } catch (error) {
+                     console.error("Error processing portrait image:", error);
+                     window.app.showAlert("Error processing portrait image. Saving original.");
+                     window.app.activeNPC.image = e.target.result;
+                  }
+
                   this.updateImageDisplay(); // Use 'this'
                   window.app.saveActiveBestiaryToDB();
                };
@@ -837,6 +885,7 @@ window.ui = {
       if (typeof this.setupTraitListeners === 'function') this.setupTraitListeners();
       if (typeof this.setupActionListeners === 'function') this.setupActionListeners();
       if (typeof this.setupClipboardModalListeners === 'function') this.setupClipboardModalListeners();
+      if (typeof this.setupSettingsListeners === 'function') this.setupSettingsListeners(); // NEW
    },
 
    // Placeholder for methods defined in ui-updates.js
@@ -852,17 +901,18 @@ window.ui = {
    updateImageDisplay: () => console.warn("ui-updates.js not loaded yet"),
    populateChallengeDropdown: () => console.warn("ui-updates.js not loaded yet"),
    populateCasterLevelDropdown: () => console.warn("ui-updates.js not loaded yet"),
-   setupCustomToggles: () => console.warn("ui-updates.js not loaded yet"),
-   setupSavingThrowListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupSkillListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupResistanceListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupWeaponModifierListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupConditionImmunityListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupLanguageListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupTraitListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupActionListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupClipboardModalListeners: () => console.warn("ui-updates.js not loaded yet"),
-   setupDragAndDrop: () => console.warn("ui-updates.js not loaded yet"),
+   setupCustomToggles: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupSavingThrowListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupSkillListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupResistanceListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupWeaponModifierListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupConditionImmunityListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupLanguageListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupTraitListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupActionListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupClipboardModalListeners: () => console.warn("ui-listener-setups.js not loaded yet"),
+   setupSettingsListeners: () => console.warn("ui-listener-setups.js not loaded yet"), // NEW
+   setupDragAndDrop: () => console.warn("ui-listener-setups.js not loaded yet"),
    showNewBestiaryModal: () => console.warn("ui-updates.js not loaded yet"),
    hideAllModals: () => console.warn("ui-updates.js not loaded yet"),
    updateMenuState: () => console.warn("ui-updates.js not loaded yet"),

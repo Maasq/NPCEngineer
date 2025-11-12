@@ -5,8 +5,8 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="author" content="Maasq" />
       <meta name="description" content="A tool for creating and managing NPCs." />
-      <meta name="version" content="0.16.01" />
-      <meta name="date" content="2025-11-10" />
+      <meta name="version" content="0.17.02" />
+      <meta name="date" content="2025-11-12" />
 
       <title>NPC Engineer</title>
 
@@ -1330,47 +1330,110 @@
             </div>
          </div>
 
-         <div id="settings-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-96 hidden modal-content">
-            <div class="flex justify-between items-center mb-2">
-               <h3 class="font-bold text-slate-700">Settings</h3>
-               <button title="Close" class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
-            </div>
-            <div id="bestiary-settings-group" class="space-y-2 border-t pt-2 mt-2">
-               <h4 class="font-bold text-sm text-slate-600">Bestiary Default Settings</h4>
-               <p class="text-xs text-gray-500">These settings are applied to all new NPCs created in this bestiary.</p>
-               <div class="flex items-center">
-                  <input type="checkbox" id="bestiary-add-description" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="bestiary-add-description" class="ml-2 label-text">Add description to the NPC</label>
-               </div>
-               <div class="flex items-center">
-                  <input type="checkbox" id="bestiary-add-title" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="bestiary-add-title" class="ml-2 label-text">Add a title</label>
-               </div>
-               <div class="flex items-center">
-                  <input type="checkbox" id="bestiary-add-image-link" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="bestiary-add-image-link" class="ml-2 label-text">Add an image link</label>
-               </div>
-               <div class="flex items-center">
-                  <input type="checkbox" id="bestiary-use-drop-cap" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="bestiary-use-drop-cap" class="ml-2 label-text">Use a drop cap in the description</label>
-               </div>
-            </div>
-				<div class="space-y-2 border-t pt-2 mt-4">
-					<h4 class="font-bold text-sm text-slate-600">Global Settings</h4>
-               <div class="flex items-center">
-                  <input type="checkbox" id="setting-solo-card-mode" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                  <label for="setting-solo-card-mode" class="ml-2 label-text text-xs">Use "Solo Card Mode" (only one card open at a time)</label>
-               </div>
-               <div class="flex items-center">
-						<input type="checkbox" id="setting-disable-unload-warning" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-						<label for="setting-disable-unload-warning" class="ml-2 label-text text-xs">Disable warning prompt when closing tab with unsaved exports</label>
-					</div>
-				</div>
+         <div id="settings-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-3xl transform scale-95 hidden" onclick="event.stopPropagation()">
+        <div class="flex justify-between items-center mb-4">
+           <h3 class="font-bold text-slate-700">Settings</h3>
+           <button title="Close" class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
+        </div>
 
-            <div class="text-right pt-2">
-               <button id="settings-ok-btn" class="btn-primary">OK</button>
-            </div>
-         </div>
+        <div class="flex flex-col md:flex-row gap-6">
+
+           <div class="w-full md:w-1/2 space-y-4">
+
+              <div id="bestiary-settings-group" class="space-y-2 border border-gray-300 rounded-lg p-3 pt-5 relative">
+                 <h4 class="font-bold text-sm text-slate-600 absolute -top-2.5 left-4 bg-white px-1">Bestiary Default Settings</h4>
+                 <p class="text-xs text-gray-500">These settings are applied to all new NPCs created in this bestiary.</p>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="bestiary-add-description" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="bestiary-add-description" class="ml-2 label-text">Add description to the NPC</label>
+                 </div>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="bestiary-add-title" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="bestiary-add-title" class="ml-2 label-text">Add a title</label>
+                 </div>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="bestiary-add-image-link" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="bestiary-add-image-link" class="ml-2 label-text">Add an image link</label>
+                 </div>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="bestiary-use-drop-cap" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="bestiary-use-drop-cap" class="ml-2 label-text">Use a drop cap in the description</label>
+                 </div>
+              </div>
+
+              <div class="space-y-2 border border-gray-300 rounded-lg p-3 pt-5 relative">
+                 <h4 class="font-bold text-sm text-slate-600 absolute -top-2.5 left-4 bg-white px-1">Global App Settings</h4>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="setting-solo-card-mode" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="setting-solo-card-mode" class="ml-2 label-text text-xs">Use "Solo Card Mode" (only one card open at a time)</label>
+                 </div>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="setting-disable-unload-warning" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="setting-disable-unload-warning" class="ml-2 label-text text-xs">Disable warning prompt when closing tab with unsaved exports</label>
+                 </div>
+              </div>
+           </div>
+
+           <div class="w-full md:w-1/2 space-y-3">
+              <div class="space-y-2 border border-gray-300 rounded-lg p-3 pt-5 relative">
+                 <h4 class="font-bold text-sm text-slate-600 absolute -top-2.5 left-4 bg-white px-1">Global Graphics Settings</h4>
+
+                 <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                       <input type="checkbox" id="setting-convert-webp" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                       <label for="setting-convert-webp" class="ml-2 label-text text-xs">Convert to WebP format</label>
+                    </div>
+                    <div class="flex items-center">
+                       <label for="setting-webp-quality" class="ml-4 mr-2 label-text text-xs">Quality (%)</label>
+                       <input type="number" id="setting-webp-quality" class="info-input h-5 w-16 text-center" min="10" max="100" value="80">
+                    </div>
+                 </div>
+
+                 <hr class="my-2">
+
+                 <div class="flex items-center">
+                    <input type="checkbox" id="setting-resize-portrait" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="setting-resize-portrait" class="ml-2 label-text text-xs">Resize NPC Portrait (Image)</label>
+                 </div>
+                 <div class="flex items-center justify-end space-x-2">
+                    <label for="setting-portrait-max-width" class="label-text text-xs">Max Width (px)</label>
+                    <input type="number" id="setting-portrait-max-width" class="info-input h-5 w-20 text-center" min="50" value="1000">
+                    <label for="setting-portrait-max-height" class="ml-2 label-text text-xs">Max Height (px)</label>
+                    <input type="number" id="setting-portrait-max-height" class="info-input h-5 w-20 text-center" min="50" value="1000">
+                 </div>
+
+                 <hr class="my-2">
+
+                 <div class="flex items-center">
+                    <input type="checkbox" id="setting-resize-token" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="setting-resize-token" class="ml-2 label-text text-xs">Resize NPC Token</label>
+                 </div>
+                 <div class="flex items-center justify-end space-x-2">
+                    <label for="setting-token-size" class="label-text text-xs">Width/Height (px)</label>
+                    <input type="number" id="setting-token-size" class="info-input h-5 w-20 text-center" min="50" value="300">
+                 </div>
+
+                 <hr class="my-2">
+
+                 <div class="flex items-center opacity-50">
+                    <input type="checkbox" id="setting-resize-camera-token" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" disabled>
+                    <label for="setting-resize-camera-token" class="ml-2 label-text text-xs">Resize NPC Camera Token</label>
+                 </div>
+                 <div class="flex items-center justify-end space-x-2 opacity-50">
+                    <label for="setting-camera-token-max-width" class="label-text text-xs">Max Width (px)</label>
+                    <input type="number" id="setting-camera-token-max-width" class="info-input h-5 w-20 text-center" min="50" value="1000" disabled>
+                    <label for="setting-camera-token-max-height" class="ml-2 label-text text-xs">Max Height (px)</label>
+                    <input type="number" id="setting-camera-token-max-height" class="info-input h-5 w-20 text-center" min="50" value="1000" disabled>
+                 </div>
+
+              </div>
+           </div>
+        </div>
+
+        <div class="text-right pt-4 mt-4 border-t">
+           <button id="settings-ok-btn" class="btn-primary">OK</button>
+        </div>
+     </div>
 
          <div id="hp-modal" class="bg-white rounded-xl custom-shadow bordered-container card-font-style p-4 space-y-3 w-80 hidden modal-content">
             <div class="flex justify-between items-center mb-2">
@@ -1594,16 +1657,18 @@
             </div>
          </div>
 			
-		<script src="icons.js" defer></script>
-      <script src="ui-elements.js" defer></script>
-      <script src="ui-updates.js" defer></script>
-      <script src="viewport.js" defer></script>
-		<script src="main.js" defer></script>
-      <script src="helpers.js" defer></script>
-		<script src="import-cleaner.js" defer></script>
-		<script src="filters.js" defer></script>
-		<script src="import.js" defer></script>
-		<script src="export-fg.js" defer></script>
+         <script src="icons.js" defer></script>
+         <script src="ui-elements.js" defer></script>
+         <script src="ui-updates.js" defer></script>
+         <script src="ui-listener-setups.js" defer></script>
+         <script src="viewport.js" defer></script>
+         <script src="main.js" defer></script>
+         <script src="helpers.js" defer></script>
+         <script src="graphics.js" defer></script>
+         <script src="import-cleaner.js" defer></script>
+         <script src="filters.js" defer></script>
+         <script src="import.js" defer></script>
+         <script src="export-fg.js" defer></script>
 			
 		</div>	
    </body>

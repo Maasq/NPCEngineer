@@ -900,7 +900,7 @@ window.importer = {
               .filter(spell => spell);
           this.importNPC.traitCastingList[0] = spellNames.join(', ');
       } else {
-         console.warn("Could not find Cantrips line in spellcasting block.")
+         console.warn("Could not find Cantrips line in spellcasting block.");
       }
 
       const levelRegexGlobal = /(\d+)(?:st|nd|rd|th)\s+level\s*\((\d+)\s+slots?\):\s*([\s\S]*?)(?=(\s*\n?\d+(?:st|nd|rd|th)\s+level)|$)/gi;
@@ -1663,7 +1663,7 @@ window.importer = {
             ${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
             ${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
             ${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
-            ${languages ? `<div class.npctop"><b>Languages</b> ${languages}</div>` : ''}
+            ${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
             ${challengeLineHtml}
             ${allTraitsHtml ? `<div class="npcdiv"><svg width="100%" height="5"><use href="#divider-swoosh"></use></svg></div>` : ''}
             ${allTraitsHtml}

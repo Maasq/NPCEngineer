@@ -192,6 +192,8 @@ function _updateFormFromActiveNPC() {
       if (!window.app.activeNPC) {
          Object.values(window.ui.inputs).forEach(input => {
             if (!input) return;
+            // Don't clear global settings on NPC clear
+            if (input.id.startsWith('setting-')) return;
             if (input.type === 'checkbox') input.checked = false;
             else if (input.type !== 'radio') input.value = '';
          });
@@ -239,7 +241,9 @@ function _updateFormFromActiveNPC() {
          this.updateStatDisplays(); // Use 'this'
          this.updateTokenDisplay(); // Use 'this'
          this.updateImageDisplay(); // Use 'this'
-         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+         document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            if (!cb.id.startsWith('setting-')) cb.checked = false; // Don't clear global settings
+         });
          document.querySelectorAll('input[name="weapon-resistance"][value="none"]').forEach(rb => rb.checked = true);
          document.querySelectorAll('input[name="weapon-immunity"][value="none"]').forEach(rb => rb.checked = true);
          if (window.ui.inputs.spellcastingToTraits) window.ui.inputs.spellcastingToTraits.checked = true;
@@ -259,6 +263,7 @@ function _updateFormFromActiveNPC() {
          if (element.type === 'radio') continue;
          if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting' || key === 'menuSoloCardMode') continue;
          if (key.startsWith('fg-')) continue; // Skip FG modal inputs
+         if (key.startsWith('setting-')) continue; // Skip global settings inputs
          // Skip specific trait spell list inputs (handled in loop below)
          if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') continue;
 
@@ -390,7 +395,7 @@ function _updateFormFromActiveNPC() {
        const actionSpells = window.app.activeNPC.actionCastingSpells || window.app.defaultNPC.actionCastingSpells;
        for (let i = 0; i < 4; i++) {
          const freqInput = window.ui.inputs[`action-casting-freq-${i}`];
-         const listInput = window.ui.inputs[`action-list-${i}`];
+         const listInput = window.ui.inputs[`action-casting-list-${i}`];
          const defaultSlot = window.app.defaultNPC.actionCastingSpells[i] || { freq: "", list: "" };
           if (freqInput) freqInput.value = actionSpells[i]?.freq ?? defaultSlot.freq;
           if (listInput) listInput.value = actionSpells[i]?.list ?? defaultSlot.list;
@@ -750,266 +755,6 @@ function _populateCasterLevelDropdown() {
    levelSelect.value = '1'; // Default to 1st level
 }
 
-
-function _setupCustomToggles() {
-   const fields = ['size','type','species','alignment'];
-   fields.forEach(field => {
-      const toggle = document.getElementById(`toggle-custom-${field}`);
-      const select = document.getElementById(`npc-${field}`);
-      const customInput = document.getElementById(`npc-${field}-custom`);
-      if (toggle && select && customInput) {
-         toggle.addEventListener('change', () => {
-            const isCustom = toggle.checked;
-            select.classList.toggle('hidden', isCustom);
-            customInput.classList.toggle('hidden', !isCustom);
-            if (isCustom) {
-               customInput.value = select.value;
-               customInput.focus();
-            } else {
-               customInput.value = '';
-            }
-            window.app.updateActiveNPCFromForm();
-         });
-         customInput.addEventListener('input', window.app.updateActiveNPCFromForm);
-      }
-   });
-}
-
-function _setupSavingThrowListeners() {
-   const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
-   abilities.forEach(ability => {
-      const profCheckbox = document.getElementById(`npc-${ability}-saving-throw-prof`);
-      const adjustInput = document.getElementById(`npc-${ability}-saving-throw-adjust`);
-      if (profCheckbox) profCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
-      if (adjustInput) adjustInput.addEventListener('input', window.app.updateActiveNPCFromForm);
-   });
-}
-
-function _setupSkillListeners() {
-   document.querySelectorAll('.skill-row').forEach(row => {
-      const profCheckbox = row.querySelector('.skill-prof');
-      const expCheckbox = row.querySelector('.skill-exp');
-      const adjustInput = row.querySelector('.skill-adjust');
-
-      if (profCheckbox) profCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
-      if (adjustInput) adjustInput.addEventListener('input', window.app.updateActiveNPCFromForm);
-
-      if (expCheckbox) {
-         expCheckbox.addEventListener('input', () => {
-            if (expCheckbox.checked && profCheckbox && !profCheckbox.checked) {
-               profCheckbox.checked = true;
-            }
-            window.app.updateActiveNPCFromForm();
-         });
-      }
-   });
-}
-
-function _setupResistanceListeners() {
-   window.app.damageTypes.forEach(type => {
-      const vulnCheckbox = document.getElementById(`vuln-${type}`);
-      const resCheckbox = document.getElementById(`res-${type}`);
-      const immCheckbox = document.getElementById(`imm-${type}`);
-
-      if (vulnCheckbox) vulnCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
-
-      if (resCheckbox) {
-         resCheckbox.addEventListener('input', () => {
-            if (resCheckbox.checked && immCheckbox) {
-               immCheckbox.checked = false;
-            }
-            window.app.updateActiveNPCFromForm();
-         });
-      }
-
-      if (immCheckbox) {
-         immCheckbox.addEventListener('input', () => {
-            if (immCheckbox.checked && resCheckbox) {
-               resCheckbox.checked = false;
-            }
-            window.app.updateActiveNPCFromForm();
-         });
-      }
-   });
-}
-
-function _setupWeaponModifierListeners() {
-   document.querySelectorAll('input[name="weapon-resistance"]').forEach(radio => {
-      radio.addEventListener('input', window.app.updateActiveNPCFromForm);
-   });
-   document.querySelectorAll('input[name="weapon-immunity"]').forEach(radio => {
-      radio.addEventListener('input', window.app.updateActiveNPCFromForm);
-   });
-}
-
-function _setupConditionImmunityListeners() {
-   window.app.conditions.forEach(condition => {
-      const checkbox = document.getElementById(`ci-${condition}`);
-      if (checkbox) checkbox.addEventListener('input', window.app.updateActiveNPCFromForm);
-   });
-}
-
-function _setupLanguageListeners() {
-   window.ui.languageListboxes.forEach(listbox => {
-      if (listbox) listbox.addEventListener('change', window.app.updateActiveNPCFromForm);
-   });
-   const telepathyCheckbox = document.getElementById('npc-has-telepathy');
-   const telepathyRangeInput = document.getElementById('npc-telepathy-range');
-   const specialOptionSelect = document.getElementById('npc-special-language-option');
-
-   if (telepathyCheckbox) telepathyCheckbox.addEventListener('input', window.app.updateActiveNPCFromForm);
-   if (telepathyRangeInput) telepathyRangeInput.addEventListener('input', window.app.updateActiveNPCFromForm);
-   if (specialOptionSelect) specialOptionSelect.addEventListener('input', window.app.updateActiveNPCFromForm);
-
-   if (window.ui.manageLanguagesBtn) window.ui.manageLanguagesBtn.addEventListener('click', this.showManageLanguagesModal.bind(this)); // Use 'this'
-   if (window.ui.addLanguageBtn) window.ui.addLanguageBtn.addEventListener('click', this.addNewLanguage.bind(this)); // Use 'this'
-   if (window.ui.newLanguageNameInput) {
-      window.ui.newLanguageNameInput.addEventListener('keyup', (e) => {
-         if (e.key === 'Enter') {
-            this.addNewLanguage(); // Use 'this'
-         }
-      });
-   }
-}
-
-function _setupTraitListeners() {
-   if (window.ui.addTraitBtn) window.ui.addTraitBtn.addEventListener('click', this.addOrUpdateNpcTrait.bind(this)); // Use 'this'
-   if (window.ui.manageTraitsBtn) window.ui.manageTraitsBtn.addEventListener('click', this.showManageTraitsModal.bind(this)); // Use 'this'
-   if (window.ui.addManagedTraitBtn) window.ui.addManagedTraitBtn.addEventListener('click', this.addNewSavedTrait.bind(this)); // Use 'this'
-
-   if (window.ui.sortTraitsAlphaCheckbox) {
-      window.ui.sortTraitsAlphaCheckbox.addEventListener('input', () => {
-         if (window.app.activeNPC) {
-            window.app.activeNPC.sortTraitsAlpha = window.ui.sortTraitsAlphaCheckbox.checked;
-            this.renderNpcTraits(); // Use 'this'
-            window.viewport.updateViewport();
-            window.app.saveActiveBestiaryToDB();
-         }
-      });
-   }
-   if (window.ui.newTraitName) {
-      window.ui.newTraitName.addEventListener('input', (e) => {
-         const traitName = e.target.value;
-         const savedTraits = window.app.activeBestiary?.metadata?.savedTraits || [];
-         const matchedTrait = savedTraits.find(t => t?.name === traitName);
-         if (matchedTrait && window.ui.newTraitDescription) {
-            window.ui.newTraitDescription.value = matchedTrait.desc || '';
-         }
-      });
-   }
-
-   if (window.ui.modalTokenButtons) {
-      window.ui.modalTokenButtons.addEventListener('click', (e) => {
-         const button = e.target.closest('button[data-token]');
-         if (!button) return;
-         e.preventDefault();
-
-         const baseToken = button.dataset.token;
-         let finalToken;
-
-         if (e.shiftKey) {
-            finalToken = `{${baseToken.charAt(1).toUpperCase()}${baseToken.slice(2)}`;
-         } else {
-            finalToken = baseToken;
-         }
-
-         const textarea = window.ui.modalTraitDescription;
-         if (!textarea) return;
-         const start = textarea.selectionStart;
-         const end = textarea.selectionEnd;
-         const text = textarea.value;
-
-         textarea.value = text.substring(0, start) + finalToken + text.substring(end);
-         textarea.selectionStart = textarea.selectionEnd = start + finalToken.length;
-         textarea.focus();
-      });
-   }
-}
-
-function _setupActionListeners() {
-   if (window.ui.clearEditBtn) window.ui.clearEditBtn.addEventListener('click', window.app.clearInputs);
-   if (window.ui.legendaryBoilerplate) window.ui.legendaryBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(window.ui.legendaryBoilerplate));
-   if (window.ui.lairBoilerplate) window.ui.lairBoilerplate.addEventListener('dblclick', () => window.app.editBoilerplate(window.ui.lairBoilerplate));
-   if (window.ui.inputs.commonDesc) window.ui.inputs.commonDesc.addEventListener('dblclick', () => window.app.handleAttackHelperOpen());
-
-   document.querySelectorAll('button[data-action-type]').forEach(button => {
-      button.addEventListener('click', () => {
-         window.app.addOrUpdateAction(button.dataset.actionType);
-      });
-   });
-
-   const attackHelperModal = document.getElementById('attack-helper-modal');
-   if (attackHelperModal) {
-      const primaryBtn = attackHelperModal.querySelector('button.btn-primary');
-      const cancelBtn = attackHelperModal.querySelector('button.btn-secondary:not(.btn-xs)');
-      const addDamageBtn = attackHelperModal.querySelector('button.btn-secondary.btn-xs');
-      if (primaryBtn) primaryBtn.addEventListener('click', window.app.generateAttackString);
-      if (cancelBtn) cancelBtn.addEventListener('click', () => window.app.closeModal('attack-helper-modal'));
-      if (addDamageBtn) addDamageBtn.addEventListener('click', window.app.addDamageRow);
-      if (window.ui.attackDamageDiceClearBtn) {
-         window.ui.attackDamageDiceClearBtn.addEventListener('click', () => {
-             if (window.ui.inputs.attackDamageDice) window.ui.inputs.attackDamageDice.value = '';
-         });
-      }
-   }
-
-   const boilerplateModal = document.getElementById('boilerplate-modal');
-   if(boilerplateModal) {
-       const primaryBtn = boilerplateModal.querySelector('button.btn-primary');
-       const cancelBtn = boilerplateModal.querySelector('button.btn-secondary');
-       if (primaryBtn) primaryBtn.addEventListener('click', window.app.saveBoilerplate);
-       if (cancelBtn) cancelBtn.addEventListener('click', () => window.app.closeModal('boilerplate-modal'));
-   }
-
-   const primaryDiceSelector = document.getElementById('primary-dice-selector');
-   const attackDamageDiceInput = document.getElementById('attack-damage-dice');
-   if (primaryDiceSelector && attackDamageDiceInput) {
-      window.app.createDiceSelector(primaryDiceSelector, attackDamageDiceInput);
-   }
-}
-
-// --- NEW: FG Export Modal Listeners Setup ---
-function _setupFgExportModalListeners() {
-   // This logic is now handled by export-fg.js in its own init()
-   // This function is kept here to be added to the ui export,
-   // but its functionality is deferred to the fgExporter object.
-   // The call inside ui-elements.js setupEventListeners will
-   // trigger this, which will in turn trigger fgExporter.init()
-   // ... or rather, fgExporter.init() is called by main.js
-   // so this function is actually no longer needed here.
-   // We will remove it.
-}
-
-
-function _setupDragAndDrop(box, validTypes, npcKey, updateFn) {
-   if (!box) return;
-   ["dragenter","dragover","dragleave","drop"].forEach(eventName => {
-      box.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); });
-   });
-   ["dragenter","dragover"].forEach(eventName => {
-      box.addEventListener(eventName, () => box.classList.add("drag-over"));
-   });
-   ["dragleave","drop"].forEach(eventName => {
-      box.addEventListener(eventName, () => box.classList.remove("drag-over"));
-   });
-   box.addEventListener("drop", e => {
-      if (!window.app.activeNPC) return;
-      const file = e.dataTransfer?.files?.[0];
-      if (file && validTypes.includes(file.type)) {
-         const reader = new FileReader();
-         reader.onload = ev => {
-            window.app.activeNPC[npcKey] = ev.target.result;
-            updateFn();
-            window.app.saveActiveBestiaryToDB();
-         };
-         reader.readAsDataURL(file);
-      } else if (file) {
-         console.warn("Invalid file type dropped:", file.type);
-         window.app.showAlert(`Invalid file type. Please drop one of: ${validTypes.join(', ')}`);
-      }
-   });
-}
-
 async function _showLoadBestiaryModal() {
    if (!window.ui.loadBestiaryModal || !window.ui.bestiaryListDiv) return;
 
@@ -1138,16 +883,52 @@ function _showSettingsModal() {
       if(window.ui.bestiarySettingsGroup) window.ui.bestiarySettingsGroup.classList.add('hidden');
    }
    
-   // Handle Global settings
+   // --- MODIFIED: Populate ALL global settings from window.app state ---
+   
+   // App Settings
    if (window.ui.settingDisableUnloadWarning) {
       window.ui.settingDisableUnloadWarning.checked = window.app.disableUnloadWarning;
    }
-   if (window.ui.settingSoloCardMode) { // NEW
+   if (window.ui.settingSoloCardMode) {
       window.ui.settingSoloCardMode.checked = window.app.soloCardMode;
    }
-   if (window.ui.menuSoloCardMode) { // NEW - Sync menu checkbox
+   if (window.ui.menuSoloCardMode) {
       window.ui.menuSoloCardMode.checked = window.app.soloCardMode;
    }
+
+   // Graphics Settings
+   if (window.ui.inputs.settingConvertWebp) {
+      window.ui.inputs.settingConvertWebp.checked = window.app.settingConvertWebp;
+   }
+   if (window.ui.inputs.settingWebpQuality) {
+      window.ui.inputs.settingWebpQuality.value = window.app.settingWebpQuality;
+   }
+   if (window.ui.inputs.settingResizePortrait) {
+      window.ui.inputs.settingResizePortrait.checked = window.app.settingResizePortrait;
+   }
+   if (window.ui.inputs.settingPortraitMaxWidth) {
+      window.ui.inputs.settingPortraitMaxWidth.value = window.app.settingPortraitMaxWidth;
+   }
+   if (window.ui.inputs.settingPortraitMaxHeight) {
+      window.ui.inputs.settingPortraitMaxHeight.value = window.app.settingPortraitMaxHeight;
+   }
+   if (window.ui.inputs.settingResizeToken) {
+      window.ui.inputs.settingResizeToken.checked = window.app.settingResizeToken;
+   }
+   if (window.ui.inputs.settingTokenSize) {
+      window.ui.inputs.settingTokenSize.value = window.app.settingTokenSize;
+   }
+   // (Future) Camera Token Settings
+   if (window.ui.inputs.settingResizeCameraToken) {
+      window.ui.inputs.settingResizeCameraToken.checked = window.app.settingResizeCameraToken;
+   }
+   if (window.ui.inputs.settingCameraTokenMaxWidth) {
+      window.ui.inputs.settingCameraTokenMaxWidth.value = window.app.settingCameraTokenMaxWidth;
+   }
+   if (window.ui.inputs.settingCameraTokenMaxHeight) {
+      window.ui.inputs.settingCameraTokenMaxHeight.value = window.app.settingCameraTokenMaxHeight;
+   }
+   // --- END MODIFICATION ---
 
    window.app.openModal('settings-modal');
 }
@@ -1576,7 +1357,12 @@ function _deleteAction(buttonElement, event) {
 
    if (type && !isNaN(indexToDelete) && window.app.activeNPC.actions && Array.isArray(window.app.activeNPC.actions[type])) {
       // Find the item with the matching original index in the current array
-      const currentItemIndex = window.app.activeNPC.actions[type].findIndex(item => item.originalIndex === indexToDelete);
+      const currentItemIndex = window.app.activeNPC.actions[type].findIndex((item, idx) => {
+         // Fallback for older data: check index if originalIndex is missing
+         const itemIndex = item.originalIndex !== undefined ? item.originalIndex : idx;
+         return itemIndex === indexToDelete;
+      });
+
 
       window.app.showConfirm(
          "Delete Action?",
@@ -1590,8 +1376,19 @@ function _deleteAction(buttonElement, event) {
                  window.app.saveActiveBestiaryToDB(); // Save changes
                  window.app.clearInputs(); // Clear editor fields
              } else {
-                 console.error("Could not find the current index for action deletion:", indexToDelete);
-                 window.app.showAlert("Error deleting action: Could not find action to delete.");
+                 // Fallback check: Try deleting by the raw index if the originalIndex logic fails
+                 // This handles data saved *before* the sorting fix
+                 console.warn(`Could not find action by originalIndex ${indexToDelete}. Trying raw index.`);
+                 if (window.app.activeNPC.actions[type][indexToDelete]) {
+                     window.app.activeNPC.actions[type].splice(indexToDelete, 1);
+                     this.renderActions();
+                     window.viewport.updateViewport();
+                     window.app.saveActiveBestiaryToDB();
+                     window.app.clearInputs();
+                 } else {
+                     console.error("Could not find the current index for action deletion:", indexToDelete);
+                     window.app.showAlert("Error deleting action: Could not find action to delete.");
+                 }
              }
          }
       );
@@ -1737,97 +1534,6 @@ function _populateDamageTypes(elementId) {
    }
 }
 
-// --- NEW CLIPBOARD MODAL LISTENERS ---
-function _setupClipboardModalListeners() {
-   if (window.ui.manageClipboardBtn) {
-      window.ui.manageClipboardBtn.addEventListener('click', () => {
-         // Call the new helper function
-         if (window.app.openClipboardModal) {
-            window.app.openClipboardModal();
-         }
-      });
-   }
-
-   // Add listeners for the modal's internal buttons
-   if (window.ui.clipboardCancelBtn) {
-      window.ui.clipboardCancelBtn.addEventListener('click', () => {
-         if (window.app.closeModal) {
-            window.app.closeModal('clipboard-modal');
-         }
-      });
-   }
-
-   // Renamed from clipboardPasteBtn to clipboardProcessBtn
-   if (window.ui.clipboardProcessBtn) {
-      window.ui.clipboardProcessBtn.addEventListener('click', () => {
-         // Call the new helper function
-         if (window.app.processAndPasteFromClipboardModal) { // Point to new function
-            window.app.processAndPasteFromClipboardModal();
-         }
-      });
-   }
-
-   if (window.ui.clipboardClearBtn) {
-      window.ui.clipboardClearBtn.addEventListener('click', () => {
-         if (window.ui.clipboardTextArea) {
-            window.ui.clipboardTextArea.value = '';
-            window.ui.clipboardTextArea.focus();
-         }
-      });
-   }
-
-   // NEW: Listener for the 'Pick out titles' checkbox
-   if (window.ui.bestiaryPickOutTitles) {
-      window.ui.bestiaryPickOutTitles.addEventListener('change', () => {
-         if (window.app.activeBestiary) {
-            window.app.activeBestiary.metadata.pickOutTitles = window.ui.bestiaryPickOutTitles.checked;
-            window.app.saveActiveBestiaryToDB(); // Save the setting
-         }
-      });
-   }
-
-   // Add CTRL-J and CTRL-E listeners, copied from import.js
-   if (window.ui.clipboardTextArea) {
-      window.ui.clipboardTextArea.addEventListener('keydown', (e) => {
-         if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
-            e.preventDefault();
-            const textArea = window.ui.clipboardTextArea;
-            const start = textArea.selectionStart;
-            const end = textArea.selectionEnd;
-            if (start !== end && window.importCleaner?.joinSelectedLines) {
-               const selectedText = textArea.value.substring(start, end);
-               const joinedText = window.importCleaner.joinSelectedLines(selectedText);
-               textArea.value = textArea.value.substring(0, start) + joinedText + textArea.value.substring(end);
-               textArea.selectionStart = start;
-               textArea.selectionEnd = start + joinedText.length;
-            }
-         }
-         else if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
-            e.preventDefault();
-            const textArea = window.ui.clipboardTextArea;
-            const start = textArea.selectionStart;
-            const end = textArea.selectionEnd;
-            if (start !== end && window.importCleaner?.cycleSelectedTextCase) {
-               const selectedText = textArea.value.substring(start, end);
-               const cycledText = window.importCleaner.cycleSelectedTextCase(selectedText);
-               textArea.value = textArea.value.substring(0, start) + cycledText + textArea.value.substring(end);
-               textArea.selectionStart = start;
-               textArea.selectionEnd = start + cycledText.length;
-            }
-         }
-      });
-   }
-}
-
-// --- NEW: FG Export Modal Listeners Setup ---
-function _setupFgExportModalListeners() {
-   // This function is now defined in export-fg.js and attached to window.fgExporter
-   // This call assumes export-fg.js has loaded and attached its object
-   // We will rely on the listener setup in export-fg.js's init() method
-   // This function can be a placeholder or removed if init is called elsewhere
-}
-
-
 // --- Assign functions to window.ui object ---
 // Make sure this runs AFTER ui-elements.js has defined window.ui
 if (window.ui) {
@@ -1845,18 +1551,7 @@ if (window.ui) {
    window.ui.updateImageDisplay = _updateImageDisplay;
    window.ui.populateChallengeDropdown = _populateChallengeDropdown;
    window.ui.populateCasterLevelDropdown = _populateCasterLevelDropdown;
-   window.ui.setupCustomToggles = _setupCustomToggles;
-   window.ui.setupSavingThrowListeners = _setupSavingThrowListeners;
-   window.ui.setupSkillListeners = _setupSkillListeners;
-   window.ui.setupResistanceListeners = _setupResistanceListeners;
-   window.ui.setupWeaponModifierListeners = _setupWeaponModifierListeners;
-   window.ui.setupConditionImmunityListeners = _setupConditionImmunityListeners;
-   window.ui.setupLanguageListeners = _setupLanguageListeners;
-   window.ui.setupTraitListeners = _setupTraitListeners;
-   window.ui.setupActionListeners = _setupActionListeners;
-   window.ui.setupClipboardModalListeners = _setupClipboardModalListeners;
-   window.ui.setupFgExportModalListeners = _setupFgExportModalListeners; // NEW
-   window.ui.setupDragAndDrop = _setupDragAndDrop;
+   // --- REMOVED LISTENER SETUP FUNCTIONS ---\r\n   window.ui.setupCustomToggles = () => console.warn(\"setupCustomToggles moved to ui-listener-setups.js\");\r\n   window.ui.setupSavingThrowListeners = () => console.warn(\"setupSavingThrowListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupSkillListeners = () => console.warn(\"setupSkillListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupResistanceListeners = () => console.warn(\"setupResistanceListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupWeaponModifierListeners = () => console.warn(\"setupWeaponModifierListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupConditionImmunityListeners = () => console.warn(\"setupConditionImmunityListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupLanguageListeners = () => console.warn(\"setupLanguageListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupTraitListeners = () => console.warn(\"setupTraitListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupActionListeners = () => console.warn(\"setupActionListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupClipboardModalListeners = () => console.warn(\"setupClipboardModalListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupFgExportModalListeners = () => console.warn(\"setupFgExportModalListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupDragAndDrop = () => console.warn(\"setupDragAndDrop moved to ui-listener-setups.js\");\r\n   window.ui.setupSettingsListeners = () => console.warn(\"setupSettingsListeners moved to ui-listener-setups.js\");
    window.ui.showLoadBestiaryModal = _showLoadBestiaryModal;
    window.ui.showManageGroupsModal = _showManageGroupsModal;
    window.ui.showSettingsModal = _showSettingsModal;
