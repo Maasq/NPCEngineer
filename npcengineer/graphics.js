@@ -10,7 +10,8 @@ window.graphicsUtils = {
     * @param {number} [options.maxHeight] The maximum height to resize to.
     * @param {string} [options.outputFormat] The desired output MIME type (e.g., 'image/webp').
     * @param {number} [options.quality] The quality for 'image/webp' or 'image/jpeg' (0-100).
-    * @returns {Promise<string>} A promise that resolves with the processed image as a data URL.
+    * @returns {Promise<object>} A promise that resolves with an object containing:
+    * { dataUrl, width, height, format, quality }
     */
    processImage: function(source, options = {}) {
       return new Promise((resolve, reject) => {
@@ -20,13 +21,25 @@ window.graphicsUtils = {
             try {
                let { width, height } = img;
                const { maxWidth, maxHeight, outputFormat, quality = 80 } = options;
+               const q = Math.max(0.1, Math.min(1.0, quality / 100)); // Clamp quality 0.1-1.0
+               const finalFormat = outputFormat || (img.src.startsWith('data:image/png') ? 'image/png' : 'image/jpeg');
 
                const needsResize = (maxWidth && width > maxWidth) || (maxHeight && height > maxHeight);
                const needsConversion = outputFormat && !img.src.startsWith(`data:${outputFormat}`);
 
-               // If no changes are needed, return the original source
+               // If no changes are needed, return the original source info
                if (!needsResize && !needsConversion) {
-                  resolve(img.src);
+                  // Try to get original format from data URL
+                  const origFormatMatch = img.src.match(/^data:(image\/\w+)/);
+                  const origFormat = origFormatMatch ? origFormatMatch[1] : (outputFormat || 'unknown'); // Fallback
+
+                  resolve({
+                     dataUrl: img.src,
+                     width: img.width,
+                     height: img.height,
+                     format: origFormat,
+                     quality: null // No re-compression
+                  });
                   return;
                }
 
@@ -48,13 +61,18 @@ window.graphicsUtils = {
                const ctx = canvas.getContext('2d');
                ctx.drawImage(img, 0, 0, width, height);
 
-               // Determine final format and quality
-               const format = outputFormat || (img.src.startsWith('data:image/png') ? 'image/png' : 'image/jpeg');
-               const q = Math.max(0.1, Math.min(1.0, quality / 100)); // Clamp quality 0.1-1.0
-
                // Get the new data URL
-               const newDataUrl = canvas.toDataURL(format, q);
-               resolve(newDataUrl);
+               const newDataUrl = canvas.toDataURL(finalFormat, q);
+
+               // --- MODIFICATION: Return object instead of string ---
+               resolve({
+                  dataUrl: newDataUrl,
+                  width: width,      // The final width
+                  height: height,    // The final height
+                  format: finalFormat, // The final format
+                  quality: (finalFormat === 'image/webp' || finalFormat === 'image/jpeg') ? Math.round(q * 100) : null // Store quality
+               });
+               // --- END MODIFICATION ---
 
             } catch (error) {
                console.error("Error during image processing:", error);

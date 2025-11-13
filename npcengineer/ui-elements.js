@@ -709,13 +709,22 @@ window.ui = {
                         options.maxHeight = size;
                      }
 
-                     const processedDataUrl = await window.graphicsUtils.processImage(e.target.result, options);
-                     window.app.activeNPC.token = processedDataUrl;
+                     // --- MODIFICATION: Expect object from processImage ---
+                     const processResult = await window.graphicsUtils.processImage(e.target.result, options);
+                     window.app.activeNPC.token = processResult.dataUrl;
+                     window.app.activeNPC.tokenInfo = {
+                        width: processResult.width,
+                        height: processResult.height,
+                        format: processResult.format,
+                        quality: processResult.quality
+                     };
+                     // --- END MODIFICATION ---
                      
                   } catch (error) {
                      console.error("Error processing token image:", error);
                      window.app.showAlert("Error processing token image. Saving original.");
                      window.app.activeNPC.token = e.target.result;
+                     window.app.activeNPC.tokenInfo = null; // Clear info on error
                   }
                   
                   this.updateTokenDisplay(); // Use 'this'
@@ -745,17 +754,26 @@ window.ui = {
                         options.maxHeight = window.app.settingPortraitMaxHeight || 1000;
                      }
                      
-                     const processedDataUrl = await window.graphicsUtils.processImage(e.target.result, options);
-                     window.app.activeNPC.image = processedDataUrl;
+                     // --- MODIFICATION: Expect object from processImage ---
+                     const processResult = await window.graphicsUtils.processImage(e.target.result, options);
+                     window.app.activeNPC.image = processResult.dataUrl;
+                     window.app.activeNPC.imageInfo = {
+                        width: processResult.width,
+                        height: processResult.height,
+                        format: processResult.format,
+                        quality: processResult.quality
+                     };
+                     // --- END MODIFICATION ---
 
                   } catch (error) {
                      console.error("Error processing portrait image:", error);
                      window.app.showAlert("Error processing portrait image. Saving original.");
                      window.app.activeNPC.image = e.target.result;
+                     window.app.activeNPC.imageInfo = null; // Clear info on error
                   }
 
                   this.updateImageDisplay(); // Use 'this'
-                  window.app.saveActiveBestiaryToDB();
+                  window.app.saveActiveBestBesiaryToDB();
                };
                reader.readAsDataURL(file);
             }

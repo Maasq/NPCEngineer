@@ -94,6 +94,8 @@ document.addEventListener("DOMContentLoaded", () => {
       wisdomSavingThrowProf: false, wisdomSavingThrowAdjust: 0,
       charismaSavingThrowProf: false, charismaSavingThrowAdjust: 0,
       gender: "creature", isUnique: false, isProperName: false, description: "", token: "", image: "",
+      tokenInfo: null,
+      imageInfo: null,
       saves: "",
       speed: "",
       addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,

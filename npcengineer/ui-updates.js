@@ -699,7 +699,19 @@ function _updateSkillDisplays() {
 
 function _updateTokenDisplay() {
    if (!window.ui.tokenBox) return;
-   window.ui.tokenBox.innerHTML = '';
+   window.ui.tokenBox.innerHTML = ''; // Clear previous content
+
+   // --- MODIFICATION: Build dynamic tooltip ---
+   let title = "Click or Drag a Token Image Here"; // Default
+   if (window.app.activeNPC && window.app.activeNPC.tokenInfo) {
+      const info = window.app.activeNPC.tokenInfo;
+      let format = (info.format || 'unknown').replace('image/', '').toLowerCase();
+      let quality = (info.quality !== null) ? ` (${info.quality}% quality).` : '';
+      title = `${info.width}x${info.height} ${format}${quality}\nClick or Drag to change token.`;
+   }
+   window.ui.tokenBox.title = title;
+   // --- END MODIFICATION ---
+
    if (window.app.activeNPC && window.app.activeNPC.token) {
       const img = document.createElement('img');
       img.src = window.app.activeNPC.token;
@@ -714,7 +726,19 @@ function _updateTokenDisplay() {
 
 function _updateImageDisplay() {
    if (!window.ui.imageBox) return;
-   window.ui.imageBox.innerHTML = '';
+   window.ui.imageBox.innerHTML = ''; // Clear previous content
+
+   // --- MODIFICATION: Build dynamic tooltip ---
+   let title = "Click or Drag an NPC Image Here"; // Default
+   if (window.app.activeNPC && window.app.activeNPC.imageInfo) {
+      const info = window.app.activeNPC.imageInfo;
+      let format = (info.format || 'unknown').replace('image/', '').toLowerCase();
+      let quality = (info.quality !== null) ? ` (${info.quality}% quality).` : '';
+      title = `${info.width}x${info.height} ${format}${quality}\nClick or Drag to change image.`;
+   }
+   window.ui.imageBox.title = title;
+   // --- END MODIFICATION ---
+
    if (window.app.activeNPC && window.app.activeNPC.image) {
       const img = document.createElement('img');
       img.src = window.app.activeNPC.image;
@@ -1323,7 +1347,7 @@ function _renderActions() {
          const listItem = document.createElement("li");
          listItem.className = "action-list-item p-3 rounded-lg border border-gray-300 group";
          listItem.dataset.actionType = type;
-         // Store the ORIGINAL index from before sorting
+         // Store the ORIGINAL index stored in the dataset
          listItem.dataset.actionIndex = itemData.originalIndex;
          listItem.setAttribute("onclick", "window.app.editAction(this)");
          listItem.setAttribute("title", "Click to load this action back into the editor above.");

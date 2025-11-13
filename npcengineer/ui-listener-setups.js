@@ -252,14 +252,22 @@ function _setupDragAndDrop(box, validTypes, npcKey, updateFn) {
                   options.maxHeight = window.app.settingPortraitMaxHeight || 1000;
                }
                
-               const processedDataUrl = await window.graphicsUtils.processImage(ev.target.result, options);
-               window.app.activeNPC[npcKey] = processedDataUrl;
-               // --- END: Processing logic ---
+               // --- MODIFICATION: Expect object from processImage ---
+               const processResult = await window.graphicsUtils.processImage(ev.target.result, options);
+               window.app.activeNPC[npcKey] = processResult.dataUrl;
+               window.app.activeNPC[`${npcKey}Info`] = { // Store the info object
+                  width: processResult.width,
+                  height: processResult.height,
+                  format: processResult.format,
+                  quality: processResult.quality
+               };
+               // --- END MODIFICATION ---
 
             } catch (error) {
                console.error(`Error processing ${npcKey} image:`, error);
                window.app.showAlert(`Error processing ${npcKey} image. Saving original.`);
                window.app.activeNPC[npcKey] = ev.target.result; // Fallback to original
+               window.app.activeNPC[`${npcKey}Info`] = null; // Clear info on error
             }
             
             updateFn();
