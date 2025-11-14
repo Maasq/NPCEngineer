@@ -96,6 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
       gender: "creature", isUnique: false, isProperName: false, description: "", token: "", image: "",
       tokenInfo: null,
       imageInfo: null,
+      cameraToken: "",
+      cameraTokenInfo: null,
+      nonId: "",
+      damageThreshold: 0,
       saves: "",
       speed: "",
       addDescription: true, addTitle: true, addImageLink: true, useDropCap: true,
@@ -483,6 +487,13 @@ document.addEventListener("DOMContentLoaded", () => {
          const allValidGroups = [bestiary.projectName, ...(bestiary.metadata.fg_groups || [])];
          if (!healedNpc.fg_group || !allValidGroups.includes(healedNpc.fg_group)) healedNpc.fg_group = bestiary.projectName;
 
+         if (healedNpc.tokenInfo === undefined) healedNpc.tokenInfo = null;
+         if (healedNpc.imageInfo === undefined) healedNpc.imageInfo = null;
+         if (healedNpc.cameraToken === undefined) healedNpc.cameraToken = "";
+         if (healedNpc.cameraTokenInfo === undefined) healedNpc.cameraTokenInfo = null;
+         if (healedNpc.nonId === undefined) healedNpc.nonId = "";
+         if (healedNpc.damageThreshold === undefined) healedNpc.damageThreshold = 0;
+         
          // Name
          if (!healedNpc.name || healedNpc.name.trim() === "") {
             let uniqueName = `Unnamed NPC ${unnamedCounter++}`;

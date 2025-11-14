@@ -378,7 +378,7 @@ function _setupSettingsListeners() {
    if (window.ui.inputs.settingResizeCameraToken) {
       window.ui.inputs.settingResizeCameraToken.addEventListener('change', (e) => window.app.setResizeCameraToken(e.target.checked));
    }
-
+   
    // Number input listeners (using 'input' for real-time saving)
    if (window.ui.inputs.settingWebpQuality) {
       window.ui.inputs.settingWebpQuality.addEventListener('input', (e) => window.app.setWebpQuality(e.target.value));

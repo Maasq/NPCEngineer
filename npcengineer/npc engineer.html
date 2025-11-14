@@ -5,8 +5,8 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="author" content="Maasq" />
       <meta name="description" content="A tool for creating and managing NPCs." />
-      <meta name="version" content="0.17.03" />
-      <meta name="date" content="2025-11-12" />
+      <meta name="version" content="0.18.04" />
+      <meta name="date" content="2025-11-13" />
 
       <title>NPC Engineer</title>
 
@@ -320,25 +320,59 @@
                                           <span id="npc-proficiency-bonus-display" class="font-medium text-gray-800"></span>
                                        </div>
                                     </div>
-
-                                    <div class="flex">
-                                       <label class="label-text w-28 text-right pr-2">Token</label>
-                                       <div class="w-[130px]">
-                                          <div id="npc-token" title="NPC Token" class="w-[130px] h-[130px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
-                                             <span>Click or Drag a Token Image Here</span>
-                                          </div>
-                                          <input type="file" id="token-upload" class="hidden" accept="image/png, image/webp">
-                                       </div>
-                                    </div>
                                  </div>
                               </div>
                            </div>
 
                            <div class="flex-grow">
-                              <div id="npc-image" title="NPC Image" class="w-[256px] h-[242px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
+                              <div id="npc-image" title="NPC Image" class="w-[256px] h-[256px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
                                  <span>Click or Drag an NPC Image Here</span>
                               </div>
                               <input type="file" id="image-upload" class="hidden" accept="image/png, image/webp, image/jpeg">
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+               <div id="fg-specific-card" class="bg-white rounded-xl custom-shadow overflow-hidden bordered-container card-font-style">
+                  <div class="card-header bg-[#F1FBEA] px-3 py-1 border-b border-black/20 cursor-pointer select-none">
+                     <h2 class="font-bold text-slate-700 relative" style="top: 0px;">Fantasy Grounds Specific</h2>
+                  </div>
+                  <div class="card-body">
+                     <div class="px-4 pt-2 pb-2">
+                        <div class="flex space-x-4">
+                           <!-- Left Column: Inputs -->
+                           <div class="flex-grow space-y-2">
+                              <div class="flex items-start space-x-2">
+                                 <label for="npc-non-id" class="label-text w-40 text-right flex-shrink-0 mt-1">Non ID Information</label>
+                                 <textarea id="npc-non-id" class="info-input w-full" rows="2" title="The text to show in the Combat Tracker when the NPC has not yet been identified."></textarea>
+                              </div>
+                              <div class="flex items-center space-x-2">
+                                 <label for="npc-damage-threshold" class="label-text w-40 text-right flex-shrink-0">Damage Threshold</label>
+                                 <input type="number" id="npc-damage-threshold" class="info-input w-24" value="0" min="0" title="If the damage done by any attack is less than this threshold, the damage is ignored completely.&#10;Usually only used by traps and structures, but can also be added to creatures.">
+                              </div>
+                           </div>
+                           <!-- Right Column: Image Boxes -->
+                           <div class="flex-shrink-0 flex space-x-4 items-end">
+                              <!-- Moved Token Box -->
+                              <div class="flex">
+                                 <div class="w-[130px]">
+                                    <div id="npc-token" title="NPC Token" class="w-[130px] h-[130px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
+                                       <span>Click or Drag a Token Image Here</span>
+                                    </div>
+                                    <input type="file" id="token-upload" class="hidden" accept="image/png, image/webp">
+                                 </div>
+                              </div>
+                              <!-- New Camera Token Box -->
+                              <div class="flex">
+                                 <div class="w-[256px]">
+                                    <div id="npc-camera-token" title="NPC Camera Token" class="w-[256px] h-[242px] info-input cursor-pointer flex items-center justify-center text-gray-400 text-xs text-center overflow-hidden">
+                                       <span>Click or Drag a Camera Token Image Here</span>
+                                    </div>
+                                    <input type="file" id="camera-token-upload" class="hidden" accept="image/png, image/webp, image/jpeg">
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>
@@ -1415,15 +1449,15 @@
 
                  <hr class="my-2">
 
-                 <div class="flex items-center opacity-50">
-                    <input type="checkbox" id="setting-resize-camera-token" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" disabled>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="setting-resize-camera-token" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                     <label for="setting-resize-camera-token" class="ml-2 label-text text-xs">Resize NPC Camera Token</label>
                  </div>
-                 <div class="flex items-center justify-end space-x-2 opacity-50">
+                 <div class="flex items-center justify-end space-x-2">
                     <label for="setting-camera-token-max-width" class="label-text text-xs">Max Width (px)</label>
-                    <input type="number" id="setting-camera-token-max-width" class="info-input h-5 w-20 text-center" min="50" value="1000" disabled>
+                    <input type="number" id="setting-camera-token-max-width" class="info-input h-5 w-20 text-center" min="50" value="1000">
                     <label for="setting-camera-token-max-height" class="ml-2 label-text text-xs">Max Height (px)</label>
-                    <input type="number" id="setting-camera-token-max-height" class="info-input h-5 w-20 text-center" min="50" value="1000" disabled>
+                    <input type="number" id="setting-camera-token-max-height" class="info-input h-5 w-20 text-center" min="50" value="1000">
                  </div>
 
               </div>

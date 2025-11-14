@@ -1558,6 +1558,31 @@ function _populateDamageTypes(elementId) {
    }
 }
 
+function _updateCameraTokenDisplay() {
+   if (!window.ui.cameraTokenBox) return;
+   window.ui.cameraTokenBox.innerHTML = ''; // Clear previous content
+
+   let title = "Click or Drag a Camera Token Here"; // Default
+   if (window.app.activeNPC && window.app.activeNPC.cameraTokenInfo) {
+      const info = window.app.activeNPC.cameraTokenInfo;
+      let format = (info.format || 'unknown').replace('image/', '').toLowerCase();
+      let quality = (info.quality !== null) ? ` (${info.quality}% quality).` : '';
+      title = `${info.width}x${info.height} ${format}${quality}\nClick or Drag to change camera token.`;
+   }
+   window.ui.cameraTokenBox.title = title;
+
+   if (window.app.activeNPC && window.app.activeNPC.cameraToken) {
+      const img = document.createElement('img');
+      img.src = window.app.activeNPC.cameraToken;
+      img.className = 'w-full h-full object-contain';
+      window.ui.cameraTokenBox.appendChild(img);
+   } else {
+      const placeholder = document.createElement('span');
+      placeholder.textContent = 'Click or Drag a Camera Token Here';
+      window.ui.cameraTokenBox.appendChild(placeholder);
+   }
+}
+
 // --- Assign functions to window.ui object ---
 // Make sure this runs AFTER ui-elements.js has defined window.ui
 if (window.ui) {
@@ -1575,7 +1600,6 @@ if (window.ui) {
    window.ui.updateImageDisplay = _updateImageDisplay;
    window.ui.populateChallengeDropdown = _populateChallengeDropdown;
    window.ui.populateCasterLevelDropdown = _populateCasterLevelDropdown;
-   // --- REMOVED LISTENER SETUP FUNCTIONS ---\r\n   window.ui.setupCustomToggles = () => console.warn(\"setupCustomToggles moved to ui-listener-setups.js\");\r\n   window.ui.setupSavingThrowListeners = () => console.warn(\"setupSavingThrowListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupSkillListeners = () => console.warn(\"setupSkillListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupResistanceListeners = () => console.warn(\"setupResistanceListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupWeaponModifierListeners = () => console.warn(\"setupWeaponModifierListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupConditionImmunityListeners = () => console.warn(\"setupConditionImmunityListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupLanguageListeners = () => console.warn(\"setupLanguageListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupTraitListeners = () => console.warn(\"setupTraitListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupActionListeners = () => console.warn(\"setupActionListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupClipboardModalListeners = () => console.warn(\"setupClipboardModalListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupFgExportModalListeners = () => console.warn(\"setupFgExportModalListeners moved to ui-listener-setups.js\");\r\n   window.ui.setupDragAndDrop = () => console.warn(\"setupDragAndDrop moved to ui-listener-setups.js\");\r\n   window.ui.setupSettingsListeners = () => console.warn(\"setupSettingsListeners moved to ui-listener-setups.js\");
    window.ui.showLoadBestiaryModal = _showLoadBestiaryModal;
    window.ui.showManageGroupsModal = _showManageGroupsModal;
    window.ui.showSettingsModal = _showSettingsModal;
@@ -1594,8 +1618,9 @@ if (window.ui) {
    window.ui.deleteSavedTrait = _deleteSavedTrait;
    window.ui.parseHpStringToModal = _parseHpStringToModal;
    window.ui.openCardAndHandleSoloMode = _openCardAndHandleSoloMode;
-   window.ui.openFgExportModal = _openFgExportModal; // NEW
+   window.ui.openFgExportModal = _openFgExportModal;
    window.ui.populateDamageTypes = _populateDamageTypes;
+   window.ui.updateCameraTokenDisplay = _updateCameraTokenDisplay;
 } else {
    console.error("window.ui object not found! Ensure ui-elements.js loads before ui-updates.js.");
 }

@@ -91,6 +91,8 @@ window.ui = {
    tokenUpload: null,
    imageBox: null,
    imageUpload: null,
+   cameraTokenBox: null,
+   cameraTokenUpload: null,
    hpModalCloseBtn: null,
    hpApplyBtn: null,
    hpDiceString: null,
@@ -227,6 +229,8 @@ window.ui = {
       this.tokenUpload = document.getElementById("token-upload");
       this.imageBox = document.getElementById("npc-image");
       this.imageUpload = document.getElementById("image-upload");
+      this.cameraTokenBox = document.getElementById("npc-camera-token");
+      this.cameraTokenUpload = document.getElementById("camera-token-upload");
       this.hpModalCloseBtn = document.getElementById("hp-modal-close");
       this.hpApplyBtn = document.getElementById("hp-apply-btn");
       this.hpDiceString = document.getElementById('hp-dice-string');
@@ -310,6 +314,8 @@ window.ui = {
          senseDarkvision: document.getElementById('npc-sense-darkvision'),
          senseTremorsense: document.getElementById('npc-sense-tremorsense'),
          senseTruesight: document.getElementById('npc-sense-truesight'),
+         nonId: document.getElementById('npc-non-id'),
+         damageThreshold: document.getElementById('npc-damage-threshold'),
          fg_group: document.getElementById('fantasy-grounds-group'),
          commonName: document.getElementById('common-name'),
          commonDesc: document.getElementById('common-desc'),
@@ -401,6 +407,12 @@ window.ui = {
 
       // --- Initial Card State Setup ---
       document.querySelectorAll('.card-body').forEach(cardBody => {
+         
+         const parentCard = cardBody.closest('.card-font-style');
+         if (parentCard && parentCard.id === 'fg-specific-card') {
+            return; // Skip this card, leave it closed by default
+         }
+         
          cardBody.classList.add('open');
          cardBody.style.paddingTop = '0.5rem';
          cardBody.style.paddingBottom = '0.5rem';
@@ -779,10 +791,54 @@ window.ui = {
             }
          });
       }
+      
+      if (this.cameraTokenBox) {
+         this.cameraTokenBox.addEventListener('click', () => window.app.activeNPC && this.cameraTokenUpload && this.cameraTokenUpload.click());
+      }
+      if (this.cameraTokenUpload) {
+         this.cameraTokenUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (window.app.activeNPC && file && (file.type === "image/png" || file.type === "image/webp" || file.type === "image/jpeg")) {
+               const reader = new FileReader();
+               reader.onload = async (e) => {
+                  try {
+                     const options = {
+                        outputFormat: window.app.settingConvertWebp ? 'image/webp' : file.type,
+                        quality: window.app.settingWebpQuality || 80,
+                     };
+                     if (window.app.settingResizeCameraToken) { // Use camera token settings
+                        options.maxWidth = window.app.settingCameraTokenMaxWidth || 1000;
+                        options.maxHeight = window.app.settingCameraTokenMaxHeight || 1000;
+                     }
+                     
+                     const processResult = await window.graphicsUtils.processImage(e.target.result, options);
+                     window.app.activeNPC.cameraToken = processResult.dataUrl;
+                     window.app.activeNPC.cameraTokenInfo = {
+                        width: processResult.width,
+                        height: processResult.height,
+                        format: processResult.format,
+                        quality: processResult.quality
+                     };
+
+                  } catch (error) {
+                     console.error("Error processing camera token image:", error);
+                     window.app.showAlert("Error processing camera token image. Saving original.");
+                     window.app.activeNPC.cameraToken = e.target.result;
+                     window.app.activeNPC.cameraTokenInfo = null;
+                  }
+
+                  this.updateCameraTokenDisplay(); // Use new display function
+                  window.app.saveActiveBestiaryToDB();
+               };
+               reader.readAsDataURL(file);
+            }
+         });
+      }
 
       if (this.tokenBox) this.setupDragAndDrop(this.tokenBox, ["image/png","image/webp"], "token", this.updateTokenDisplay.bind(this));
       if (this.imageBox) this.setupDragAndDrop(this.imageBox, ["image/png","image/webp","image/jpeg"], "image", this.updateImageDisplay.bind(this));
-
+      if (this.cameraTokenBox) this.setupDragAndDrop(this.cameraTokenBox, ["image/png","image/webp","image/jpeg"], "cameraToken", this.updateCameraTokenDisplay.bind(this));
+      
       if (this.inputs.hitPoints) {
          this.inputs.hitPoints.addEventListener('dblclick', () => {
             if (window.app.activeNPC) {
@@ -953,4 +1009,5 @@ window.ui = {
    parseHpStringToModal: () => console.warn("ui-updates.js not loaded yet"),
    openCardAndHandleSoloMode: () => console.warn("ui-updates.js not loaded yet"),
    populateDamageTypes: () => console.warn("ui-updates.js not loaded yet"),
+   updateCameraTokenDisplay: () => console.warn("ui-updates.js not loaded yet"), // NEW
 };

@@ -14,8 +14,9 @@ function updateViewport() {
 		name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
 		strength, dexterity, constitution, intelligence, wisdom, charisma,
 		strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-		useDropCap, addDescription, addTitle, speed, challenge, experience, proficiencyBonus, traits, sortTraitsAlpha, // Added proficiencyBonus here
+		useDropCap, addDescription, addTitle, speed, challenge, experience, proficiencyBonus, traits, sortTraitsAlpha, 
 		actions, legendaryBoilerplate, lairBoilerplate,
+		cameraToken, nonId, damageThreshold,
 		// Innate Spellcasting properties
 		hasInnateSpellcasting, innateIsPsionics, innateAbility, innateDC, innateComponents, innateSpells,
 		// Regular Spellcasting properties
@@ -326,6 +327,7 @@ function updateViewport() {
 			${vulnerabilities ? `<div class="npctop"><b>Damage Vulnerabilities</b> ${vulnerabilities}</div>` : ''}
 			${resistances ? `<div class="npctop"><b>Damage Resistances</b> ${resistances}</div>` : ''}
 			${immunities ? `<div class="npctop"><b>Damage Immunities</b> ${immunities}</div>` : ''}
+			${damageThreshold > 0 ? `<div class="npctop"><b>Damage Threshold</b> ${damageThreshold}</div>` : ''}
 			${conditionImmunities ? `<div class="npctop"><b>Condition Immunities</b> ${conditionImmunities}</div>` : ''}
 			${senses ? `<div class="npctop"><b>Senses</b> ${senses}</div>` : ''}
 			${languages ? `<div class="npctop"><b>Languages</b> ${languages}</div>` : ''}
