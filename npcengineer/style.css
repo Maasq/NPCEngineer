@@ -1,4 +1,9 @@
 /* style.css */
+@font-face {
+   font-family: 'Chancery';
+   src: url('../fonts/chancery.ttf') format('truetype');
+}
+
 html {
    scroll-behavior: smooth;
    scroll-padding-top: 152px; /* 148px header height + 4px buffer */
@@ -172,6 +177,14 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
    font-size: 16pt;
    font-weight: bold;
 }
+
+.titlebar {
+   font-family: 'Chancery';
+   font-size: 30pt; 
+   font-weight: 700;  /* same as font-bold */
+   color: #87CC24;
+}
+
 .action-header { /* Style used for Actions, Bonus Actions etc in Viewport */
    font-family: 'Raleway', sans-serif;
    font-weight: 400;
@@ -195,14 +208,10 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
     /* Remove Raleway font and small-caps */
     transition: color 0.3s ease-in-out;
 }
-/* Ensure the text-gray-400 class is applied initially via HTML for the dimmed look */
-
 
 /* Define hidden field styles for transitions */
 #innate-spellcasting-fields,
 #spellcasting-fields {
-    /* Max-height and opacity are set inline in ui.js for dynamic transition control. */
-    /* Set height transition duration */
     transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
     padding: 0; /* Default padding should be 0 when collapsed */
     overflow: hidden; /* Added to ensure content doesn't peek */
@@ -650,13 +659,6 @@ table.spell td {
 #npc-buttons button:hover svg {
     color: #87CC24; /* Green title color */
 }
-
-/* Remove Flash effect */
-/* #bestiary-buttons button::after,
-#npc-buttons button::after { ... } 
-#bestiary-buttons button:hover::after,
-#npc-buttons button:hover::after { ... } 
-*/
 
 /* Ensure disabled NPC buttons don't show hover effects */
 #npc-buttons button:disabled:hover svg {
