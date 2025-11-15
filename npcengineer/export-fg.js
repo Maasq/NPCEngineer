@@ -122,10 +122,22 @@ window.fgExporter = {
       // 4. Close the modal
       window.ui.hideAllModals();
 
-      // 5. *** PLACEHOLDER for actual export logic ***
-      // We will build this out later.
-      console.log("Settings saved. Triggering FG Export with data:", activeBestiary);
-      window.app.showAlert("Settings saved! Actual XML export is not yet implemented.");
+      // 5. *** TEMPORARY TEST: Generate and show export output ***
+      console.log("Settings saved. Generating test output for modal...");
+
+      //
+      // TODO: Add your real XML generation logic here.
+      //
+      const testOutput = "This is a placeholder for the real XML export output.\n\n" +
+                         "Bestiary: " + activeBestiary.metadata.fgBestiaryTitle + "\n" +
+                         "Author: ".padEnd(12) + activeBestiary.metadata.fgBestiaryAuthor + "\n" +
+                         "Filename: ".padEnd(12) + activeBestiary.metadata.fgBestiaryFilename + "\n" +
+                         "Locked: ".padEnd(12) + activeBestiary.metadata.fgModLock + "\n" +
+                         "GM Only: ".padEnd(12) + activeBestiary.metadata.fgGMonly + "\n" +
+                         "NPCs: ".padEnd(12) + activeBestiary.npcs.length;
+      
+      // Call the new display function
+      this.showExportOutputForTesting(testOutput);
    },
 
    /**
@@ -149,7 +161,7 @@ window.fgExporter = {
          
          // Save to active bestiary
          if (window.app.activeBestiary) {
-            window.app.activeBestiary.metadata.fgCoverImage = resizedDataUrl;
+            window.app.activeBestiary.metadata.fgCoverImage = resizedDataUrl.dataUrl; // Make sure to save the dataUrl
             // No need to save to DB here, saveSettingsAndExport will do it
          }
          
@@ -158,7 +170,7 @@ window.fgExporter = {
          if (fgCoverImageEl) {
             fgCoverImageEl.innerHTML = '';
             const img = document.createElement('img');
-            img.src = resizedDataUrl;
+            img.src = resizedDataUrl.dataUrl; // Use the dataUrl
             img.className = 'w-full h-full object-contain';
             fgCoverImageEl.appendChild(img);
          }
@@ -194,6 +206,67 @@ window.fgExporter = {
       if (window.ui.inputs.fgCoverUpload) {
          window.ui.inputs.fgCoverUpload.value = null;
       }
+   },
+
+   /**
+    * [TEMPORARY TEST FUNCTION]
+    * Repurposes the Import Modal to display a string.
+    * @param {string} outputText The text to display.
+    */
+   showExportOutputForTesting(outputText) {
+      const {
+         importModal,
+         importPaneRaw,
+         importPaneFiltered,
+         importTextArea,
+         importFilterSelect,
+         importCancelBtn,
+         importConfirmBtn,
+         importToggleViewBtn,
+         importClearBtn
+      } = window.ui;
+
+      if (!importModal || !importPaneFiltered || !importTextArea) {
+         console.error("Cannot show test output: Import modal elements not found.");
+         window.app.showAlert(outputText); // Fallback to alert
+         return;
+      }
+
+      // 1. Open the modal
+      window.app.openModal('import-modal');
+
+      // 2. Change the title
+      const modalTitle = document.getElementById('import-modal')?.querySelector('h3');
+      if (modalTitle) modalTitle.textContent = "Export Test Output";
+
+      // 3. Hide all the import-specific UI
+      if (importPaneRaw) importPaneRaw.classList.add('hidden');
+      if (importFilterSelect) importFilterSelect.parentElement.parentElement.classList.add('hidden');
+      if (importConfirmBtn) importConfirmBtn.classList.add('hidden');
+      if (importToggleViewBtn) importToggleViewBtn.classList.add('hidden');
+      if (importClearBtn) importClearBtn.classList.add('hidden');
+      
+      // 4. Repurpose the 'Filtered' pane
+      if (importPaneFiltered) {
+         // Make it visible and full-width
+         importPaneFiltered.classList.remove('hidden');
+         if (importPaneFiltered.parentElement) {
+            importPaneFiltered.parentElement.classList.remove('w-1/2');
+            importPaneFiltered.parentElement.classList.add('w-full');
+         }
+         // Change its label
+         const filteredLabel = importPaneFiltered.querySelector('label');
+         if (filteredLabel) filteredLabel.textContent = "Export Output (Read-Only)";
+      }
+      
+      // 5. Hide the preview viewport
+      const viewportPane = document.getElementById('import-viewport')?.parentElement;
+      if (viewportPane) viewportPane.classList.add('hidden');
+
+      // 6. Set the text and update the 'Cancel' button
+      importTextArea.value = outputText;
+      importTextArea.scrollTop = 0; // Scroll to top
+      if (importCancelBtn) importCancelBtn.textContent = "Close";
    },
 
    /**
