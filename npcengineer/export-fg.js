@@ -131,26 +131,13 @@ window.fgExporter = {
       // 4. Close the modal
       window.ui.hideAllModals();
 
-      // 5. Generate the XML (DEBUG MODE)
+      // 5. Generate the XML
       try {
-         let rawHtml = "";
-         if (window.app.activeNPC) {
-            rawHtml = "\n";
-            rawHtml += "\n\n";
-            
-            // Get the description
-            let content = window.app.activeNPC.description || "";
-            
-            // Apply the separate cleaner function
-            content = this._cleanDebugHtml(content);
-            
-            rawHtml += content || "(No description entered)";
-         } else {
-            rawHtml = "";
-         }
+         // Restore the main XML generation
+         const xmlOutput = this._generateDbXml(activeBestiary, settings);
          
-         // 6. Display Raw HTML in the test modal
-         this.showExportOutputForTesting(rawHtml);
+         // 6. Display XML in the test modal
+         this.showExportOutputForTesting(xmlOutput);
          
       } catch (error) {
          console.error("Error during XML generation:", error);
@@ -159,12 +146,12 @@ window.fgExporter = {
    },
 
    /**
-    * Temporary debug cleaner.
-    * Removes block comments and translates Trix HTML tags using replaceAll.
+    * Cleans and translates HTML string for FG XML compatibility.
+    * Uses replaceAll and specific string targets as requested.
     * @param {string} html The input HTML string.
     * @returns {string} The cleaned string.
     */
-   _cleanDebugHtml(html) {
+   _cleanHtmlString(html) {
       if (!html) return "";
       
       // Step 1: Remove comment (two-step replacement)
@@ -188,7 +175,6 @@ window.fgExporter = {
       // Step 3: Paragraphs and Breaks
       cleaned = cleaned.replaceAll("<div>", "<p>");
       cleaned = cleaned.replaceAll("</div>", "</p>");
-      // Added newline after &#13; as requested
       cleaned = cleaned.replaceAll("<br>", "&#13;\n");
       
       // Step 4: Readability Newlines
@@ -292,7 +278,8 @@ window.fgExporter = {
       // 2. Change the title
       const modalTitle = document.getElementById('import-modal')?.querySelector('h3');
       if (modalTitle) {
-         modalTitle.textContent = `DEBUG: Raw Trix Output`;
+         const filename = window.app.activeBestiary.metadata.fgGMonly ? 'db.xml' : 'client.xml';
+         modalTitle.textContent = `Export Preview (${filename})`;
       }
 
       // 3. Hide all the import-specific UI
@@ -310,7 +297,7 @@ window.fgExporter = {
             importPaneFiltered.parentElement.classList.add('w-full');
          }
          const filteredLabel = importPaneFiltered.querySelector('label');
-         if (filteredLabel) filteredLabel.textContent = "Raw HTML Content";
+         if (filteredLabel) filteredLabel.textContent = "XML Output (Read-Only)";
       }
       
       // 5. Hide the preview viewport
@@ -436,7 +423,7 @@ window.fgExporter = {
     * @returns {string} The complete XML file as a string.
     */
    _generateDbXml(bestiary, settings) {
-      const versionInfo = `(Version ${window.app.version || '0.18.09'})`; // Get version from main.js or default
+      const versionInfo = `(Version ${window.app.version || '0.18.13'})`; // Get version from main.js or default
       
       let xml = `<?xml version="1.0" encoding="utf-8"?>\n`; // Single newline is correct.
       xml += `<root version="4.8" dataversion="20241002" release="8.1|CoreRPG:7">\n`;
@@ -973,41 +960,18 @@ window.fgExporter = {
    _formatTrixDescription(html, indentLevel) {
       if (!html) return "";
       
-      // Create a temporary element to parse the HTML
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      
-      let content = "";
-      
-      // Iterate over child nodes to preserve structure
-      tempDiv.childNodes.forEach(node => {
-         if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-            // Handle stray text nodes (wrap in <p>)
-            content += this._indent(indentLevel + 1) + `<p>${this._cleanString(node.textContent)}</p>\n`;
-         } else if (node.nodeType === Node.ELEMENT_NODE) {
-            let tag = 'p'; // Default to paragraph
-            if (node.tagName === 'H1') tag = 'h';
-            
-            // Re-build inner HTML, keeping <b> and <i>
-            let innerHtml = node.innerHTML || "";
-            innerHtml = innerHtml.replace(/<strong>/g, '<b>').replace(/<\/strong>/g, '</b>');
-            innerHtml = innerHtml.replace(/<em>/g, '<i>').replace(/<\/em>/g, '</i>');
-            innerHtml = innerHtml.replace(/<br>/g, ''); // Remove <br>
-            
-            // *** NEW: Handle <frame> tags ***
-            if (node.tagName === 'BLOCKQUOTE') {
-               tag = 'frame';
-               // Trix wraps blockquote content in divs, so we strip them
-               // but keep the inner <b>/<i> tags.
-               innerHtml = innerHtml.replace(/<div>/g, '').replace(/<\/div>/g, ' ').trim();
-            }
-            // *** END NEW ***
+      // Use the approved cleaner logic
+      let cleanXml = this._cleanHtmlString(html);
 
-            content += this._indent(indentLevel + 1) + `<${tag}>${innerHtml}</${tag}>\n`;
-         }
-      });
+      // Apply indentation to each line for XML formatting
+      const indent = this._indent(indentLevel + 1);
+      // Split by newline (added by the cleaner), filter empty, indent, join
+      const formattedContent = cleanXml.split('\n')
+         .filter(line => line.trim() !== '')
+         .map(line => indent + line.trim())
+         .join('\n');
 
-      return this._indent(indentLevel) + `<text type="formattedtext">\n${content}` + this._indent(indentLevel) + `</text>\n`;
+      return this._indent(indentLevel) + `<text type="formattedtext">\n${formattedContent}\n` + this._indent(indentLevel) + `</text>\n`;
    },
 
    /**
