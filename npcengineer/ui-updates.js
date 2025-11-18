@@ -107,8 +107,13 @@ function _updateMenuState() {
    if (window.ui.footerImportTextBtn) {
       window.ui.footerImportTextBtn.disabled = !hasActiveBestiary;
    }
-    if (window.ui.footerExportFgBtn) {
+   if (window.ui.footerExportFgBtn) {
       window.ui.footerExportFgBtn.disabled = !hasActiveBestiary;
+   }
+   // NEW: Force PDF button to disabled state for now
+   if (window.ui.footerExportPdfBtn) {
+      window.ui.footerExportPdfBtn.disabled = true; 
+      // When ready to enable: window.ui.footerExportPdfBtn.disabled = !hasActiveBestiary;
    }
 
    if (window.ui.menuDeleteNpc && hasActiveBestiary && window.app.activeBestiary.npcs.length <= 1) {

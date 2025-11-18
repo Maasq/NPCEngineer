@@ -237,7 +237,6 @@ function _setupDragAndDrop(box, validTypes, npcKey, updateFn) {
          const reader = new FileReader();
          reader.onload = async (ev) => {
             try {
-               // --- NEW: Processing logic ---
                const options = {
                   outputFormat: window.app.settingConvertWebp ? 'image/webp' : file.type,
                   quality: window.app.settingWebpQuality || 80,
@@ -252,22 +251,20 @@ function _setupDragAndDrop(box, validTypes, npcKey, updateFn) {
                   options.maxHeight = window.app.settingPortraitMaxHeight || 1000;
                }
                
-               // --- MODIFICATION: Expect object from processImage ---
                const processResult = await window.graphicsUtils.processImage(ev.target.result, options);
                window.app.activeNPC[npcKey] = processResult.dataUrl;
-               window.app.activeNPC[`${npcKey}Info`] = { // Store the info object
+               window.app.activeNPC[`${npcKey}Info`] = {
                   width: processResult.width,
                   height: processResult.height,
                   format: processResult.format,
                   quality: processResult.quality
                };
-               // --- END MODIFICATION ---
 
             } catch (error) {
                console.error(`Error processing ${npcKey} image:`, error);
                window.app.showAlert(`Error processing ${npcKey} image. Saving original.`);
-               window.app.activeNPC[npcKey] = ev.target.result; // Fallback to original
-               window.app.activeNPC[`${npcKey}Info`] = null; // Clear info on error
+               window.app.activeNPC[npcKey] = ev.target.result;
+               window.app.activeNPC[`${npcKey}Info`] = null;
             }
             
             updateFn();
@@ -281,18 +278,15 @@ function _setupDragAndDrop(box, validTypes, npcKey, updateFn) {
    });
 }
 
-// --- NEW CLIPBOARD MODAL LISTENERS ---
 function _setupClipboardModalListeners() {
    if (window.ui.manageClipboardBtn) {
       window.ui.manageClipboardBtn.addEventListener('click', () => {
-         // Call the new helper function
          if (window.app.openClipboardModal) {
             window.app.openClipboardModal();
          }
       });
    }
 
-   // Add listeners for the modal's internal buttons
    if (window.ui.clipboardCancelBtn) {
       window.ui.clipboardCancelBtn.addEventListener('click', () => {
          if (window.app.closeModal) {
@@ -301,11 +295,9 @@ function _setupClipboardModalListeners() {
       });
    }
 
-   // Renamed from clipboardPasteBtn to clipboardProcessBtn
    if (window.ui.clipboardProcessBtn) {
       window.ui.clipboardProcessBtn.addEventListener('click', () => {
-         // Call the new helper function
-         if (window.app.processAndPasteFromClipboardModal) { // Point to new function
+         if (window.app.processAndPasteFromClipboardModal) {
             window.app.processAndPasteFromClipboardModal();
          }
       });
@@ -320,17 +312,15 @@ function _setupClipboardModalListeners() {
       });
    }
 
-   // NEW: Listener for the 'Pick out titles' checkbox
    if (window.ui.bestiaryPickOutTitles) {
       window.ui.bestiaryPickOutTitles.addEventListener('change', () => {
          if (window.app.activeBestiary) {
             window.app.activeBestiary.metadata.pickOutTitles = window.ui.bestiaryPickOutTitles.checked;
-            window.app.saveActiveBestiaryToDB(); // Save the setting
+            window.app.saveActiveBestiaryToDB();
          }
       });
    }
 
-   // Add CTRL-J and CTRL-E listeners, copied from import.js
    if (window.ui.clipboardTextArea) {
       window.ui.clipboardTextArea.addEventListener('keydown', (e) => {
          if ((e.ctrlKey || e.metaKey) && e.key === 'j') {
@@ -363,9 +353,7 @@ function _setupClipboardModalListeners() {
    }
 }
 
-// --- NEW: Settings Modal Listeners Setup ---
 function _setupSettingsListeners() {
-   // Checkbox listeners
    if (window.ui.inputs.settingConvertWebp) {
       window.ui.inputs.settingConvertWebp.addEventListener('change', (e) => window.app.setConvertWebp(e.target.checked));
    }
@@ -379,7 +367,6 @@ function _setupSettingsListeners() {
       window.ui.inputs.settingResizeCameraToken.addEventListener('change', (e) => window.app.setResizeCameraToken(e.target.checked));
    }
    
-   // Number input listeners (using 'input' for real-time saving)
    if (window.ui.inputs.settingWebpQuality) {
       window.ui.inputs.settingWebpQuality.addEventListener('input', (e) => window.app.setWebpQuality(e.target.value));
    }
@@ -400,18 +387,6 @@ function _setupSettingsListeners() {
    }
 }
 
-// --- NEW: FG Export Modal Listeners Setup ---
-function _setupFgExportModalListeners() {
-   // This logic is now handled by export-fg.js in its own init()
-   // This function is kept here to be added to the ui export,
-   // but its functionality is deferred to the fgExporter object.
-   // The call inside ui-elements.js setupEventListeners will
-   // trigger this, which will in turn trigger fgExporter.init()
-   // ... or rather, fgExporter.init() is called by main.js
-   // so this function is actually no longer needed here.
-   // We will remove it.
-}
-
 
 // --- Assign functions to window.ui object ---
 // Make sure this runs AFTER ui-elements.js has defined window.ui
@@ -426,9 +401,9 @@ if (window.ui) {
    window.ui.setupTraitListeners = _setupTraitListeners;
    window.ui.setupActionListeners = _setupActionListeners;
    window.ui.setupClipboardModalListeners = _setupClipboardModalListeners;
-   window.ui.setupFgExportModalListeners = _setupFgExportModalListeners; // NEW
    window.ui.setupDragAndDrop = _setupDragAndDrop;
-   window.ui.setupSettingsListeners = _setupSettingsListeners; // NEW
+   window.ui.setupSettingsListeners = _setupSettingsListeners;
+   // Removed _setupFgExportModalListeners as it is now handled by export-fg.js
 } else {
    console.error("window.ui object not found! Ensure ui-elements.js loads before ui-listener-setups.js.");
 }
