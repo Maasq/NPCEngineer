@@ -3,17 +3,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
    // --- DATABASE SETUP ---
    const db = new Dexie('npcEngineerDB');
-   // Bump version number from 1 to 2 because we added the 'settings' table
    db.version(2).stores({
-      projects: '++id, projectName', // Kept as 'projects' for backward compatibility.
-      settings: 'key' // Simple key-value store for global settings
+      projects: '++id, projectName',
+      settings: 'key'
    }).upgrade(tx => {
-      // Version 2 upgrade logic (optional, but good practice if structure changed)
-      // In this case, just adding a table doesn't require complex upgrade logic
-      // unless you needed to migrate data from version 1.
       console.log("Upgrading database schema to version 2.");
    });
-   // Fallback for version 1 if needed (though upgrade should handle it)
    db.version(1).stores({
        projects: '++id, projectName'
    });
@@ -28,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
    const exoticLanguages = [ "Abyssal", "Celestial", "Draconic", "Deep speech", "Infernal", "Primordial", "Sylvan", "Druidic", "Undercommon" ];
    const monstrousLanguages1 = [ "Aarakocra", "Aquan", "Auran", "Bullywug", "Gith", "Gnoll", "Grell", "Grung", "Hook horror", "Ice toad", "Ignan", "Ixitxachitl" ];
    const monstrousLanguages2 = [ "Modron", "Otyugh", "Sahuagin", "Slaad", "Sphinx", "Terran", "Thri-kreen", "Tlincalli", "Troglodyte", "Umber hulk", "Vegepygmy", "Yeti" ];
-   // Combine all predefined languages for validation checks
    const allPredefinedLanguages = [
       ...standardLanguages, ...exoticLanguages,
       ...monstrousLanguages1, ...monstrousLanguages2
@@ -64,13 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
    let activeNPC = null;
    let activeNPCIndex = -1;
    let isUpdatingForm = false;
-   let currentlyEditingAction = null; // Still needed for state tracking
-   let boilerplateTarget = null; // Still needed for state tracking
-   let confirmCallback = null; // Still needed for state tracking
-   let changesMadeSinceExport = false; // Track changes for unload warning
-   let disableUnloadWarning = false; // User preference for unload warning
-   let soloCardMode = false; // NEW global setting
-   // NEW: Global Graphics Settings
+   let currentlyEditingAction = null;
+   let boilerplateTarget = null;
+   let confirmCallback = null;
+   let changesMadeSinceExport = false;
+   let disableUnloadWarning = false;
+   let soloCardMode = false;
+   // Global Graphics Settings
    let settingConvertWebp = false;
    let settingWebpQuality = 80;
    let settingResizePortrait = false;
@@ -78,9 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
    let settingPortraitMaxHeight = 1000;
    let settingResizeToken = false;
    let settingTokenSize = 300;
-   let settingResizeCameraToken = false; // For future use
-   let settingCameraTokenMaxWidth = 1000; // For future use
-   let settingCameraTokenMaxHeight = 1000; // For future use
+   let settingResizeCameraToken = false;
+   let settingCameraTokenMaxWidth = 1000;
+   let settingCameraTokenMaxHeight = 1000;
 
    const baseDefaultNPC = {
       name: "", size: "", type: "", species: "", alignment: "",
@@ -128,10 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // --- INNATE SPELLCASTING PROPERTIES ---
       hasInnateSpellcasting: false,
       innateIsPsionics: false,
-      innateAbility: 'charisma', // Default ability
-      innateDC: 10, // Placeholder, calculated later
-      innateComponents: 'requiring no material components', // Default value
-      innateSpells: [ // Array to hold frequency/list pairs (Reduced to 4 rows)
+      innateAbility: 'charisma',
+      innateDC: 10,
+      innateComponents: 'requiring no material components',
+      innateSpells: [
          { freq: "At will", list: "" },
          { freq: "3/day each", list: "" },
          { freq: "1/day each", list: "" },
@@ -139,22 +133,22 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
       // --- REGULAR SPELLCASTING PROPERTIES ---
       hasSpellcasting: false,
-      spellcastingPlacement: 'traits', // 'traits' or 'actions'
+      spellcastingPlacement: 'traits',
       // --- TRAIT-BASED SPELLCASTING PROPERTIES ---
-      traitCastingLevel: '1', // Default to 1st level
-      traitCastingAbility: 'intelligence', // Default ability
-      traitCastingDC: 10, // Placeholder
-      traitCastingBonus: 2, // Placeholder
-      traitCastingClass: '', // Default to None
-      traitCastingFlavor: '', // Default empty
-      traitCastingSlots: ['0','0','0','0','0','0','0','0','0'], // Slots for levels 1-9
-      traitCastingList: ['','','','','','','','','',''], // Lists for levels 0-9
-      traitCastingMarked: '', // Marked spells description
+      traitCastingLevel: '1',
+      traitCastingAbility: 'intelligence',
+      traitCastingDC: 10,
+      traitCastingBonus: 2,
+      traitCastingClass: '',
+      traitCastingFlavor: '',
+      traitCastingSlots: ['0','0','0','0','0','0','0','0','0'],
+      traitCastingList: ['','','','','','','','','',''],
+      traitCastingMarked: '',
       // --- ACTION-BASED SPELLCASTING PROPERTIES ---
-      actionCastingAbility: 'intelligence', // Default different from innate
-      actionCastingDC: 10, // Placeholder
-      actionCastingComponents: '', // Default to empty
-      actionCastingSpells: [ // Same structure as innate
+      actionCastingAbility: 'intelligence',
+      actionCastingDC: 10,
+      actionCastingComponents: '',
+      actionCastingSpells: [
          { freq: "At will", list: "" },
          { freq: "3/day each", list: "" },
          { freq: "1/day each", list: "" },
@@ -162,7 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
    };
 
-   // Dynamically create the full defaultNPC object with resistance and skill properties
    const defaultNPC = { ...baseDefaultNPC };
    damageTypes.forEach(type => {
       defaultNPC[`vulnerability_${type}`] = false;
@@ -200,9 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
    };
 
    // Make variables and functions available to other scripts
-   // window.app is initialized/extended in helpers.js first
    Object.assign(window.app, {
-      // Core Data & State (already initialized in helpers.js)
       db,
       damageTypes,
       standardLanguages,
@@ -212,18 +203,17 @@ document.addEventListener("DOMContentLoaded", () => {
       allPredefinedLanguages,
       conditions,
       skills,
-      activeBestiary, // Keep state here
-      activeNPC,      // Keep state here
-      activeNPCIndex, // Keep state here
-      isUpdatingForm, // Keep state here
+      activeBestiary,
+      activeNPC,
+      activeNPCIndex,
+      isUpdatingForm,
       defaultNPC,
       crToXpMap,
       challengeOrder,
       pronounSets,
       changesMadeSinceExport,
       disableUnloadWarning,
-      soloCardMode, // NEW
-      // NEW: Graphics Settings state
+      soloCardMode,
       settingConvertWebp,
       settingWebpQuality,
       settingResizePortrait,
@@ -234,14 +224,12 @@ document.addEventListener("DOMContentLoaded", () => {
       settingResizeCameraToken,
       settingCameraTokenMaxWidth,
       settingCameraTokenMaxHeight,
-      currentlyEditingAction, // Keep state reference
-      boilerplateTarget,      // Keep state reference
-      confirmCallback,        // Keep state reference
+      currentlyEditingAction,
+      boilerplateTarget,
+      confirmCallback,
 
-      // Core Functions
       setDisableUnloadWarning,
-      setSoloCardMode, // NEW
-      // NEW: Graphics Settings setters
+      setSoloCardMode,
       setConvertWebp,
       setWebpQuality,
       setResizePortrait,
@@ -273,7 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
       switchActiveNPC,
       saveActiveBestiaryToDB,
 
-      // Keep references to helpers defined elsewhere
       calculateAbilityBonus: window.app.calculateAbilityBonus,
       calculateProficiencyBonus: window.app.calculateProficiencyBonus,
       calculateSpellcastingDCBonus: window.app.calculateSpellcastingDCBonus,
@@ -323,12 +310,12 @@ document.addEventListener("DOMContentLoaded", () => {
    async function createNewBestiary() {
       const bestiaryName = window.ui.newBestiaryNameInput.value.trim();
       if (!bestiaryName) {
-         window.app.showAlert("Bestiary name cannot be empty."); // Use helper
+         window.app.showAlert("Bestiary name cannot be empty.");
          return;
       }
       const existingBestiary = await db.projects.where('projectName').equalsIgnoreCase(bestiaryName).first();
       if (existingBestiary) {
-         window.app.showAlert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`); // Use helper
+         window.app.showAlert(`A bestiary named "${bestiaryName}" already exists. Please choose a unique name.`);
          return;
       }
 
@@ -353,7 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
          window.ui.newBestiaryNameInput.value = "";
       } catch (error) {
          console.error("Failed to create bestiary:", error);
-         window.app.showAlert("Error: Could not create bestiary. Check console for details."); // Use helper
+         window.app.showAlert("Error: Could not create bestiary. Check console for details.");
       }
    }
 
@@ -367,20 +354,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const metadataPropsToConvert = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap', 'pickOutTitles'];
       metadataPropsToConvert.forEach(prop => {
          if (typeof bestiary.metadata[prop] === 'number') bestiary.metadata[prop] = bestiary.metadata[prop] === 1;
-         else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true; // Default to true
+         else if (bestiary.metadata[prop] === undefined) bestiary.metadata[prop] = true;
       });
-      // Heal soloCardMode separately (default false)
+      // Heal soloCardMode separately
       if (typeof bestiary.metadata.soloCardMode === 'number') bestiary.metadata.soloCardMode = bestiary.metadata.soloCardMode === 1;
-      else if (bestiary.metadata.soloCardMode === undefined) bestiary.metadata.soloCardMode = false; // Default to false
+      else if (bestiary.metadata.soloCardMode === undefined) bestiary.metadata.soloCardMode = false;
       
-      // NEW: Heal FG export fields
+      // Heal FG export fields
       if (bestiary.metadata.fgBestiaryTitle === undefined) bestiary.metadata.fgBestiaryTitle = null;
       if (bestiary.metadata.fgBestiaryAuthor === undefined) bestiary.metadata.fgBestiaryAuthor = null;
       if (bestiary.metadata.fgBestiaryFilename === undefined) bestiary.metadata.fgBestiaryFilename = null;
       if (bestiary.metadata.fgBestiaryDisplayname === undefined) bestiary.metadata.fgBestiaryDisplayname = null;
       if (bestiary.metadata.fgCoverImage === undefined) bestiary.metadata.fgCoverImage = null;
-      if (bestiary.metadata.fgModLock === undefined) bestiary.metadata.fgModLock = false; // Default to false
-      if (bestiary.metadata.fgGMonly === undefined) bestiary.metadata.fgGMonly = true; // Default to true
+      if (bestiary.metadata.fgModLock === undefined) bestiary.metadata.fgModLock = false;
+      if (bestiary.metadata.fgGMonly === undefined) bestiary.metadata.fgGMonly = true;
 
 
       // --- NPC Healing ---
@@ -403,14 +390,13 @@ document.addEventListener("DOMContentLoaded", () => {
          if (healedNpc.hasTelepathy === undefined) healedNpc.hasTelepathy = defaultNPC.hasTelepathy;
          if (healedNpc.telepathyRange === undefined) healedNpc.telepathyRange = defaultNPC.telepathyRange;
          if (!Array.isArray(healedNpc.traits)) healedNpc.traits = [];
-         // *** ADDED: Trait key migration ***
+         // Trait key migration
          healedNpc.traits.forEach(trait => {
             if (trait && trait.hasOwnProperty('description') && !trait.hasOwnProperty('desc')) {
                trait.desc = trait.description;
                delete trait.description;
             }
          });
-         // *** End of Trait key migration ***
          if (healedNpc.sortTraitsAlpha === undefined) healedNpc.sortTraitsAlpha = defaultNPC.sortTraitsAlpha;
          if (typeof healedNpc.actions !== 'object' || healedNpc.actions === null) {
             healedNpc.actions = JSON.parse(JSON.stringify(defaultNPC.actions));
@@ -418,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
             for (const key in defaultNPC.actions) {
                if (!Array.isArray(healedNpc.actions[key])) healedNpc.actions[key] = [];
             }
-            // *** ADDED: Action key migration (ensure consistency) ***
+            // Action key migration
             Object.values(healedNpc.actions).forEach(actionList => {
                if(Array.isArray(actionList)) {
                   actionList.forEach(action => {
@@ -429,7 +415,6 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
                }
             });
-            // *** End of Action key migration ***
          }
          if (healedNpc.legendaryBoilerplate === undefined) healedNpc.legendaryBoilerplate = defaultNPC.legendaryBoilerplate;
          if (healedNpc.lairBoilerplate === undefined) healedNpc.lairBoilerplate = defaultNPC.lairBoilerplate;
@@ -515,23 +500,22 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
          const clonedBestiary = JSON.parse(JSON.stringify(bestiary));
          const healedBestiary = healBestiary(clonedBestiary);
-         window.app.activeBestiary = healedBestiary; // Use window.app reference
+         window.app.activeBestiary = healedBestiary;
          changesMadeSinceExport = false;
          sortAndSwitchToNpc(null);
          window.ui.updateUIForActiveBestiary();
       } catch (error) {
          console.error("Critical error loading bestiary:", error);
-         window.app.showAlert("There was a critical error trying to load this bestiary. It may be corrupt. Check the console for details."); // Use helper
-         window.app.activeBestiary = null; // Use window.app reference
-         window.app.activeNPC = null; // Use window.app reference
-         window.app.activeNPCIndex = -1; // Use window.app reference
+         window.app.showAlert("There was a critical error trying to load this bestiary. It may be corrupt. Check the console for details.");
+         window.app.activeBestiary = null;
+         window.app.activeNPC = null;
+         window.app.activeNPCIndex = -1;
          changesMadeSinceExport = false;
          window.ui.updateUIForActiveBestiary();
       }
    }
 
    function switchActiveNPC(index) {
-       // Access state via window.app
       if (window.app.activeBestiary && index >= 0 && index < window.app.activeBestiary.npcs.length) {
          window.app.activeNPCIndex = index;
          window.app.activeNPC = window.app.activeBestiary.npcs[index];
@@ -549,7 +533,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
    async function saveActiveBestiaryToDB() {
-       // Access state/db via window.app
       if (window.app.activeBestiary && window.app.activeBestiary.id) {
          try {
             const bestiaryToSave = JSON.parse(JSON.stringify(window.app.activeBestiary));
@@ -564,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
    }
 
    function sortAndSwitchToNpc(targetNpc) {
-      if (!window.app.activeBestiary) return; // Use window.app reference
+      if (!window.app.activeBestiary) return;
 
       window.app.activeBestiary.npcs.sort((a, b) => {
          return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: 'base' });
@@ -579,18 +562,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
    async function exportBestiary() {
-      if (!window.app.activeBestiary) { // Use window.app reference
-         window.app.showAlert("No active bestiary to export."); // Use helper
+      if (!window.app.activeBestiary) {
+         window.app.showAlert("No active bestiary to export.");
          return;
       }
-      if (window.app.activeNPC) updateActiveNPCFromForm(); // Use window.app reference
+      if (window.app.activeNPC) updateActiveNPCFromForm();
 
-      const bestiaryToExport = JSON.parse(JSON.stringify(window.app.activeBestiary)); // Use window.app reference
+      const bestiaryToExport = JSON.parse(JSON.stringify(window.app.activeBestiary));
       const bestiaryJson = JSON.stringify(bestiaryToExport, null, 2);
 
       try {
          const handle = await window.showSaveFilePicker({
-            suggestedName: `Bestiary-${window.app.activeBestiary.projectName}.json`, // Use window.app reference
+            suggestedName: `Bestiary-${window.app.activeBestiary.projectName}.json`,
             types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
          });
          const writable = await handle.createWritable();
@@ -600,7 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
          if (err.name !== "AbortError") {
             console.error("Error exporting bestiary:", err);
-            window.app.showAlert("Failed to export bestiary. See console for details."); // Use helper
+            window.app.showAlert("Failed to export bestiary. See console for details.");
          }
       }
    }
@@ -616,40 +599,40 @@ document.addEventListener("DOMContentLoaded", () => {
          try { importedBestiary = JSON.parse(content); }
          catch (parseError) {
             console.error("Error parsing JSON file:", parseError);
-            window.app.showAlert("Failed to import: The selected file is not valid JSON."); // Use helper
+            window.app.showAlert("Failed to import: The selected file is not valid JSON.");
             return;
          }
          if (!importedBestiary || typeof importedBestiary.projectName !== 'string') {
-            window.app.showAlert("Failed to import: Invalid bestiary format."); // Use helper
+            window.app.showAlert("Failed to import: Invalid bestiary format.");
             return;
          }
          delete importedBestiary.id;
          const existing = await db.projects.where('projectName').equalsIgnoreCase(importedBestiary.projectName).first();
          if (existing) {
-            window.app.showAlert(`A bestiary named "${importedBestiary.projectName}" already exists...`); // Use helper
+            window.app.showAlert(`A bestiary named "${importedBestiary.projectName}" already exists...`);
             return;
          }
          const healedBestiary = healBestiary(importedBestiary);
          const newId = await db.projects.add(healedBestiary);
          healedBestiary.id = newId;
          loadBestiary(healedBestiary);
-         window.app.showAlert(`Bestiary "${healedBestiary.projectName}" imported successfully!`); // Use helper
+         window.app.showAlert(`Bestiary "${healedBestiary.projectName}" imported successfully!`);
       } catch (err) {
          if (err.name !== "AbortError") {
             console.error("Error importing bestiary:", err);
-            window.app.showAlert("Failed to import bestiary. See console for details."); // Use helper
+            window.app.showAlert("Failed to import bestiary. See console for details.");
          }
       }
    }
 
-   // --- NEW: Full Database Export/Import ---
+   // --- Full Database Export/Import ---
    async function exportFullDatabase() {
        try {
            const allProjects = await db.projects.toArray();
            const allSettings = await db.settings.toArray();
 
            const exportData = {
-               version: 2, // Simple versioning for the export format
+               version: 2,
                exportedAt: new Date().toISOString(),
                projects: allProjects,
                settings: allSettings
@@ -664,19 +647,19 @@ document.addEventListener("DOMContentLoaded", () => {
            const writable = await handle.createWritable();
            await writable.write(exportJson);
            await writable.close();
-           window.app.showAlert("Full database exported successfully."); // Use helper
-           changesMadeSinceExport = false; // Exporting everything counts as a backup
+           window.app.showAlert("Full database exported successfully.");
+           changesMadeSinceExport = false;
 
        } catch (err) {
            if (err.name !== "AbortError") {
                console.error("Error exporting full database:", err);
-               window.app.showAlert("Failed to export full database. See console for details."); // Use helper
+               window.app.showAlert("Failed to export full database. See console for details.");
            }
        }
    }
 
    function confirmImportFullDatabase() {
-      window.app.openModal('import-db-confirm-modal'); // Use helper
+      window.app.openModal('import-db-confirm-modal');
    }
 
    async function importFullDatabase() {
@@ -690,11 +673,11 @@ document.addEventListener("DOMContentLoaded", () => {
          try { importData = JSON.parse(content); }
          catch (parseError) {
             console.error("Error parsing database JSON file:", parseError);
-            window.app.showAlert("Import Failed: The selected file is not a valid JSON database backup."); // Use helper
+            window.app.showAlert("Import Failed: The selected file is not a valid JSON database backup.");
             return;
          }
          if (!importData || importData.version !== 2 || !Array.isArray(importData.projects) || !Array.isArray(importData.settings)) {
-            window.app.showAlert("Import Failed: Invalid or incompatible database backup file format."); // Use helper
+            window.app.showAlert("Import Failed: Invalid or incompatible database backup file format.");
             return;
          }
 
@@ -708,18 +691,18 @@ document.addEventListener("DOMContentLoaded", () => {
              console.log(`Imported ${projectsToImport.length} projects and ${importData.settings.length} settings.`);
          });
 
-         window.app.activeBestiary = null; // Use window.app reference
-         window.app.activeNPC = null; // Use window.app reference
-         window.app.activeNPCIndex = -1; // Use window.app reference
+         window.app.activeBestiary = null;
+         window.app.activeNPC = null;
+         window.app.activeNPCIndex = -1;
          changesMadeSinceExport = false;
-         await loadSettings(); // Reload settings
+         await loadSettings();
          window.ui.updateUIForActiveBestiary();
-         window.app.showAlert("Full database imported successfully! Please select a bestiary to load."); // Use helper
+         window.app.showAlert("Full database imported successfully! Please select a bestiary to load.");
 
       } catch (err) {
          if (err.name !== "AbortError") {
             console.error("Error importing full database:", err);
-            window.app.showAlert("Failed to import full database. See console for details."); // Use helper
+            window.app.showAlert("Failed to import full database. See console for details.");
          }
       }
    }
@@ -727,19 +710,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
    // --- NPC Management ---
    function createNewNpc() {
-      if (!window.app.activeBestiary) { // Use window.app reference
-         window.app.showAlert("Please load or create a bestiary first."); // Use helper
+      if (!window.app.activeBestiary) {
+         window.app.showAlert("Please load or create a bestiary first.");
          return;
       }
       const newNpc = JSON.parse(JSON.stringify(defaultNPC));
       newNpc.name = findUniqueNpcName("New NPC");
-      newNpc.useDropCap = window.app.activeBestiary.metadata.useDropCap; // Use window.app reference
-      newNpc.addDescription = window.app.activeBestiary.metadata.addDescription; // Use window.app reference
-      newNpc.addTitle = window.app.activeBestiary.metadata.addTitle; // Use window.app reference
-      newNpc.addImageLink = window.app.activeBestiary.metadata.addImageLink; // Use window.app reference
-      newNpc.fg_group = window.app.activeBestiary.projectName; // Use window.app reference
+      newNpc.useDropCap = window.app.activeBestiary.metadata.useDropCap;
+      newNpc.addDescription = window.app.activeBestiary.metadata.addDescription;
+      newNpc.addTitle = window.app.activeBestiary.metadata.addTitle;
+      newNpc.addImageLink = window.app.activeBestiary.metadata.addImageLink;
+      newNpc.fg_group = window.app.activeBestiary.projectName;
 
-      // Use helpers for calculation
       const { dc: innateDC } = window.app.calculateSpellcastingDCBonus(newNpc.innateAbility, newNpc.proficiencyBonus, newNpc);
       newNpc.innateDC = innateDC;
       const { dc: traitDC, bonus: traitBonus } = window.app.calculateSpellcastingDCBonus(newNpc.traitCastingAbility, newNpc.proficiencyBonus, newNpc);
@@ -748,57 +730,60 @@ document.addEventListener("DOMContentLoaded", () => {
       const { dc: actionDC } = window.app.calculateSpellcastingDCBonus(newNpc.actionCastingAbility, newNpc.proficiencyBonus, newNpc);
       newNpc.actionCastingDC = actionDC;
 
-      window.app.activeBestiary.npcs.push(newNpc); // Use window.app reference
+      window.app.activeBestiary.npcs.push(newNpc);
       sortAndSwitchToNpc(newNpc);
       saveActiveBestiaryToDB();
+      window.ui.updateUIForActiveBestiary(); // Update count immediately
       window.ui.inputs.name.focus();
    }
 
 
    function duplicateCurrentNpc() {
-      if (!window.app.activeBestiary || !window.app.activeNPC) { // Use window.app references
-         window.app.showAlert("Please select an NPC to duplicate."); // Use helper
+      if (!window.app.activeBestiary || !window.app.activeNPC) {
+         window.app.showAlert("Please select an NPC to duplicate.");
          return;
       }
       updateActiveNPCFromForm();
-      const newNpc = JSON.parse(JSON.stringify(window.app.activeNPC)); // Use window.app reference
-      newNpc.name = findUniqueNpcName(`${window.app.activeNPC.name} (Copy)`); // Use window.app reference
-      window.app.activeBestiary.npcs.push(newNpc); // Use window.app reference
+      const newNpc = JSON.parse(JSON.stringify(window.app.activeNPC));
+      newNpc.name = findUniqueNpcName(`${window.app.activeNPC.name} (Copy)`);
+      window.app.activeBestiary.npcs.push(newNpc);
       sortAndSwitchToNpc(newNpc);
       saveActiveBestiaryToDB();
+      window.ui.updateUIForActiveBestiary(); // Update count immediately
       window.ui.inputs.name.focus();
    }
 
 
    function deleteCurrentNpc() {
-      if (!window.app.activeBestiary) { // Use window.app reference
-         window.app.showAlert("No active bestiary."); // Use helper
+      if (!window.app.activeBestiary) {
+         window.app.showAlert("No active bestiary.");
          return;
       }
-      if (!window.app.activeNPC) { // Use window.app reference
-         window.app.showAlert("No NPC selected to delete."); // Use helper
+      if (!window.app.activeNPC) {
+         window.app.showAlert("No NPC selected to delete.");
          return;
       }
-      if (window.app.activeBestiary.npcs.length <= 1) { // Use window.app reference
-         window.app.showAlert("Cannot delete the last NPC in the bestiary."); // Use helper
+      if (window.app.activeBestiary.npcs.length <= 1) {
+         window.app.showAlert("Cannot delete the last NPC in the bestiary.");
          return;
       }
 
-      const npcToDelete = window.app.activeNPC; // Use window.app reference
+      const npcToDelete = window.app.activeNPC;
       const npcNameToDelete = npcToDelete.name || "Unnamed NPC";
 
-      window.app.showConfirm( // Use helper
+      window.app.showConfirm(
          "Delete NPC?",
          `Are you sure you want to permanently delete "${npcNameToDelete}"? This cannot be undone.`,
          () => {
-            const indexToDelete = window.app.activeBestiary.npcs.findIndex(npc => npc === npcToDelete); // Use window.app reference
+            const indexToDelete = window.app.activeBestiary.npcs.findIndex(npc => npc === npcToDelete);
             if (indexToDelete !== -1) {
-               window.app.activeBestiary.npcs.splice(indexToDelete, 1); // Use window.app reference
+               window.app.activeBestiary.npcs.splice(indexToDelete, 1);
                sortAndSwitchToNpc(null);
                saveActiveBestiaryToDB();
+               window.ui.updateUIForActiveBestiary(); // Update count immediately
             } else {
                console.error("Could not find the NPC to delete after confirmation.");
-               window.app.showAlert("Error: Could not delete the NPC."); // Use helper
+               window.app.showAlert("Error: Could not delete the NPC.");
             }
          }
       );
@@ -806,8 +791,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
    async function importNpc() {
-      if (!window.app.activeBestiary) { // Use window.app reference
-         window.app.showAlert("Please load or create a bestiary first to import an NPC into."); // Use helper
+      if (!window.app.activeBestiary) {
+         window.app.showAlert("Please load or create a bestiary first to import an NPC into.");
          return;
       }
       try {
@@ -818,44 +803,45 @@ document.addEventListener("DOMContentLoaded", () => {
          try { loadedNPC = JSON.parse(content); }
          catch (parseError) {
             console.error("Error parsing NPC JSON file:", parseError);
-            window.app.showAlert("Failed to import: The selected file is not valid JSON."); // Use helper
+            window.app.showAlert("Failed to import: The selected file is not valid JSON.");
             return;
          }
          if (typeof loadedNPC !== 'object' || loadedNPC === null) {
-            window.app.showAlert("Failed to import: Invalid NPC data format."); // Use helper
+            window.app.showAlert("Failed to import: Invalid NPC data format.");
             return;
          }
          const newNpc = { ...defaultNPC, ...loadedNPC };
          newNpc.name = findUniqueNpcName(newNpc.name || "Imported NPC");
-         if (!newNpc.fg_group) newNpc.fg_group = window.app.activeBestiary.projectName; // Use window.app reference
+         if (!newNpc.fg_group) newNpc.fg_group = window.app.activeBestiary.projectName;
          const propsToInherit = ['addDescription', 'addTitle', 'addImageLink', 'useDropCap'];
          propsToInherit.forEach(prop => {
-            if (newNpc[prop] === undefined) newNpc[prop] = window.app.activeBestiary.metadata[prop]; // Use window.app reference
+            if (newNpc[prop] === undefined) newNpc[prop] = window.app.activeBestiary.metadata[prop];
          });
-         window.app.activeBestiary.npcs.push(newNpc); // Use window.app reference
+         window.app.activeBestiary.npcs.push(newNpc);
          sortAndSwitchToNpc(newNpc);
          saveActiveBestiaryToDB();
-         window.app.showAlert(`NPC "${newNpc.name}" imported successfully.`); // Use helper
+         window.ui.updateUIForActiveBestiary(); // Update count immediately
+         window.app.showAlert(`NPC "${newNpc.name}" imported successfully.`);
       } catch (err) {
          if (err.name !== "AbortError") {
             console.error("Error importing NPC:", err);
-            window.app.showAlert("Failed to import NPC. See console for details."); // Use helper
+            window.app.showAlert("Failed to import NPC. See console for details.");
          }
       }
    }
 
 
    async function exportNpc() {
-      if (!window.app.activeNPC) { // Use window.app reference
-         window.app.showAlert("No NPC selected to export."); // Use helper
+      if (!window.app.activeNPC) {
+         window.app.showAlert("No NPC selected to export.");
          return;
       }
       updateActiveNPCFromForm();
-      const npcToExport = JSON.parse(JSON.stringify(window.app.activeNPC)); // Use window.app reference
+      const npcToExport = JSON.parse(JSON.stringify(window.app.activeNPC));
       const npcJson = JSON.stringify(npcToExport, null, 2);
       try {
          const handle = await window.showSaveFilePicker({
-            suggestedName: `${window.app.activeNPC.name || "unnamed-npc"}.json`, // Use window.app reference
+            suggestedName: `${window.app.activeNPC.name || "unnamed-npc"}.json`,
             types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }]
          });
          const writable = await handle.createWritable();
@@ -864,7 +850,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (err) {
          if (err.name !== "AbortError") {
             console.error("Error exporting NPC:", err);
-            window.app.showAlert("Failed to export NPC. See console for details."); // Use helper
+            window.app.showAlert("Failed to export NPC. See console for details.");
          }
       }
    }
@@ -875,7 +861,6 @@ document.addEventListener("DOMContentLoaded", () => {
          window.app.showAlert("No active bestiary to export.");
          return;
       }
-      // NEW: Open the modal instead of showing an alert
       if (window.ui.openFgExportModal) {
          window.ui.openFgExportModal();
       } else {
@@ -886,9 +871,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
    function updateActiveNPCFromForm() {
-      if (window.app.isUpdatingForm || !window.app.activeNPC) return; // Use window.app references
+      if (window.app.isUpdatingForm || !window.app.activeNPC) return;
 
-      // --- Cache potentially changing values for comparison/calculation ---
       const oldProfBonus = window.app.activeNPC.proficiencyBonus;
       const oldAbilities = {
          strength: window.app.activeNPC.strength,
@@ -904,64 +888,53 @@ document.addEventListener("DOMContentLoaded", () => {
       const oldTraitCasterLevel = window.app.activeNPC.traitCastingLevel;
 
 
-      // --- Name Validation ---
       const newName = window.ui.inputs.name.value.trim();
       if (!newName) {
-          // If name is cleared, keep the old name temporarily to avoid errors
-          // but visually show the input is empty until blur/save
-          window.ui.inputs.name.value = ''; // Keep input visually empty
+          window.ui.inputs.name.value = '';
       } else if (newName.toLowerCase() !== (window.app.activeNPC.name || "").toLowerCase()) {
           const isDuplicate = window.app.activeBestiary.npcs.some((npc, index) =>
               index !== window.app.activeNPCIndex && npc.name.toLowerCase() === newName.toLowerCase()
           );
           if (isDuplicate) {
               window.app.showAlert(`An NPC named "${newName}" already exists. Please choose a unique name.`);
-              window.ui.inputs.name.value = window.app.activeNPC.name; // Revert input value
-              return; // Stop update if duplicate name attempt
+              window.ui.inputs.name.value = window.app.activeNPC.name;
+              return;
           }
           window.app.activeNPC.name = newName;
       } else if (window.app.activeNPC.name !== newName) {
-         // Handle case where only capitalization changed
          window.app.activeNPC.name = newName;
       }
 
 
-      // --- Update Standard Properties ---
       for (const key in window.ui.inputs) {
          const element = window.ui.inputs[key];
-         if (!element || key === 'name') continue; // Skip name, handled above
+         if (!element || key === 'name') continue;
          if (key === 'description') {
-            // Trix editor content update handled separately if needed
             const trixEditor = document.querySelector("trix-editor");
             if (trixEditor && trixEditor.editor) {
                window.app.activeNPC[key] = trixEditor.editor.getDocument().toString().trim() === "" ? "" : trixEditor.innerHTML;
             }
             continue;
          }
-         if (key.startsWith('common') || key === 'attackDamageDice') continue; // Skip action editor fields
-         if (key.startsWith('fg-')) continue; // NEW: Skip FG modal inputs
-         if (key.startsWith('setting-')) continue; // NEW: Skip global settings inputs
-         if (element.type === 'radio') { // Handle radio groups
+         if (key.startsWith('common') || key === 'attackDamageDice') continue;
+         if (key.startsWith('fg-')) continue;
+         if (key.startsWith('setting-')) continue;
+         if (element.type === 'radio') {
             if(element.checked) {
-               // Special handling for spellcasting placement
                if (element.name === 'spellcasting-placement') {
                   window.app.activeNPC.spellcastingPlacement = element.value;
                }
-               // Add other radio groups here if needed
             }
-            continue; // Move to next input after processing radio
+            continue;
          }
 
-         const defaultValue = defaultNPC[key]; // Use local defaultNPC
+         const defaultValue = defaultNPC[key];
 
          if (key.startsWith('innate-') || key.startsWith('trait-casting-') || key.startsWith('action-casting-') || key === 'hasInnateSpellcasting' || key === 'hasSpellcasting' || key === 'menuSoloCardMode') {
-            // Spellcasting fields handled specifically later
          } else if (key.match(/^traitCastingList-\d$/) || key.match(/^traitCastingSlots-\d$/) || key === 'traitCastingMarked') {
-             // Trait spell lists/slots handled later
          } else if (element.type === "checkbox") {
             window.app.activeNPC[key] = element.checked;
          } else if (element.tagName === 'SELECT' && element.multiple) {
-            // Skip language listboxes, handled separately
          } else if (element.tagName === 'SELECT') {
             const customToggle = document.getElementById(`toggle-custom-${key}`);
             if (customToggle?.checked) {
@@ -973,24 +946,22 @@ document.addEventListener("DOMContentLoaded", () => {
          } else if (element.type === "number") {
             const parsedValue = parseInt(element.value, 10);
             window.app.activeNPC[key] = isNaN(parsedValue) ? (defaultValue !== undefined ? defaultValue : 0) : parsedValue;
-         } else { // Text inputs
+         } else {
             window.app.activeNPC[key] = element.value.trim() !== "" ? element.value : (defaultValue !== undefined ? defaultValue : "");
          }
       }
 
 
-      // --- Update Proficiency Bonus & Experience ---
       const newProfBonus = window.app.calculateProficiencyBonus(window.app.activeNPC.challenge);
-      const newExperience = window.app.crToXpMap[window.app.activeNPC.challenge] || '0'; // <-- FIX: Calculate XP
+      const newExperience = window.app.crToXpMap[window.app.activeNPC.challenge] || '0';
       let profBonusChanged = false;
       if (newProfBonus !== oldProfBonus) {
          window.app.activeNPC.proficiencyBonus = newProfBonus;
          profBonusChanged = true;
       }
-      window.app.activeNPC.experience = newExperience; // <-- FIX: Save XP
+      window.app.activeNPC.experience = newExperience;
 
 
-      // --- Recalculate Ability Bonuses ---
       let abilityScoresChanged = false;
       const abilities = ['strength','dexterity','constitution','intelligence','wisdom','charisma'];
       abilities.forEach(ability => {
@@ -1000,11 +971,9 @@ document.addEventListener("DOMContentLoaded", () => {
          const newBonus = window.app.calculateAbilityBonus(window.app.activeNPC[ability]);
          if (newBonus !== window.app.activeNPC[`${ability}Bonus`]) {
             window.app.activeNPC[`${ability}Bonus`] = newBonus;
-            // No need to set abilityScoresChanged here, direct score change covers it
          }
       });
 
-      // --- Innate Spellcasting fields ---
       window.app.activeNPC.hasInnateSpellcasting = window.ui.inputs.hasInnateSpellcasting?.checked ?? false;
       window.app.activeNPC.innateIsPsionics = window.ui.inputs.innateIsPsionics?.checked ?? false;
       window.app.activeNPC.innateAbility = window.ui.inputs.innateAbility?.value ?? defaultNPC.innateAbility;
@@ -1012,9 +981,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const innateAbilityChanged = window.app.activeNPC.innateAbility !== oldAbilities.innateAbility;
       const innateDCInputVal = parseInt(window.ui.inputs.innateDC?.value, 10);
       const { dc: newInnateCalculatedDC } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.innateAbility, newProfBonus, window.app.activeNPC);
-      // Save input value if it's NOT the calculated default, otherwise clear it to allow auto-calc
       window.app.activeNPC.innateDC = (!isNaN(innateDCInputVal) && innateDCInputVal !== newInnateCalculatedDC) ? innateDCInputVal : undefined;
-      // Populate spell list array
       window.app.activeNPC.innateSpells = [];
       for (let i = 0; i < 4; i++) {
          const freq = window.ui.inputs[`innate-freq-${i}`]?.value ?? '';
@@ -1022,11 +989,8 @@ document.addEventListener("DOMContentLoaded", () => {
          window.app.activeNPC.innateSpells.push({ freq, list });
       }
 
-      // --- Spellcasting fields ---
       window.app.activeNPC.hasSpellcasting = window.ui.inputs.hasSpellcasting?.checked ?? false;
-      // spellcastingPlacement already updated via radio button listener
 
-      // --- Trait-based Spellcasting fields ---
       window.app.activeNPC.traitCastingLevel = window.ui.inputs.traitCastingLevel?.value ?? defaultNPC.traitCastingLevel;
       window.app.activeNPC.traitCastingAbility = window.ui.inputs.traitCastingAbility?.value ?? defaultNPC.traitCastingAbility;
       window.app.activeNPC.traitCastingClass = window.ui.inputs.traitCastingClass?.value ?? defaultNPC.traitCastingClass;
@@ -1037,30 +1001,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const traitDCInputVal = parseInt(window.ui.inputs.traitCastingDC?.value, 10);
       const traitBonusInputVal = parseInt(window.ui.inputs.traitCastingBonus?.value, 10);
       const { dc: newTraitCalculatedDC, bonus: newTraitCalculatedBonus } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.traitCastingAbility, newProfBonus, window.app.activeNPC);
-      // Save input values if they differ from calculated, otherwise clear
       window.app.activeNPC.traitCastingDC = (!isNaN(traitDCInputVal) && traitDCInputVal !== newTraitCalculatedDC) ? traitDCInputVal : undefined;
       window.app.activeNPC.traitCastingBonus = (!isNaN(traitBonusInputVal) && traitBonusInputVal !== newTraitCalculatedBonus) ? traitBonusInputVal : undefined;
-      // Populate spell list/slot arrays
       window.app.activeNPC.traitCastingList = [];
       window.app.activeNPC.traitCastingSlots = [];
       for (let i = 0; i <= 9; i++) {
          const list = window.ui.inputs[`traitCastingList-${i}`]?.value ?? '';
          window.app.activeNPC.traitCastingList.push(list);
-         if (i > 0) { // Slots 1-9
+         if (i > 0) {
             const slots = window.ui.inputs[`traitCastingSlots-${i}`]?.value ?? '0';
             window.app.activeNPC.traitCastingSlots.push(slots);
          }
       }
 
-      // --- Action-based Spellcasting fields ---
       window.app.activeNPC.actionCastingAbility = window.ui.inputs.actionCastingAbility?.value ?? defaultNPC.actionCastingAbility;
       window.app.activeNPC.actionCastingComponents = window.ui.inputs.actionCastingComponents?.value ?? defaultNPC.actionCastingComponents;
       const actionAbilityChanged = window.app.activeNPC.actionCastingAbility !== oldAbilities.actionCastingAbility;
       const actionDCInputVal = parseInt(window.ui.inputs.actionCastingDC?.value, 10);
       const { dc: newActionCalculatedDC } = window.app.calculateSpellcastingDCBonus(window.app.activeNPC.actionCastingAbility, newProfBonus, window.app.activeNPC);
-      // Save input value if different from calculated
       window.app.activeNPC.actionCastingDC = (!isNaN(actionDCInputVal) && actionDCInputVal !== newActionCalculatedDC) ? actionDCInputVal : undefined;
-      // Populate spell list array
       window.app.activeNPC.actionCastingSpells = [];
       for (let i = 0; i < 4; i++) {
          const freq = window.ui.inputs[`action-casting-freq-${i}`]?.value ?? '';
@@ -1069,19 +1028,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // --- Languages ---
       let languagesModifiedBySpecialOption = false;
       const specialOption = parseInt(document.getElementById('npc-special-language-option')?.value || '0', 10);
       window.app.activeNPC.specialLanguageOption = specialOption;
 
       if (specialOption === 1 || specialOption === 2 || specialOption === 3 || specialOption === 5 || specialOption === 6) {
-          // If a special option overrides selection, clear the selected languages array
           if (window.app.activeNPC.selectedLanguages?.length > 0) {
               window.app.activeNPC.selectedLanguages = [];
-              languagesModifiedBySpecialOption = true; // Flag that we changed languages due to the dropdown
+              languagesModifiedBySpecialOption = true;
           }
       } else {
-          // Otherwise, read selected languages from listboxes
           const selectedLanguages = new Set();
           window.ui.languageListboxes.forEach(listbox => {
               if (listbox) {
@@ -1090,7 +1046,6 @@ document.addEventListener("DOMContentLoaded", () => {
                   });
               }
           });
-          // Update only if the set of languages actually changed
           const currentSelected = new Set(window.app.activeNPC.selectedLanguages || []);
           if (selectedLanguages.size !== currentSelected.size || [...selectedLanguages].some(lang => !currentSelected.has(lang))) {
               window.app.activeNPC.selectedLanguages = Array.from(selectedLanguages);
@@ -1100,13 +1055,11 @@ document.addEventListener("DOMContentLoaded", () => {
       window.app.activeNPC.telepathyRange = parseInt(document.getElementById('npc-telepathy-range')?.value || '0', 10);
 
 
-      // --- Viewport Options ---
       for (const key in window.ui.npcSettingsCheckboxes) {
          window.app.activeNPC[key] = window.ui.npcSettingsCheckboxes[key]?.checked ?? true;
       }
 
 
-      // --- Saves & Skills (Proficiency/Expertise/Adjustment) ---
       abilities.forEach(ability => {
          window.app.activeNPC[`${ability}SavingThrowProf`] = document.getElementById(`npc-${ability}-saving-throw-prof`)?.checked || false;
          const adjustVal = parseInt(document.getElementById(`npc-${ability}-saving-throw-adjust`)?.value || '0', 10);
@@ -1119,7 +1072,6 @@ document.addEventListener("DOMContentLoaded", () => {
          window.app.activeNPC[`skill_${skill.id}_adjust`] = isNaN(adjustVal) ? 0 : adjustVal;
       });
 
-      // --- Resistances/Immunities ---
       window.app.damageTypes.forEach(type => {
          window.app.activeNPC[`vulnerability_${type}`] = document.getElementById(`vuln-${type}`)?.checked || false;
          window.app.activeNPC[`resistance_${type}`] = document.getElementById(`res-${type}`)?.checked || false;
@@ -1134,18 +1086,15 @@ document.addEventListener("DOMContentLoaded", () => {
       window.app.activeNPC.weaponImmunity = weaponImmRadio ? weaponImmRadio.value : 'none';
 
 
-      // --- Recalculate derived stats ---
-      window.app.calculateAllStats(); // Recalculates bonuses, saves str, skills str, passive P, speed str
+      window.app.calculateAllStats();
 
 
-      // --- Recalculate spellcasting DC/Bonus if needed ---
       const needsInnateRecalc = profBonusChanged || innateAbilityChanged;
       const needsTraitRecalc = profBonusChanged || traitAbilityChanged || traitLevelChanged;
       const needsActionRecalc = profBonusChanged || actionAbilityChanged;
 
-      // Update stored calculated values *only if* the user hasn't overridden them
       if (needsInnateRecalc && window.app.activeNPC.innateDC === undefined) {
-         window.ui.inputs.innateDC.value = newInnateCalculatedDC; // Update display directly
+         window.ui.inputs.innateDC.value = newInnateCalculatedDC;
       }
       if (needsTraitRecalc) {
          if (window.app.activeNPC.traitCastingDC === undefined) {
@@ -1160,18 +1109,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
 
-      // --- Final UI Updates ---
-      window.ui.updateStatDisplays(); // Update bonuses, save totals
-      window.ui.updateSkillDisplays(); // Update skill totals
+      window.ui.updateStatDisplays();
+      window.ui.updateSkillDisplays();
 
-      // --- FIX: Update XP and Prof Bonus displays on info card ---
       if (window.ui.experienceDisplay) window.ui.experienceDisplay.textContent = window.app.activeNPC.experience || '';
       if (window.ui.proficiencyBonusDisplay) window.ui.proficiencyBonusDisplay.textContent = `+${window.app.activeNPC.proficiencyBonus}` || '+2';
-      // --- END FIX ---
 
-      window.viewport.updateViewport(); // Update stat block preview
+      window.viewport.updateViewport();
 
-      // Update name in selector dropdown if it changed
       if(window.ui.npcSelector && window.ui.npcSelector.selectedIndex >= 0) {
          const currentOption = window.ui.npcSelector.options[window.ui.npcSelector.selectedIndex];
          if(currentOption && currentOption.textContent !== window.app.activeNPC.name) {
@@ -1179,10 +1124,9 @@ document.addEventListener("DOMContentLoaded", () => {
          }
       }
 
-      // If special language option forced a change, refresh the form's language section
       if (languagesModifiedBySpecialOption) {
           const wasUpdating = window.app.isUpdatingForm;
-          window.app.isUpdatingForm = true; // Prevent loop
+          window.app.isUpdatingForm = true;
           window.ui.populateLanguageListbox('language-list-standard', window.app.standardLanguages, []);
           window.ui.populateLanguageListbox('language-list-exotic', window.app.exoticLanguages, []);
           window.ui.populateLanguageListbox('language-list-monstrous1', window.app.monstrousLanguages1, []);
@@ -1191,41 +1135,27 @@ document.addEventListener("DOMContentLoaded", () => {
           window.app.isUpdatingForm = wasUpdating;
       }
 
-      window.ui.updateSpellcastingVisibility(); // Update visibility based on checkbox states
+      window.ui.updateSpellcastingVisibility();
 
-      // --- Save ---
-      saveActiveBestiaryToDB(); // This now sets changesMadeSinceExport = true
+      saveActiveBestiaryToDB();
    }
 
 
    // --- Settings Persistence ---
-   
-   // --- NEW: Helper to load and save a setting ---
-   /**
-    * Fetches a setting from DB, applies default, and saves default if not present.
-    * @param {string} key - The setting key.
-    * @param {*} defaultValue - The default value if not found.
-    * @param {string} [globalVarName] - The name of the global variable in window.app to update.
-    * @param {HTMLElement} [uiElement] - The UI element to update.
-    */
    async function loadAndSetSetting(key, defaultValue, globalVarName, uiElement) {
       let setting = await db.settings.get(key);
       let value;
 
       if (setting === undefined) {
          value = defaultValue;
-         // Save the default back to Dexie if it wasn't found
          await db.settings.put({ key, value });
       } else {
          value = setting.value;
       }
 
-      // Update the global state
       if (globalVarName) {
          window.app[globalVarName] = value;
          
-         // Dynamically update the local-scope variable if it exists
-         // This relies on local variable names matching globalVarName
          try {
             if (eval(`typeof ${globalVarName}`) !== 'undefined') {
                eval(`${globalVarName} = value;`);
@@ -1235,7 +1165,6 @@ document.addEventListener("DOMContentLoaded", () => {
          }
       }
       
-      // Update the UI
       if (uiElement) {
          if (uiElement.type === 'checkbox') {
             uiElement.checked = value;
@@ -1250,18 +1179,15 @@ document.addEventListener("DOMContentLoaded", () => {
          await db.open();
          console.log("Database opened successfully.");
 
-         // --- Load settings using the new helper ---
          const firstUseSetting = await db.settings.get('firstUseCompleted');
          if (!firstUseSetting || !firstUseSetting.value) {
             window.app.openModal('first-use-modal');
-            // Don't save default for firstUse, let user action do it
          }
 
          await loadAndSetSetting('disableUnloadWarning', false, 'disableUnloadWarning', window.ui.settingDisableUnloadWarning);
          await loadAndSetSetting('soloCardMode', false, 'soloCardMode', window.ui.settingSoloCardMode);
-         if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = window.app.soloCardMode; // Sync menu
+         if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = window.app.soloCardMode;
 
-         // --- Graphics Settings ---
          await loadAndSetSetting('settingConvertWebp', false, 'settingConvertWebp', window.ui.inputs.settingConvertWebp);
          await loadAndSetSetting('settingWebpQuality', 80, 'settingWebpQuality', window.ui.inputs.settingWebpQuality);
          await loadAndSetSetting('settingResizePortrait', false, 'settingResizePortrait', window.ui.inputs.settingResizePortrait);
@@ -1272,15 +1198,13 @@ document.addEventListener("DOMContentLoaded", () => {
          await loadAndSetSetting('settingResizeCameraToken', false, 'settingResizeCameraToken', window.ui.inputs.settingResizeCameraToken);
          await loadAndSetSetting('settingCameraTokenMaxWidth', 1000, 'settingCameraTokenMaxWidth', window.ui.inputs.settingCameraTokenMaxWidth);
          await loadAndSetSetting('settingCameraTokenMaxHeight', 1000, 'settingCameraTokenMaxHeight', window.ui.inputs.settingCameraTokenMaxHeight);
-         // --- End Graphics Settings ---
 
       } catch (error) {
          console.error("Error loading settings or opening DB:", error);
-         if (error.name === 'OpenFailedError') window.app.showAlert("Database could not be opened..."); // Use helper
-         else if (error.name === 'VersionError') window.app.showAlert("Database version conflict..."); // Use helper
-         else window.app.showAlert("Error loading application settings..."); // Use helper
+         if (error.name === 'OpenFailedError') window.app.showAlert("Database could not be opened...");
+         else if (error.name === 'VersionError') window.app.showAlert("Database version conflict...");
+         else window.app.showAlert("Error loading application settings...");
          
-         // Manually set all defaults on error
          disableUnloadWarning = false; window.app.disableUnloadWarning = false;
          soloCardMode = false; window.app.soloCardMode = false;
          settingConvertWebp = false; window.app.settingConvertWebp = false;
@@ -1294,7 +1218,7 @@ document.addEventListener("DOMContentLoaded", () => {
          settingCameraTokenMaxWidth = 1000; window.app.settingCameraTokenMaxWidth = 1000;
          settingCameraTokenMaxHeight = 1000; window.app.settingCameraTokenMaxHeight = 1000;
 
-         if (error.name !== 'OpenFailedError' && error.name !== 'VersionError') window.app.openModal('first-use-modal'); // Use helper
+         if (error.name !== 'OpenFailedError' && error.name !== 'VersionError') window.app.openModal('first-use-modal');
       }
    }
 
@@ -1303,11 +1227,9 @@ document.addEventListener("DOMContentLoaded", () => {
       catch (error) { console.error("Error saving first use setting:", error); }
    }
 
-   // --- NEW: Generic Setting Saver ---
    async function saveSetting(key, value) {
       try {
          await db.settings.put({ key, value });
-         // Update the global state variable
          if (window.app.hasOwnProperty(key)) {
             window.app[key] = value;
          } else {
@@ -1319,71 +1241,68 @@ document.addEventListener("DOMContentLoaded", () => {
    }
 
    async function setDisableUnloadWarning(isDisabled) {
-      disableUnloadWarning = isDisabled; // Update local scope
+      disableUnloadWarning = isDisabled;
       await saveSetting('disableUnloadWarning', isDisabled);
    }
    
    async function setSoloCardMode(isEnabled) {
-      soloCardMode = isEnabled; // Update local scope
+      soloCardMode = isEnabled;
       await saveSetting('soloCardMode', isEnabled);
-      // Sync both checkboxes
       if (window.ui.settingSoloCardMode) window.ui.settingSoloCardMode.checked = isEnabled;
       if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = isEnabled;
+      // --- NEW: Enforce immediately ---
+      if (window.ui.enforceSoloMode) window.ui.enforceSoloMode();
    }
 
-   // --- NEW: Graphics Settings Savers ---
    async function setConvertWebp(isEnabled) {
-      settingConvertWebp = isEnabled; // Update local scope
+      settingConvertWebp = isEnabled;
       await saveSetting('settingConvertWebp', isEnabled);
    }
    async function setResizePortrait(isEnabled) {
-      settingResizePortrait = isEnabled; // Update local scope
+      settingResizePortrait = isEnabled;
       await saveSetting('settingResizePortrait', isEnabled);
    }
    async function setResizeToken(isEnabled) {
-      settingResizeToken = isEnabled; // Update local scope
+      settingResizeToken = isEnabled;
       await saveSetting('settingResizeToken', isEnabled);
    }
    async function setResizeCameraToken(isEnabled) {
-      settingResizeCameraToken = isEnabled; // Update local scope
+      settingResizeCameraToken = isEnabled;
       await saveSetting('settingResizeCameraToken', isEnabled);
    }
    
-   // Number value setters
    async function setWebpQuality(value) {
       const numValue = parseInt(value, 10) || 80;
-      settingWebpQuality = numValue; // Update local scope
+      settingWebpQuality = numValue;
       await saveSetting('settingWebpQuality', numValue);
    }
    async function setPortraitMaxWidth(value) {
       const numValue = parseInt(value, 10) || 1000;
-      settingPortraitMaxWidth = numValue; // Update local scope
+      settingPortraitMaxWidth = numValue;
       await saveSetting('settingPortraitMaxWidth', numValue);
    }
    async function setPortraitMaxHeight(value) {
       const numValue = parseInt(value, 10) || 1000;
-      settingPortraitMaxHeight = numValue; // Update local scope
+      settingPortraitMaxHeight = numValue;
       await saveSetting('settingPortraitMaxHeight', numValue);
    }
    async function setTokenSize(value) {
       const numValue = parseInt(value, 10) || 300;
-      settingTokenSize = numValue; // Update local scope
+      settingTokenSize = numValue;
       await saveSetting('settingTokenSize', numValue);
    }
    async function setCameraTokenMaxWidth(value) {
       const numValue = parseInt(value, 10) || 1000;
-      settingCameraTokenMaxWidth = numValue; // Update local scope
+      settingCameraTokenMaxWidth = numValue;
       await saveSetting('settingCameraTokenMaxWidth', numValue);
    }
    async function setCameraTokenMaxHeight(value) {
       const numValue = parseInt(value, 10) || 1000;
-      settingCameraTokenMaxHeight = numValue; // Update local scope
+      settingCameraTokenMaxHeight = numValue;
       await saveSetting('settingCameraTokenMaxHeight', numValue);
    }
-   // --- END Graphics Settings Savers ---
 
 
-   // --- Before Unload Warning ---
    window.addEventListener('beforeunload', (event) => {
       if (changesMadeSinceExport && !disableUnloadWarning) {
          const message = "You have unsaved changes since your last export...";
@@ -1394,10 +1313,8 @@ document.addEventListener("DOMContentLoaded", () => {
    });
 
 
-   // --- INITIALIZATION ---
    window.ui.init();
    window.importer.init();
-   // window.fgExporter.init(); // This is now called from export-fg.js itself
    loadSettings();
    window.ui.updateUIForActiveBestiary();
 

@@ -53,6 +53,27 @@ function _openCardAndHandleSoloMode(cardId) {
    }
 }
 
+// --- NEW: Enforce Solo Mode Helper ---
+function _enforceSoloMode() {
+   if (!window.app.soloCardMode) return;
+
+   const openCards = document.querySelectorAll('.card-body.open');
+   if (openCards.length > 1) {
+      // Keep the first one open, close the rest
+      for (let i = 1; i < openCards.length; i++) {
+         const card = openCards[i];
+         // Close it
+         card.style.maxHeight = card.scrollHeight + 'px';
+         requestAnimationFrame(() => {
+            card.classList.remove('open');
+            card.style.maxHeight = '0';
+            card.style.paddingTop = '0';
+            card.style.paddingBottom = '0';
+         });
+      }
+   }
+}
+
 // --- NEW FG Export Modal Function ---
 function _openFgExportModal() {
    // This function is now defined in export-fg.js and attached to window.fgExporter
@@ -110,10 +131,9 @@ function _updateMenuState() {
    if (window.ui.footerExportFgBtn) {
       window.ui.footerExportFgBtn.disabled = !hasActiveBestiary;
    }
-   // NEW: Force PDF button to disabled state for now
+   // PDF button disabled state
    if (window.ui.footerExportPdfBtn) {
       window.ui.footerExportPdfBtn.disabled = true; 
-      // When ready to enable: window.ui.footerExportPdfBtn.disabled = !hasActiveBestiary;
    }
 
    if (window.ui.menuDeleteNpc && hasActiveBestiary && window.app.activeBestiary.npcs.length <= 1) {
@@ -1623,6 +1643,7 @@ if (window.ui) {
    window.ui.deleteSavedTrait = _deleteSavedTrait;
    window.ui.parseHpStringToModal = _parseHpStringToModal;
    window.ui.openCardAndHandleSoloMode = _openCardAndHandleSoloMode;
+   window.ui.enforceSoloMode = _enforceSoloMode; // NEW: Assign to window.ui
    window.ui.openFgExportModal = _openFgExportModal;
    window.ui.populateDamageTypes = _populateDamageTypes;
    window.ui.updateCameraTokenDisplay = _updateCameraTokenDisplay;

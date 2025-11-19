@@ -727,9 +727,9 @@ table.spell td {
     margin: 0.5em 1em 0.7em 28px; 
 }
 .npcdescrip blockquote::before {
-    content: url('speech.webp');
+    content: url('graphics/speech.webp');
     position: absolute;
-    top: 0;
+    top: 5px;
     left: -27px;
 }
 
