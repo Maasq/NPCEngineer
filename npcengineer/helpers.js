@@ -1068,8 +1068,15 @@ function processAndPasteFromClipboardModal() {
       return;
    }
    
-   const textToPaste = window.ui.clipboardTextArea.value;
-   const shouldProcessTitles = window.ui.bestiaryPickOutTitles?.checked ?? false; // Check the new checkbox
+   let textToPaste = window.ui.clipboardTextArea.value;
+   
+   // 1. Clean Non-Breaking Spaces
+   textToPaste = textToPaste.replace(/\u00A0/g, ' ');
+   
+   // 2. Normalize Line Endings (The "paragraph endings" fix)
+   textToPaste = textToPaste.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+   
+   const shouldProcessTitles = window.ui.bestiaryPickOutTitles?.checked ?? false;
    
    const trixEditorElement = document.querySelector("trix-editor[input='npc-description']");
    const trixEditor = trixEditorElement?.editor;
@@ -1080,20 +1087,20 @@ function processAndPasteFromClipboardModal() {
       return; // Don't close modal if pasting failed
    }
 
-   if (shouldProcessTitles) {
-      // Process the text for titles
-      const paragraphs = textToPaste.split('\n');
-      let finalHtml = '';
+   // Split into lines (paragraphs)
+   const paragraphs = textToPaste.split('\n');
+   let finalHtml = '';
 
-      paragraphs.forEach(paragraph => {
-         // Sanitize paragraph to prevent unwanted HTML injection
-         const sanitizedParagraph = paragraph.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-         
-         if (sanitizedParagraph.trim() === '') {
-            finalHtml += '<div><br></div>'; // Handle empty lines as breaks
-            return;
-         }
+   paragraphs.forEach(paragraph => {
+      // Sanitize paragraph to prevent unwanted HTML injection
+      const sanitizedParagraph = paragraph.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      
+      if (sanitizedParagraph.trim() === '') {
+         finalHtml += '<div><br></div>'; // Handle empty lines as breaks
+         return;
+      }
 
+      if (shouldProcessTitles) {
          // Find the first sentence (ends with ., !, or ?)
          const sentenceEndMatch = sanitizedParagraph.match(/^([^.!?]+[.!?])/);
          
@@ -1122,15 +1129,13 @@ function processAndPasteFromClipboardModal() {
                finalHtml += `<div>${sanitizedParagraph}</div>`;
             }
          }
-      });
-      
-      trixEditor.insertHTML(finalHtml); // Insert processed HTML
-      
-   } else {
-      // Just paste plain text
-      trixEditor.insertString(textToPaste);
-   }
-
+      } else {
+         // Just wrap in div
+         finalHtml += `<div>${sanitizedParagraph}</div>`;
+      }
+   });
+   
+   trixEditor.insertHTML(finalHtml); // Insert processed HTML
    trixEditor.element.focus(); // Focus the Trix editor after pasting
    window.app.closeModal('clipboard-modal'); // closeModal is in helpers.js
 }
