@@ -131,18 +131,151 @@ window.fgExporter = {
       // 4. Close the modal
       window.ui.hideAllModals();
 
-      // 5. Generate the XML
+      // 5. Generate Content (Images & XML) & ZIP
       try {
-         // Restore the main XML generation
-         const xmlOutput = this._generateDbXml(activeBestiary, settings);
+         // Initialize JSZip
+         const zip = new JSZip();
          
-         // 6. Display XML in the test modal
-         this.showExportOutputForTesting(xmlOutput);
+         // Add definition.xml
+         const definitionXml = this._generateDefinitionXml(settings);
+         zip.file("definition.xml", definitionXml);
+
+         // Process Images and build a map of final filenames
+         // This modifies the 'zip' object directly by adding files
+         const imageMap = await this._processAndZipImages(zip, activeBestiary.npcs);
+         
+         // Add Thumbnail (if exists)
+         if (settings.coverImage) {
+             const thumbData = this._dataURLtoBlob(settings.coverImage);
+             zip.file("thumbnail.png", thumbData);
+         }
+
+         // Generate Main XML (db.xml or client.xml) passing the imageMap
+         const xmlOutput = this._generateDbXml(activeBestiary, settings, imageMap);
+         const mainXmlFilename = settings.isGmOnly ? "db.xml" : "client.xml";
+         zip.file(mainXmlFilename, xmlOutput);
+
+         // 6. Generate the .mod file and trigger download
+         const content = await zip.generateAsync({ type: "blob" });
+         
+         // Create download link
+         const a = document.createElement("a");
+         a.href = URL.createObjectURL(content);
+         a.download = `${settings.filename}.mod`;
+         document.body.appendChild(a);
+         a.click();
+         document.body.removeChild(a);
+         URL.revokeObjectURL(a.href);
+         
+         window.app.showAlert(`Export successful! Saved as ${settings.filename}.mod`);
          
       } catch (error) {
-         console.error("Error during XML generation:", error);
-         window.app.showAlert(`An error occurred during XML generation: ${error.message}`);
+         console.error("Error during Export generation:", error);
+         window.app.showAlert(`An error occurred during export: ${error.message}`);
       }
+   },
+
+   /**
+    * Iterates through NPCs, processes their images, handles filename collisions,
+    * adds them to the zip, and returns a map of paths for the XML generator.
+    */
+   async _processAndZipImages(zip, npcs) {
+      const imageMap = new Map(); // Key: npc object, Value: { image: path, token: path, cameraToken: path }
+      
+      // Sets to track used filenames in each folder to prevent collisions
+      const usedImageNames = new Set();
+      const usedTokenNames = new Set();
+
+      const imagesFolder = zip.folder("images");
+      const tokensFolder = zip.folder("tokens");
+
+      // Helper to get extension from data URL
+      const getExtension = (dataUrl) => {
+         const match = dataUrl.match(/^data:image\/(\w+);base64,/);
+         return match ? match[1] : 'png'; // Default to png
+      };
+
+      // Helper to generate a unique filename
+      const getUniqueFilename = (baseName, extension, usedSet) => {
+         let counter = 0;
+         let filename = `${baseName}.${extension}`;
+         
+         while (usedSet.has(filename.toLowerCase())) {
+             counter++;
+             const suffix = counter < 10 ? `0${counter}` : `${counter}`; // 01, 02...
+             filename = `${baseName}${suffix}.${extension}`;
+         }
+         usedSet.add(filename.toLowerCase());
+         return filename;
+      };
+
+      for (let i = 0; i < npcs.length; i++) {
+         const npc = npcs[i];
+         
+         const paths = {
+            image: null,
+            token: null,
+            cameraToken: null
+         };
+
+         const cleanName = this._sanitizeFilename(npc.name || "Unnamed");
+
+         // 1. Main NPC Image
+         if (npc.image) {
+             const ext = getExtension(npc.image);
+             const filename = getUniqueFilename(cleanName, ext, usedImageNames);
+             const blob = this._dataURLtoBlob(npc.image);
+             imagesFolder.file(filename, blob);
+             paths.image = `images/${filename}`;
+         }
+
+         // 2. Camera Token (Also goes in 'images' folder)
+         if (npc.cameraToken) {
+             const ext = getExtension(npc.cameraToken);
+             const baseName = `${cleanName} front`;
+             const filename = getUniqueFilename(baseName, ext, usedImageNames); // Checks same set as main images
+             const blob = this._dataURLtoBlob(npc.cameraToken);
+             imagesFolder.file(filename, blob);
+             paths.cameraToken = `images/${filename}`;
+         }
+
+         // 3. Token (Goes in 'tokens' folder)
+         if (npc.token) {
+             const ext = getExtension(npc.token);
+             const baseName = `${cleanName} token`;
+             const filename = getUniqueFilename(baseName, ext, usedTokenNames); // Different set
+             const blob = this._dataURLtoBlob(npc.token);
+             tokensFolder.file(filename, blob);
+             paths.token = `tokens/${filename}`;
+         }
+
+         imageMap.set(npc, paths);
+      }
+
+      return imageMap;
+   },
+
+   /**
+    * Helper to convert Data URL to Blob
+    */
+   _dataURLtoBlob(dataurl) {
+       const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+       const bstr = atob(arr[1]);
+       let n = bstr.length;
+       const u8arr = new Uint8Array(n);
+       while(n--){
+           u8arr[n] = bstr.charCodeAt(n);
+       }
+       return new Blob([u8arr], {type:mime});
+   },
+
+   /**
+    * Sanitizes a string for use as a filename.
+    * Allows alphanumeric, spaces, hyphens, underscores.
+    */
+   _sanitizeFilename(str) {
+       // Replace illegal chars with empty string, trim spaces
+       return str.replace(/[^a-zA-Z0-9 \-_]/g, "").trim();
    },
 
    /**
@@ -249,87 +382,6 @@ window.fgExporter = {
    },
 
    /**
-    * [TEMPORARY TEST FUNCTION]
-    * Repurposes the Import Modal to display a string.
-    * @param {string} outputText The text to display.
-    */
-   showExportOutputForTesting(outputText) {
-      const {
-         importModal,
-         importPaneRaw,
-         importPaneFiltered,
-         importTextArea,
-         importFilterSelect,
-         importCancelBtn,
-         importConfirmBtn,
-         importToggleViewBtn,
-         importClearBtn
-      } = window.ui;
-
-      if (!importModal || !importPaneFiltered || !importTextArea) {
-         console.error("Cannot show test output: Import modal elements not found.");
-         window.app.showAlert(outputText); // Fallback to alert
-         return;
-      }
-
-      // 1. Open the modal
-      window.app.openModal('import-modal');
-
-      // 2. Change the title
-      const modalTitle = document.getElementById('import-modal')?.querySelector('h3');
-      if (modalTitle) {
-         const filename = window.app.activeBestiary.metadata.fgGMonly ? 'db.xml' : 'client.xml';
-         modalTitle.textContent = `Export Preview (${filename})`;
-      }
-
-      // 3. Hide all the import-specific UI
-      if (importPaneRaw) importPaneRaw.classList.add('hidden');
-      if (importFilterSelect) importFilterSelect.parentElement.parentElement.classList.add('hidden');
-      if (importConfirmBtn) importConfirmBtn.classList.add('hidden');
-      if (importToggleViewBtn) importToggleViewBtn.classList.add('hidden');
-      if (importClearBtn) importClearBtn.classList.add('hidden');
-      
-      // 4. Repurpose the 'Filtered' pane
-      if (importPaneFiltered) {
-         importPaneFiltered.classList.remove('hidden');
-         if (importPaneFiltered.parentElement) {
-            importPaneFiltered.parentElement.classList.remove('w-1/2');
-            importPaneFiltered.parentElement.classList.add('w-full');
-         }
-         const filteredLabel = importPaneFiltered.querySelector('label');
-         if (filteredLabel) filteredLabel.textContent = "XML Output (Read-Only)";
-      }
-      
-      // 5. Hide the preview viewport
-      const viewportPane = document.getElementById('import-viewport')?.parentElement;
-      if (viewportPane) viewportPane.classList.add('hidden');
-
-      // 6. Set the text and update the 'Cancel' button
-      importTextArea.value = outputText;
-      importTextArea.scrollTop = 0; // Scroll to top
-      if (importCancelBtn) importCancelBtn.textContent = "Close";
-      
-      // 7. Re-bind cancel button to close modal and reset modal title/buttons
-      importCancelBtn.onclick = () => {
-         window.app.closeModal('import-modal');
-         // Reset modal to its original import state
-         if (modalTitle) modalTitle.textContent = "Import NPC from Text";
-         if (importPaneFiltered.parentElement) {
-            importPaneFiltered.parentElement.classList.add('w-1/2');
-            importPaneFiltered.parentElement.classList.remove('w-full');
-         }
-         if (viewportPane) viewportPane.classList.remove('hidden');
-         if (importFilterSelect) importFilterSelect.parentElement.parentElement.classList.remove('hidden');
-         if (importConfirmBtn) importConfirmBtn.classList.remove('hidden');
-         if (importToggleViewBtn) importToggleViewBtn.classList.remove('hidden');
-         if (importClearBtn) importClearBtn.classList.remove('hidden');
-         if (importCancelBtn) importCancelBtn.textContent = "Cancel";
-         // Re-bind original listener (from importer.js)
-         if (importCancelBtn) importCancelBtn.onclick = () => window.importer.closeImportModal();
-      };
-   },
-   
-   /**
     * Sets up all event listeners for the FG Export Modal.
     */
    setupEventListeners() {
@@ -420,10 +472,11 @@ window.fgExporter = {
     * Main function to generate the db.xml/client.xml file content.
     * @param {object} bestiary The full bestiary object.
     * @param {object} settings The settings from the export modal.
+    * @param {Map} imageMap Map of NPC object -> { image: path, token: path, cameraToken: path }
     * @returns {string} The complete XML file as a string.
     */
-   _generateDbXml(bestiary, settings) {
-      const versionInfo = `(Version ${window.app.version || '0.18.13'})`; // Get version from main.js or default
+   _generateDbXml(bestiary, settings, imageMap) {
+      const versionInfo = `(Version ${window.app.version || '0.18.20'})`; // Get version from main.js or default
       
       let xml = `<?xml version="1.0" encoding="utf-8"?>\n`; // Single newline is correct.
       xml += `<root version="4.8" dataversion="20241002" release="8.1|CoreRPG:7">\n`;
@@ -437,11 +490,28 @@ window.fgExporter = {
       xml += this._generateLibrarySection(settings);
       
       // Add Reference section (NPC data)
-      xml += this._generateReferenceSection(bestiary.npcs, settings, xlock);
+      xml += this._generateReferenceSection(bestiary.npcs, settings, xlock, imageMap);
       
       // Add Lists section (NPC sorting lists)
       xml += this._generateListsSection(bestiary.npcs, settings);
 
+      xml += `</root>\n`;
+      return xml;
+   },
+
+   /**
+    * Generates the definition.xml file content.
+    * @param {object} settings The export settings.
+    * @returns {string} The complete XML string.
+    */
+   _generateDefinitionXml(settings) {
+      // REVERTED TO SAFE STANDARD HEADER
+      let xml = `<?xml version="1.0" encoding="utf-8"?>\n`;
+      xml += `<root version="3.3" release="3.3">\n`; // Standard FG header
+      xml += this._indent(1) + `<name>${this._cleanString(settings.displayName || settings.title)}</name>\n`;
+      xml += this._indent(1) + `<category>Supplement</category>\n`;
+      xml += this._indent(1) + `<author>${this._cleanString(settings.author)}</author>\n`;
+      xml += this._indent(1) + `<ruleset>5E</ruleset>\n`;
       xml += `</root>\n`;
       return xml;
    },
@@ -476,9 +546,10 @@ window.fgExporter = {
     * @param {Array} npcs The list of NPC objects.
     * @param {object} settings The export settings.
     * @param {string} xlock The static="true" string or empty.
+    * @param {Map} imageMap Map of NPC object -> paths
     * @returns {string} The <reference> XML string.
     */
-   _generateReferenceSection(npcs, settings, xlock) {
+   _generateReferenceSection(npcs, settings, xlock, imageMap) {
       // *** BUG FIX: Added xlock to the reference tag ***
       let xml = this._indent(1) + `<reference${xlock}>\n`;
       xml += this._indent(2) + `<npcdata>\n`;
@@ -500,6 +571,9 @@ window.fgExporter = {
             const npcId = `id-${npcCounter.toString().padStart(5, '0')}`;
             npcCounter++;
             
+            // Retrieve pre-calculated image paths
+            const imagePaths = imageMap ? (imageMap.get(npc) || {}) : {};
+
             xml += this._indent(4) + `<${npcId}>\n`;
             
             // --- Core Stats ---
@@ -585,14 +659,20 @@ window.fgExporter = {
             xml += this._generateActionListXML('legendaryactions', npc.actions?.['legendary-actions'], 5, npc, false, npc.legendaryBoilerplate);
             xml += this._generateActionListXML('lairactions', npc.actions?.['lair-actions'], 5, npc, false, npc.lairBoilerplate);
 
-            // --- Images ---
-            if (npc.image) xml += this._buildTag('picture', 'token', this._getImagePath(npc, 'image', settings.moduleName), 5);
-            if (npc.token) xml += this._buildTag('token', 'token', this._getImagePath(npc, 'token', settings.moduleName), 5);
-            if (npc.cameraToken) xml += this._buildTag('token3Dflat', 'token', this._getImagePath(npc, 'cameraToken', settings.moduleName), 5);
+            // --- Images (Using Pre-calculated Paths) ---
+            // Fallback to _getImagePath only if imageMap is missing (shouldn't happen in full export)
+            const imgPath = imagePaths.image || this._getImagePath(npc, 'image', settings.moduleName);
+            const tokPath = imagePaths.token || this._getImagePath(npc, 'token', settings.moduleName);
+            const camPath = imagePaths.cameraToken || this._getImagePath(npc, 'cameraToken', settings.moduleName);
+
+            if (npc.image && imgPath) xml += this._buildTag('picture', 'token', imgPath, 5);
+            if (npc.token && tokPath) xml += this._buildTag('token', 'token', tokPath, 5);
+            if (npc.cameraToken && camPath) xml += this._buildTag('token3Dflat', 'token', camPath, 5);
 
             // --- Description ---
             if (npc.description) {
-               xml += this._formatTrixDescription(npc.description, 5);
+               // Use correct call with npc and settings for Title/Image Link logic
+               xml += this._formatTrixDescription(npc.description, 5, npc, npcId, settings);
             }
 
             xml += this._indent(4) + `</${npcId}>\n`;
@@ -953,23 +1033,48 @@ window.fgExporter = {
    
    /**
     * Converts Trix HTML to FG-formatted XML text.
+    * MODIFIED: Accepts npc, npcId, and settings to implement "Add Title" and "Add Image Link".
     * @param {string} html The Trix HTML string.
     * @param {number} indentLevel The base indentation.
+    * @param {object} npc The NPC object.
+    * @param {string} npcId The ID string for this NPC (e.g. 'id-00001').
+    * @param {object} settings The export settings.
     * @returns {string} The <text>...</text> block.
     */
-   _formatTrixDescription(html, indentLevel) {
-      if (!html) return "";
-      
+   _formatTrixDescription(html, indentLevel, npc, npcId, settings) {
       // Use the approved cleaner logic
-      let cleanXml = this._cleanHtmlString(html);
+      let cleanXml = this._cleanHtmlString(html || "");
 
       // Apply indentation to each line for XML formatting
       const indent = this._indent(indentLevel + 1);
+      
       // Split by newline (added by the cleaner), filter empty, indent, join
-      const formattedContent = cleanXml.split('\n')
+      let formattedContent = cleanXml.split('\n')
          .filter(line => line.trim() !== '')
          .map(line => indent + line.trim())
          .join('\n');
+
+      // --- NEW FEATURE: Add Title ---
+      let prefixContent = "";
+      if (npc && npc.addTitle) {
+         prefixContent += `${indent}<h>${this._cleanString(npc.name)}</h>\n`;
+      }
+
+      // --- NEW FEATURE: Add Image Link (Placeholder) ---
+      if (npc && npc.addImageLink && npc.image) {
+         // Construct record name: image.id-XXXXX@ModuleName
+         // Note: FG expects lowercase module names in references
+         const moduleName = settings.moduleName.toLowerCase();
+         const recordName = `image.${npcId}@${moduleName}`;
+         
+         // NOTE: This relies on imageMap logic in _generateDbXml to ensure the image ID exists
+         prefixContent += `${indent}<link class="imagewindow" recordname="${recordName}">Image: ${this._cleanString(npc.name)}</link>\n`;
+      }
+      
+      // Prepend any generated prefix content
+      if (prefixContent) {
+          formattedContent = prefixContent + formattedContent;
+      }
 
       return this._indent(indentLevel) + `<text type="formattedtext">\n${formattedContent}\n` + this._indent(indentLevel) + `</text>\n`;
    },
@@ -997,7 +1102,8 @@ window.fgExporter = {
    },
    
    /**
-    * Gets the relative image path for the export.
+    * Gets the relative image path for the export (DEPRECATED - handled by pre-calc now).
+    * KEPT FOR FALLBACK but primary logic is in _generateReferenceSection loop.
     * @param {object} npc The NPC object.
     * @param {string} key "image", "token", or "cameraToken".
     * @param {string} moduleName The cleaned module name.

@@ -1,4 +1,1 @@
-1. When Solo Card Mode is selected, all cards except the currently selected one should be collapsed.
-2. The NPC count in the title bar is not incrementing when new NPCs are imported. It knows the correct number, as it shows correctly on load.
-3. If the first paragraph of the description is a blockquote, then the drop cap (if selected) should be applied to the first non-blockquote paragraph.
 
