@@ -1,6 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
-  
-  const svgString = `
+const svgString = `
     <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 605 605" preserveAspectRatio="xMidYMid meet">
       <g class="page-background-svg">
         <path d="M111.6 580.9 c-2.1 -1.7 -2.6 -2.9 -2.6 -6.8 0 -4.5 -0.3 -5 -5.4 -9.4 -13.4 -11.6 -22.4 -28.5 -24.7 -46.7 -1.3 -10.5 0.2 -19.5 4.6 -28.7 4 -8 9.4 -13.5 19.6 -19.7 14.5 -8.9 16.9 -12.2 16.9 -23.4 l0 -7 -3.5 -0.6 c-7 -1.3 -10 -10.2 -5 -15.1 l2.4 -2.5 41.1 0 41.2 0 2.9 2.9 c3.9 4 3.9 8.2 0 12.2 -1.7 1.6 -4 2.9 -5.4 2.9 -3 0 -4 3.5 -2.8 10.8 1.1 7.2 3.9 11.2 11.1 16 14 9.3 17.3 11.9 21.6 17.6 6.6 8.6 8.8 16.9 8.2 30.4 -0.9 19.5 -8.1 34.7 -23 48.8 -6.4 6.1 -7.5 7.6 -7.1 9.8 0.8 4.1 -0.5 7.5 -3.7 9.1 -2.4 1.3 -9.1 1.5 -43.3 1.5 -39.4 0 -40.5 -0.1 -43.1 -2.1z m0.3 -32.3 c-12.6 -24 -14.6 -47.5 -5.7 -65 l2 -3.9 -2.4 1.9 c-12.4 9.8 -16.9 22.9 -13.3 38.8 3 13.8 8.6 23.8 18.6 33.6 3.4 3.3 6.3 6 6.5 6 0.2 0 -2.4 -5.1 -5.7 -11.4z"/>
@@ -24,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
     </svg>
   `;
 
+document.addEventListener('DOMContentLoaded', function() {
+  
   const svgContainer = document.createElement('div');
   
   svgContainer.style.position = 'fixed';
