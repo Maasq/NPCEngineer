@@ -5,11 +5,12 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="author" content="Maasq" />
       <meta name="description" content="A tool for creating and managing NPCs." />
-      <meta name="version" content="0.18.21" />
-      <meta name="date" content="2025-11-20" />
+      <meta name="version" content="0.18.25" />
+      <meta name="date" content="2025-11-23" /> 
 
       <title>NPC Engineer</title>
-
+      <link rel="icon" type="image/webp" href="graphics/npc engineer.webp">
+      
       <script src="https://cdn.tailwindcss.com"></script>
       <script src="../libs/dexie.js"></script>
       <link rel="stylesheet" type="text/css" href="../libs/trix.css">
@@ -72,6 +73,11 @@
 								<a href="#" id="menu-export-db" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Export Full Database</a>
 								<a href="#" id="menu-import-db" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Import Full Database</a>
 								<hr class="my-1"/>
+                         <a href="https://ko-fi.com/maasq/tip" target="_blank" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                             <img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi" class="w-4 h-4">
+                             Buy me a coffee!
+                         </a>
+                         <hr class="my-1"/>
                          <a href="#" id="menu-settings" class="menu-item block px-4 py-1 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                      </div>
                  </div>
@@ -141,6 +147,24 @@
                </li>
             </ul>
          </nav>
+         
+         <a href="https://ko-fi.com/maasq/tip" target="_blank" 
+            class="fixed z-40 flex items-center justify-start overflow-hidden
+                   bg-gradient-to-b from-[#333333] to-[#000000] text-[#A6E33C] border border-[#444444] 
+                   shadow-[inset_0_1px_0_rgba(255,255,255,0.4),4px_4px_8px_rgba(0,0,0,0.4)]
+                   transition-all duration-300 ease-in-out
+                   w-10 hover:w-[200px] h-10 rounded-xl group"
+            style="left: 10px; top: 550px;" 
+            title="Support the developer!">
+             
+             <div class="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                 <img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi" class="w-5 h-5">
+             </div>
+             
+             <span class="whitespace-nowrap font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 pl-2">
+                 Buy me a coffee!
+             </span>
+         </a>
 
          <main class="flex flex-wrap justify-center gap-6 pt-6">
 
