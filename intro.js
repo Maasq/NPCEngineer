@@ -1,5 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
     
+    // --- CHECK IF WE SHOULD RUN THE INTRO ---
+    const today = new Date().toDateString(); // e.g., "Tue Nov 25 2025"
+    const lastRunDate = localStorage.getItem('engineerSuiteIntroLastRun');
+
+    if (lastRunDate === today) {
+        // We have already run it today. Stop here.
+        return; 
+    }
+
+    // If we are here, it's a new day (or first visit).
+    // Save today's date so we don't run it again today.
+    localStorage.setItem('engineerSuiteIntroLastRun', today);
+
+    // --- START INTRO LOGIC ---
+    
     const introContainer = document.createElement('div');
     introContainer.id = 'intro-overlay'; 
     
@@ -37,9 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
         path.style.strokeDashoffset = length;
         
         // Transitions:
-        // 1. Stroke Offset: 3s (Draws the line)
-        // 2. Fill: 1s duration, starts after 2.5s delay 
-        // 3. Stroke Color: 1.5s duration (Changes color at the end)
         path.style.transition = 'stroke-dashoffset 3s ease-in-out, fill 1s ease-in-out 2.5s, stroke 1.5s ease-in-out';
     });
 
@@ -59,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5. Trigger the Logo Color Shift (To Faint Gray/Purple)
     setTimeout(() => {
         paths.forEach(path => {
-            // Override the previous transition to remove delays for this step
             path.style.transition = 'fill 2.0s ease-in-out, stroke 2.0s ease-in-out';
             path.style.stroke = '#e8e5ec';
             path.style.fill = '#e8e5ec'; 
@@ -67,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 4000);
 
     // 6. Final Fade Out
-    // We wait for the color shift to finish (4000ms + 2000ms approx = 6300ms)
     setTimeout(() => {
         introContainer.style.opacity = '0';
         
