@@ -1,0 +1,953 @@
+/* style.css */
+@font-face {
+   font-family: 'Chancery';
+   src: url('../fonts/chancery.ttf') format('truetype');
+}
+
+html {
+   scroll-behavior: smooth;
+   scroll-padding-top: 152px; /* 148px header height + 4px buffer */
+}
+body { /* A simple style for our application font */
+   font-family: "Lexend", sans-serif;
+   position: relative; /* Required for pseudo-element positioning */
+   overflow-x: hidden; /* Prevent horizontal scroll from large blobs */
+}
+.card-body { /* Custom styles for the card collapse/expand transition */
+   max-height: 0;
+   overflow: hidden;
+   transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+   padding-top: 0;
+   padding-bottom: 0;
+}
+.card-body.open { /* A large max-height to allow content to expand fully */
+   max-height: 70rem; /* Increased to accommodate new section */
+}
+.card-font-style { /* Sets font size for card content */
+   font-size: 11pt;
+}
+.custom-shadow { /* Custom shadow style */
+   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.4);
+}
+.input-field {
+   width: 100%;
+   background-color: #F3F4F6; /* bg-gray-100 */
+   border-width: 1px;
+   border-color: #D1D5DB; /* border-gray-300 */
+   border-radius: 0.375rem; /* rounded-md */
+   padding-left: 0.75rem; /* px-3 */
+   padding-right: 0.75rem; /* px-3 */
+   padding-top: 0.25rem; /* py-1 */
+   padding-bottom: 0.25rem; /* py-1 */
+   font-size: 0.875rem; /* text-sm */
+   line-height: 1.25rem;
+}
+.input-field:focus {
+   border-color: #6366F1; /* focus:border-indigo-500 */
+   outline: 2px solid #6366F1; /* focus:ring-2 */
+   outline-offset: 2px;
+}
+.label-text {
+   display: block; /* block */
+   font-size: 0.875rem; /* text-sm */
+   line-height: 1.25rem;
+   font-weight: 500; /* font-medium */
+   color: #374151; /* text-gray-700 */
+}
+.bordered-container { /* A reusable class for black borders */
+   border: 1px solid black;
+}
+.info-input, .info-select, .language-listbox { /* Custom style for specific input boxes and dropdowns */
+   background-color: #F8FAFC; /* Lighter input background */
+   border: 1px solid #CBD5E1; /* Adjusted darker shade for the border */
+   border-radius: 2px;
+   padding-left: 0.5rem;
+   padding-right: 0.5rem;
+   font-size: 10pt; /* Set font size for input fields */
+}
+
+/* --- Viewport Styles --- */
+div.container {
+   margin: auto;
+   width: 10.3cm;
+   box-shadow: 8px 8px 20px #472737;
+   background-image: url("graphics/statblock texture.jpg");
+   background-color: #FDF1E6; /* Pale yellow fallback */
+}
+div.cap {
+   margin: auto;
+   height: 0.2cm;
+   width: 10.3cm;
+   background: #e0851d; /* App title green color */
+   border-style: solid;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-top-width: 1px;
+   border-bottom-width: 1px;
+   border-right-color: #000000;
+   border-left-color: #000000;
+   border-top-color: #000000;
+   border-bottom-color: #000000;
+   background-image: url("graphics/statblock cap.jpg");
+}
+div.npcname {
+   margin: auto;
+   width: 10.3cm;
+   background: rgba(0, 0, 0, 0.0);
+   color: #7A200D;
+   font-family: "Cormorant SC", serif;
+   font-size: 21pt;
+   border-left-style: solid;
+   border-right-style: solid;
+   border-top-style: none;
+   border-bottom-style: none;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-right-color: #BA4E3B;
+   border-left-color: #BA4E3B;
+   padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npctype {
+   margin: auto;
+   width: 10.3cm;
+   background: rgba(0, 0, 0, 0.0);
+   color: #000000;
+   font-family: "Questrial", sans-serif;
+   font-size: 9pt;
+   border-left-style: solid;
+   border-right-style: solid;
+   border-top-style: none;
+   border-bottom-style: none;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-right-color: #BA4E3B;
+   border-left-color: #BA4E3B;
+   padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npctop {
+   margin: auto;
+   width: 10.3cm;
+   background: rgba(0, 0, 0, 0.0);
+   color: #7A200D;
+   font-family: "Questrial", sans-serif;
+   font-size: 10.5pt;
+   border-left-style: solid;
+   border-right-style: solid;
+   border-top-style: none;
+   border-bottom-style: none;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-right-color: #BA4E3B;
+   border-left-color: #BA4E3B;
+   padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npcbottom {
+   margin: auto;
+   width: 10.3cm;
+   background: rgba(0, 0, 0, 0.0);
+   color: #000000;
+   font-family: "Questrial", sans-serif;
+   font-size: 10pt;
+   border-left-style: solid;
+   border-right-style: solid;
+   border-top-style: none;
+   border-bottom-style: none;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-right-color: #BA4E3B;
+   border-left-color: #BA4E3B;
+   padding: 0cm 0.15cm 0cm 0.15cm;
+}
+div.npcdescrip {
+   margin: auto;
+   background-color: transparent; /* Removes color */
+   background-image: none;        /* Removes image */
+    background: rgba(255, 255, 255, 0.0);
+   color: #000000;
+   font-family: "Questrial", sans-serif;
+   font-size: 12pt;
+   padding: 0.4cm 0.1cm 0cm 0.1cm;
+}
+div.npcdescrip .trix-content { /* Override Trix's default padding for the viewport */
+   padding: 0;
+}
+.heading {
+   background: rgba(0, 0, 0, 0.0);
+   color: #7A200D;
+   font-size: 16pt;
+   font-weight: bold;
+}
+
+.titlebar {
+   font-family: 'Chancery';
+   font-size: 30pt; 
+   font-weight: 700;  /* same as font-bold */
+   color: #87CC24;
+}
+
+.action-header { /* Style used for Actions, Bonus Actions etc in Viewport */
+   font-family: 'Raleway', sans-serif;
+   font-weight: 400;
+   font-variant: small-caps;
+   color: #7A200D;
+   font-size: 18pt;
+   padding-bottom: 0em;
+   margin-bottom: -0.2em;
+   border-left: 1px solid #BA4E3B;
+   border-right: 1px solid #BA4E3B;
+   padding-left: 0.15cm;
+   padding-right: 0.15cm;
+}
+
+/* --- Spellcasting/Psionics Header Styling (Action CARD Subheading Style) --- */
+#innate-spellcasting-header,
+#spellcasting-header {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 700; /* font-bold */
+    color: #333; /* Dark grey/black, replace slate-700 when active */
+    /* Remove Raleway font and small-caps */
+    transition: color 0.3s ease-in-out;
+}
+
+/* Define hidden field styles for transitions */
+#innate-spellcasting-fields,
+#spellcasting-fields {
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, padding 0.3s ease-in-out;
+    padding: 0; /* Default padding should be 0 when collapsed */
+    overflow: hidden; /* Added to ensure content doesn't peek */
+}
+
+/* --- Radio Button Alignment --- */
+.radio-container {
+    display: flex;
+    justify-content: flex-end; /* Align items to the right */
+    align-items: center; /* Vertically center items */
+    width: auto; /* Allow container to shrink-wrap content */
+    margin-left: auto; /* Push container to the right */
+}
+.radio-container label {
+    order: 1; /* Label comes first */
+    margin-right: 0.5rem; /* Space between label and radio */
+}
+.radio-container input[type="radio"] {
+    order: 2; /* Radio comes second */
+}
+
+.post-container {
+   margin: 20px 20px 0 0;
+   overflow: auto;
+   padding: 0cm 0.15cm 0cm 0cm;
+}
+.post-thumb {
+   float: left;
+}
+.post-thumb img {
+   display: block;
+}
+.post-content {
+   background: #FDF1E6;
+   color: #000000;
+   font-family: "Questrial", sans-serif;
+   font-size: 10pt;
+   border: 1px solid #7A200D;
+   margin-left: 1cm;
+   padding: 0.15cm 0.15cm 0cm 0.15cm;
+   box-shadow: 4px 4px 8px #472737;
+}
+div.npcdiv {
+   margin: auto;
+   width: 10.3cm;
+   background: rgba(0, 0, 0, 0.0);
+   border-left-style: solid;
+   border-right-style: solid;
+   border-top-style: none;
+   border-bottom-style: none;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-right-color: #BA4E3B;
+   border-left-color: #BA4E3B;
+   padding: 0.15cm 0.15cm 0.15cm 0.15cm;
+}
+.whoosh { /* This class is now used on an SVG polyline, styled via attributes */ }
+table.attr {
+   background: rgba(0, 0, 0, 0.0);
+   color: #7A200D;
+   font-family: "Lato", sans-serif;
+   font-size: 11pt;
+   border-style: none;
+   border-collapse: collapse;
+   text-align: center;
+   padding: 0cm 0cm 0cm 0cm;
+}
+div.npcdiv2 {
+   margin: auto;
+   width: 10.3cm;
+   background: rgba(0, 0, 0, 0.0);
+   border-left-style: solid;
+   border-right-style: solid;
+   border-top-style: none;
+   border-bottom-style: none;
+   border-right-width: 1px;
+   border-left-width: 1px;
+   border-right-color: #BA4E3B;
+   border-left-color: #BA4E3B;
+   padding: 0cm 0.15cm 0.2cm 0.15cm;
+}
+table.spell {
+   background: #FDF1E6;
+   color: #000000;
+   font-family: "Lato", sans-serif;
+   font-size: 11pt;
+   border: 1px solid #7A200D;
+   border-collapse: collapse;
+   text-align: left;
+   padding: 0.2cm 0.2cm 0.2cm 0.2cm;
+   box-shadow: 3px 3px #DDDDDD;
+}
+table.spell th {
+   background-color: #7A200D;
+   color: #FFFFFF;
+   padding: 0.1cm;
+   border: 1px solid #7A200D;
+   border-collapse: collapse;
+}
+table.spell td {
+   padding: 0.1cm;
+   border: 1px solid #7A200D;
+   border-collapse: collapse;
+}
+
+/* --- Drag & Drop highlight --- */
+.drag-over {
+   border: 2px dashed #87CC24 !important;
+   background-color: #f0fff4 !important;
+}
+#npc-token, #npc-image {
+   padding: 0;
+}
+.menu-item.disabled {
+   opacity: 0.5;
+   cursor: not-allowed;
+}
+.menu-item.disabled:hover {
+   background-color: transparent;
+}
+.stat-header {
+   color: #8B575C; /* Desaturated dark red */
+}
+.drop-cap::first-letter {
+   font-family: 'Macondo Swash Caps', serif;
+   font-size: 3em;
+   float: left;
+   line-height: 0.8;
+   padding-top: 4px; /* Adjust vertical alignment */
+   padding-right: 4px;
+   color: #7A200D;
+}
+.language-listbox option:checked {
+    background-color: #8A8AA3;
+    color: #FFFFFF;
+}
+/* --- Drag &Drop Trait Indicator --- */
+.drop-indicator-top {
+    border-top: 2px solid #87CC24; /* A bright blue */
+    margin-top: -2px; /* Prevent layout shift */
+}
+.drop-indicator-bottom {
+    border-bottom: 2px solid #87CC24;
+    margin-bottom: 2px; /* Prevent layout shift */
+}
+
+/* --- Action & Dice Icon Styles --- */
+.action-list-item {
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+}
+.action-list-item:hover {
+    background-color: #f0fdf4; /* A very light green for hover */
+}
+.editing {
+    background-color: #fefce8 !important; /* A light yellow for editing */
+    border-color: #facc15;
+}
+.die-icon, .bonus-icon {
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s ease-in-out;
+}
+.die-icon:not(:first-child) {
+    margin-left: -8px;
+}
+.die-icon:hover, .bonus-icon:hover {
+    transform: scale(1.1);
+}
+.die-icon {
+    color: #166534; /* Dark Green */
+}
+.bonus-icon {
+    color: #581c87; /* Purple */
+}
+/* --- Hide viewport scrollbar --- */
+#viewport {
+    /* For Firefox */
+    scrollbar-width: none;
+    
+    /* For IE and Edge (older versions) */
+    -ms-overflow-style: none;
+}
+
+#viewport::-webkit-scrollbar {
+    /* For Chrome, Safari, and new Edge */
+    display: none;
+}
+
+/* --- NEW STYLE FOR CLEAR BUTTON --- */
+.clear-btn {
+    font-size: 9pt;
+    color: rgb(0, 81, 255); /* blue */
+    background-color: transparent;
+    border: none;
+   border-radius: 2px;
+   cursor: pointer;
+   padding-left: 0.2rem;
+   padding-right: 0.2rem;
+   padding-top: 0.1rem;
+   padding-bottom: 0.1rem;
+    margin-top: 2px;
+    text-decoration: none;
+}
+.clear-btn:hover {
+    background-color: #9fd650;
+   color: rgb(0, 0, 0);
+
+}
+
+/* --- NEW Primary Button Style --- */
+.btn-primary {
+  background: linear-gradient(to bottom, #A6E33C 0%, #6BAF1A 100%);
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #558B2F;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glossy top highlight */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+
+/* Hover shine animation */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-primary:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+
+.btn-primary:hover {
+  opacity: 0.8;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* Specific adjustments for smaller buttons if needed */
+.btn-primary.btn-sm { /* Example for smaller padding */
+    padding-left: 0.75rem; /* px-3 */
+    padding-right: 0.75rem; /* px-3 */
+}
+
+.btn-primary.btn-xs { /* Example for even smaller padding */
+    padding-left: 0.5rem; /* px-2 */
+    padding-right: 0.5rem; /* px-2 */
+    font-size: 0.75rem; /* text-xs */
+}
+
+/* --- NEW Secondary (Cancel) Button Style --- */
+.btn-secondary {
+  background: linear-gradient(to bottom, #FFFFFF 0%, #E0E0E0 100%);
+  color: black;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #B0B0B0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+.btn-secondary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-secondary:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+.btn-secondary:hover {
+  opacity: 0.8;
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-secondary.btn-sm {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.btn-secondary.btn-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* --- NEW Dark Button Style --- */
+.btn-dark {
+  background: linear-gradient(to bottom, #333333 0%, #000000 100%);
+  color: #A6E33C;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.25rem 1rem;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+  border: 1px solid #444444;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    3px 3px 6px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.btn-dark::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+  pointer-events: none;
+}
+.btn-dark::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn-dark:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+.btn-dark:hover {
+  opacity: 0.8;
+}
+.btn-dark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-dark.btn-sm {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+.btn-dark.btn-xs {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 0.75rem;
+}
+#logo-container {
+    position: absolute; /* Or relative if you didn't use absolute positioning */
+    overflow: hidden; /* Essential for clipping the shine */
+    cursor: pointer; /* To indicate it's clickable/interactive */
+}
+
+/* Hover shine animation for the logo */
+#logo-container::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+
+#logo-container:hover::after {
+  left: 125%;
+  transition: left 0.5s ease-in-out;
+}
+/* Optional: Add a subtle opacity change on hover like the buttons */
+#logo-container:hover {
+  opacity: 0.9; /* Slightly less than buttons maybe */
+  transition: opacity 0.15s ease-in-out;
+}
+
+
+/* --- Import Modal Styles --- */
+#import-viewport {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+#import-viewport::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, new Edge */
+}
+#import-text-area {
+    font-family: monospace;
+    font-size: 10pt;
+}
+
+/* --- Header Icon Button Hover Styles --- */
+#bestiary-buttons button svg,
+#npc-buttons button svg {
+    transition: color 0.15s ease-in-out; /* Smooth color transition */
+}
+
+/* Bestiary buttons hover: Darker Green */
+#bestiary-buttons button:hover svg {
+    color: #558B2F; /* Darker green */
+}
+
+/* NPC buttons hover: Bright Green */
+#npc-buttons button:hover svg {
+    color: #87CC24; /* Green title color */
+}
+
+/* Ensure disabled NPC buttons don't show hover effects */
+#npc-buttons button:disabled:hover svg {
+    color: white; /* Or original color */
+}
+
+/* --- Import Modal Pane Styles --- */
+#import-source-area {
+   font-family: monospace;
+   font-size: 10pt;
+}
+
+#import-text-area[readonly] {
+   background-color: #F1FBEA; /* Light green, same as card headers */
+}
+
+/* --- Trix Styling --- */
+/* Restore list styles that Tailwind removes. */
+.trix-content ul,
+.trix-content ol,
+.npcdescrip ul,
+.npcdescrip ol {
+    padding-left: 1.5em !important;
+}
+.trix-content li,
+.npcdescrip li {
+    list-style-type: none !important; /* Explicitly hide default bullet */
+    position: relative; /* Anchor for the ::before pseudo-element */
+}
+.trix-content ul li::before,
+.npcdescrip ul li::before {
+    content: "•";
+    position: absolute;
+    margin-left: -1em;
+}
+
+/* Style for Headings (h1) */
+.trix-content h1,
+.npcdescrip h1 {
+   color: #7A200D;
+   font-size: 16pt;
+    font-family: "Questrial", serif !important;
+    font-weight: bold !important;
+    margin: 0.8em 0 0.05em !important; /* Standard h1 margin */
+}
+/* Style for Quotes (in Trix Editor) */
+.trix-content blockquote {
+    background-color: #FFFFF0 !important;
+    border: 1px solid black !important;
+    border-radius: 6px !important;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5) !important;
+    padding: 0.3em 0.3em !important;
+   border-left: 1px solid black !important;
+    margin: 1em 1.5em !important;
+}
+
+/* --- Viewport Blockquote Styling --- */
+.npcdescrip blockquote {
+    background-color: rgba(255, 255, 240, 0.5);
+    border: 1px solid black;
+    border-radius: 6px;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    padding: 0.5em 1em;
+    border-left: 1px solid black;
+    position: relative;
+    margin: 0.5em 1em 0.7em 28px; 
+}
+.npcdescrip blockquote::before {
+    content: url('graphics/speech.webp');
+    position: absolute;
+    top: 5px;
+    left: -27px;
+}
+
+/* --- Trix Editor Styles --- */
+trix-toolbar .trix-button-group button {
+   tabindex: -1; /* Remove Trix toolbar buttons from tab order */
+
+    /* 1. APPLY .btn-primary LOOK TO ALL BUTTONS */
+    background: linear-gradient(to bottom, #A6E33C 0%, #6BAF1A 100%) !important;
+    color: black !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important; 
+    padding: 0.2rem 0.4rem !important; 
+    border-radius: 0.375rem !important;
+    border: 1px solid #558B2F !important;
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      2px 2px 4px rgba(0, 0, 0, 0.4) !important;
+    cursor: pointer !important;
+    
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    height: 26px; /* Custom height */
+    width: auto;
+    min-width: 26px;
+}
+trix-toolbar .trix-button-group {
+    border: none !important;
+    margin-right: 4px; 
+}
+trix-toolbar .trix-button-group button:hover {
+  opacity: 0.8;
+  background-color: transparent !important;
+}
+trix-toolbar .trix-button--icon.trix-active {
+    background: #558B2F !important; /* Darker green background when active */
+    color: white !important;
+}
+.trix-content {
+   min-height: 250px;
+   background-color: #F8FAFC;
+   border: 1px solid #CBD5E1;
+   border-top: none; 
+   border-radius: 0 0 2px 2px;
+   padding: 0.5rem;
+}
+trix-toolbar {
+   background-color: #F8FAFC;
+}
+/* --- CRITICAL FIX: HIGHLY SPECIFIC BUTTON REMOVAL RULES --- */
+trix-toolbar .trix-button-group .trix-button--icon-strike {
+    display: none !important;
+}
+trix-toolbar .trix-button-group .trix-button--icon-link {
+    display: none !important;
+}
+trix-toolbar .trix-button-group .trix-button--icon-code {
+    display: none !important;
+}
+trix-toolbar .trix-button-group .trix-button--icon-number-list {
+    display: none !important;
+}
+trix-toolbar .trix-button-group .trix-button--icon-decrease-nesting-level {
+    display: none !important;
+}
+trix-toolbar .trix-button-group .trix-button--icon-increase-nesting-level {
+    display: none !important;
+}
+trix-toolbar .trix-button-group--file-tools {
+    display: none !important;
+}
+
+/* --- Quick Jump Menu --- */
+#quick-jump-menu {
+   position: fixed;
+   top: 180px; /* Position below header */
+   left: 10px;
+   width: 40px; /* Narrow default width */
+   
+   /* --- NEW: Default state (closed) styled like .btn-dark --- */
+   background: linear-gradient(to bottom, #333333 0%, #000000 100%);
+   border: 1px solid #444444;
+   box-shadow:
+     inset 0 1px 0 rgba(255, 255, 255, 0.4),
+     4px 4px 8px rgba(0, 0, 0, 0.4);
+   /* --- End new styles --- */
+   
+   border-radius: 12px; /* rounded-xl */
+   z-index: 40; /* Below modals (50) but above content */
+   overflow: hidden; /* Hide text when collapsed */
+   transition: width 0.3s ease-in-out, background-color 0.3s ease-in-out, background 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+#quick-jump-menu:hover {
+   width: 200px; /* Expanded width */
+   
+   /* --- NEW: Hover state (open) styled like old default --- */
+   background: rgba(255, 255, 255, 0.95);
+   backdrop-filter: blur(5px);
+   border: 1px solid #CBD5E1; /* border-slate-300 */
+   /* --- End new styles --- */
+}
+#quick-jump-menu ul {
+   list-style: none;
+   padding: 0.5rem; /* p-2 */
+   margin: 0;
+   white-space: nowrap; /* Prevent text from wrapping */
+}
+#quick-jump-menu a {
+   display: block;
+   padding: 4px 12px;
+   font-size: 0.875rem; /* text-sm */
+   font-weight: 500; /* font-medium */
+   color: #374151; /* text-gray-700 */
+   text-decoration: none;
+   border-radius: 6px; /* rounded-md */
+   transition: all 0.15s ease-in-out;
+   opacity: 0; /* Hidden by default */
+}
+#quick-jump-menu:hover a {
+   opacity: 1; /* Visible on hover */
+   transition-delay: 0.15s; /* Delay appearance */
+}
+#quick-jump-menu a:hover {
+   background-color: #F1FBEA; /* Your light green card header */
+   color: #1F2937; /* text-gray-800 */
+}
+
+/* --- NEW: Styles for Quick Jump Menu Title --- */
+.quick-jump-title {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   height: 100%;
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 40px; /* Match collapsed width */
+   
+   /* Vertical text */
+   writing-mode: vertical-rl;
+   transform: rotate(180deg);
+   
+   /* Style like .btn-dark text */
+   color: #A6E33C;
+   font-weight: 600;
+   font-size: 0.875rem;
+   letter-spacing: 1px;
+   
+   pointer-events: none; /* Allow hover to pass through */
+   transition: opacity 0.3s ease-in-out;
+   opacity: 1; /* Visible by default */
+}
+#quick-jump-menu:hover .quick-jump-title {
+   opacity: 0; /* Fade out on hover */
+}
+
+/* --- NEW: Styles for Quick Jump Menu Setting --- */
+.quick-jump-divider {
+   opacity: 0;
+   transition: opacity 0.3s ease-in-out;
+}
+.quick-jump-divider hr {
+   border-top: 1px solid #CBD5E1; /* border-slate-300 */
+   margin-top: 0.5rem;
+   margin-bottom: 0.5rem;
+}
+.quick-jump-setting {
+   display: flex;
+   align-items: center;
+   padding: 4px 12px;
+   opacity: 0; /* Hidden by default */
+   transition: opacity 0.3s ease-in-out;
+}
+#quick-jump-menu:hover .quick-jump-setting,
+#quick-jump-menu:hover .quick-jump-divider {
+   opacity: 1; /* Visible on hover */
+   transition-delay: 0.15s;
+}
+.quick-jump-setting label {
+   font-size: 0.875rem;
+   font-weight: 500;
+   color: #374151;
+   margin-left: 0.5rem; /* ml-2 */
+   cursor: pointer;
+}
+.quick-jump-setting input[type="checkbox"] {
+   height: 1rem; /* h-4 */
+   width: 1rem; /* w-4 */
+   border-radius: 0.25rem; /* rounded */
+   border-color: #94A3B8; /* border-slate-400 */
+   color: #87CC24; /* text-green-500 */
+   cursor: pointer;
+}
+.quick-jump-setting input[type="checkbox"]:focus {
+   ring: 0;
+   outline: 0;
+}
+
+/* --- NEW: Styles for FG Export Modal --- */
+#fg-cover-image {
+   padding: 0;
+   position: relative; /* For clear button positioning */
+}
+#fg-cover-image span {
+   padding: 0.5rem; /* Give placeholder text padding */
+}
+#fg-cover-clear-btn {
+   position: absolute;
+   top: 0.25rem;
+   right: 0.25rem;
+   background-color: rgba(255, 255, 255, 0.7);
+   border-radius: 99px;
+   padding: 0.1rem 0.25rem;
+   font-size: 8pt;
+}
+#fg-cover-clear-btn:hover {
+   background-color: #9fd650;
+   color: black;
+}
