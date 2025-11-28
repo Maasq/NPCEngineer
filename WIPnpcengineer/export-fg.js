@@ -346,6 +346,9 @@ window.fgExporter = {
       cleaned = cleaned.replaceAll("</li>", "</li>\n");
       cleaned = cleaned.replaceAll("</list>", "</list>\n");
 
+      // Step 5: Replace Non-Breaking Spaces with regular spaces
+      cleaned = cleaned.replace(/\u00A0/g, ' ').replace(/&nbsp;/g, ' ');
+
       return cleaned;
    },
 
@@ -585,7 +588,7 @@ window.fgExporter = {
     * @returns {string} The complete XML file as a string.
     */
    _generateDbXml(bestiary, settings, imageMap) {
-      const versionInfo = `(Version ${window.app.version || '0.18.32'})`; // Get version from main.js or default
+      const versionInfo = `(Version ${window.app.version || '0.18.33'})`; // Get version from main.js or default
       
       let xml = `<?xml version="1.0" encoding="utf-8"?>\n`; // Single newline is correct.
       xml += `<root version="4.8" dataversion="20241002" release="8.1|CoreRPG:7">\n`;
@@ -1014,6 +1017,7 @@ window.fgExporter = {
       let xml = this._indent(indentLevel) + `<${listName}>\n`;
       let idCounter = 1;
       
+      // Add boilerplate only if we are actually generating the block (which implies items exist)
       if (boilerplate) {
          const boilerplateId = `id-${idCounter.toString().padStart(5, '0')}`;
          idCounter++;

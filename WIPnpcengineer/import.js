@@ -261,33 +261,65 @@ window.importer = {
             } else if ((match = line.match(/^Skills\s+(.*)/i))) {
                this.parseSkills(match[1]);
             } else if ((match = line.match(/^Damage Vulnerabilities\s+(.*)/i))) {
-               this.parseDamageModifiers(match[1], 'vulnerability');
+               let vulnString = match[1].trim();
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     vulnString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseDamageModifiers(vulnString, 'vulnerability');
+
             } else if ((match = line.match(/^Damage Resistances\s+(.*)/i))) {
-               this.parseDamageModifiers(match[1], 'resistance');
+               let resString = match[1].trim();
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     resString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseDamageModifiers(resString, 'resistance');
+
             } else if ((match = line.match(/^Damage Immunities\s+(.*)/i))) {
-               this.parseDamageModifiers(match[1], 'immunity');
+               let immString = match[1].trim();
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     immString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseDamageModifiers(immString, 'immunity');
+
             } else if ((match = line.match(/^Condition Immunities\s+(.*)/i))) {
                let ciString = match[1].trim();
-               let nextLine = peekLine(currentLineIndex); // Peek at the raw next line. Check if line ends with a comma and the next line exists and is not a new header
-               if (ciString.endsWith(',') && nextLine && !headerKeywordRegex.test(nextLine.trim())) {
-                 ciString += " " + nextLine.trim(); // Append the next line
-                 currentLineIndex++; // Consume the next line
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     ciString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
                }
-              this.parseConditionImmunities(ciString);
-            } else if (line.match(/^Senses\s+/i)) { // Check more generally
-               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); // Trim peeked line for logic
-               currentLineIndex += linesConsumed; // Advance index by lines consumed in parseSenses
-               currentLineIndex++; // Increment index for the current line itself
-               continue; // Continue loop AFTER advancing index
+               this.parseConditionImmunities(ciString);
+
+            } else if (line.match(/^Senses\s+/i)) { 
+               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); 
+               currentLineIndex += linesConsumed; 
+               currentLineIndex++; 
+               continue; 
+
             } else if ((match = line.match(/^Languages\s+(.*)/i))) {
                let langString = match[1].trim();
-              let nextLine = peekLine(currentLineIndex); // Peek at the raw next line
-              // Check if line does NOT end with a period/dash and the next line exists and is not a new header
-              if (!/[.—]$/.test(langString) && nextLine && !headerKeywordRegex.test(nextLine.trim())) {
-                 langString += " " + nextLine.trim(); // Append the next line
-                 currentLineIndex++; // Consume the next line
-              }
-              this.parseLanguages(langString);
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     langString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseLanguages(langString);
             } else if ((match = line.match(/^Challenge\s+([\d\/]+)\s*\((\d{1,3}(?:,?\d{3})*)\s*XP\)(?:\s*Proficiency Bonus\s*([+-]\d+))?/i))) {
                this.importNPC.challenge = match[1];
                this.importNPC.experience = match[2]; // Keep comma
@@ -386,36 +418,60 @@ window.importer = {
             const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/);
 
             if (spellcastingHeaderMatch) {
-                currentItem = null; // Spellcasting block always ends the previous item
-                // ... (rest of spellcasting parsing) ...
+                currentItem = null;
                 this.importNPC.hasSpellcasting = true;
                 this.importNPC.spellcastingPlacement = 'actions';
-                let boilerplate = spellcastingHeaderMatch[1];
+                
+                // 1. Consume multi-line boilerplate (look ahead until we see a Frequency or new Action)
+                let boilerplate = spellcastingHeaderMatch[1].trim();
+                while (true) {
+                    let nextLine = peekLine(currentLineIndex);
+                    if (!nextLine) break;
+                    
+                    // Check if next line is a spell frequency (e.g. "At will:", "3/day:")
+                    const isFrequency = /^(At will|(?:\d+\s*\/\s*day(?:\s+each)?)):/i.test(nextLine.trim());
+                    if (isFrequency) break;
+                    
+                    // Check if next line looks like a new Action start (safety break)
+                    const isNewAction = /^(Melee|Ranged|Legendary|Actions|Bonus|Reactions)/i.test(nextLine.trim());
+                    if (isNewAction) break;
+
+                    // Otherwise, it's part of the description
+                    boilerplate += " " + nextLine.trim();
+                    currentLineIndex++;
+                }
+
+                // 2. Parse Ability/DC from the full boilerplate
                 const castingInfoMatch = boilerplate.match(/using (\w+) .* \(spell save DC (\d+)\)/i);
                 if (castingInfoMatch) {
                     this.importNPC.actionCastingAbility = castingInfoMatch[1].toLowerCase();
                     this.importNPC.actionCastingDC = parseInt(castingInfoMatch[2], 10);
                 }
+
+                // 3. Parse Spells
                 let spellListIndex = 0;
                 this.importNPC.actionCastingSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.actionCastingSpells));
+                
                 while (spellListIndex < this.importNPC.actionCastingSpells.length) {
                     currentLineIndex++;
                     let spellLine = getLine(currentLineIndex);
                     const spellListMatch = spellLine ? spellLine.match(/^(.*?):\s*(.*)/) : null;
+                    
                     if (spellListMatch && (spellListMatch[1].toLowerCase() === 'at will' || spellListMatch[1].match(/^\d+\s*\/\s*day(?:\s+each)?/i))) {
                            this.importNPC.actionCastingSpells[spellListIndex].freq = spellListMatch[1].trim();
+                           // Remove italics tags if present in source
                            const spellNames = spellListMatch[2].split(',')
                                .map(spell => spell.replace(/<\/?i>/g, '').replace(/\*/g, '').trim().toLowerCase())
                                .filter(spell => spell);
                            this.importNPC.actionCastingSpells[spellListIndex].list = spellNames.join(', ');
                         spellListIndex++;
                     } else {
-                        currentLineIndex--;
+                        currentLineIndex--; // Backtrack if not a match
                         break;
                     }
                 }
-                currentLineIndex++; // Move past the last processed line
-                continue; // Go to next line
+                currentLineIndex++; 
+                continue; 
             }
             else if (standardAttackMatch) {
                // Standard attacks always start a new item
@@ -1681,7 +1737,3 @@ window.importer = {
       importViewportElement.innerHTML = generatedHtml;
    }
 };
-
-// Ensure init is called when the DOM is ready (if not already handled in main.js)
-// document.addEventListener('DOMContentLoaded', () => window.importer.init());
-// ^^ This might be redundant if main.js calls importer.init() after ui.init()
