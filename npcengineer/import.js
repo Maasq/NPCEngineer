@@ -144,6 +144,18 @@ window.importer = {
       if (!this.htmlLoaded) return;
       
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
+      this.importNPC.passivePerception = undefined;
+
+      // --- NEW: Initialize Adjustments to undefined ---
+      // This allows inferSavesAndSkills to distinguish between "explicit 0" and "not found".
+      ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
+         this.importNPC[`${ability}SavingThrowAdjust`] = undefined;
+      });
+
+      window.app.skills.forEach(skill => {
+         this.importNPC[`skill_${skill.id}_adjust`] = undefined;
+      });
+      // ------------------------------------------------
 
       // This function correctly reads from the cleaned text area
       const cleanedText = window.ui.importTextArea ? window.ui.importTextArea.value : '';
@@ -261,33 +273,65 @@ window.importer = {
             } else if ((match = line.match(/^Skills\s+(.*)/i))) {
                this.parseSkills(match[1]);
             } else if ((match = line.match(/^Damage Vulnerabilities\s+(.*)/i))) {
-               this.parseDamageModifiers(match[1], 'vulnerability');
+               let vulnString = match[1].trim();
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     vulnString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseDamageModifiers(vulnString, 'vulnerability');
+
             } else if ((match = line.match(/^Damage Resistances\s+(.*)/i))) {
-               this.parseDamageModifiers(match[1], 'resistance');
+               let resString = match[1].trim();
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     resString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseDamageModifiers(resString, 'resistance');
+
             } else if ((match = line.match(/^Damage Immunities\s+(.*)/i))) {
-               this.parseDamageModifiers(match[1], 'immunity');
+               let immString = match[1].trim();
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     immString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseDamageModifiers(immString, 'immunity');
+
             } else if ((match = line.match(/^Condition Immunities\s+(.*)/i))) {
                let ciString = match[1].trim();
-               let nextLine = peekLine(currentLineIndex); // Peek at the raw next line. Check if line ends with a comma and the next line exists and is not a new header
-               if (ciString.endsWith(',') && nextLine && !headerKeywordRegex.test(nextLine.trim())) {
-                 ciString += " " + nextLine.trim(); // Append the next line
-                 currentLineIndex++; // Consume the next line
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     ciString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
                }
-              this.parseConditionImmunities(ciString);
-            } else if (line.match(/^Senses\s+/i)) { // Check more generally
-               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); // Trim peeked line for logic
-               currentLineIndex += linesConsumed; // Advance index by lines consumed in parseSenses
-               currentLineIndex++; // Increment index for the current line itself
-               continue; // Continue loop AFTER advancing index
+               this.parseConditionImmunities(ciString);
+
+            } else if (line.match(/^Senses\s+/i)) { 
+               let linesConsumed = this.parseSenses(line, peekLine(currentLineIndex)?.trim()); 
+               currentLineIndex += linesConsumed; 
+               currentLineIndex++; 
+               continue; 
+
             } else if ((match = line.match(/^Languages\s+(.*)/i))) {
                let langString = match[1].trim();
-              let nextLine = peekLine(currentLineIndex); // Peek at the raw next line
-              // Check if line does NOT end with a period/dash and the next line exists and is not a new header
-              if (!/[.—]$/.test(langString) && nextLine && !headerKeywordRegex.test(nextLine.trim())) {
-                 langString += " " + nextLine.trim(); // Append the next line
-                 currentLineIndex++; // Consume the next line
-              }
-              this.parseLanguages(langString);
+               while (true) {
+                  let nextLine = peekLine(currentLineIndex);
+                  if (nextLine && !headerKeywordRegex.test(nextLine.trim())) {
+                     langString += " " + nextLine.trim();
+                     currentLineIndex++;
+                  } else { break; }
+               }
+               this.parseLanguages(langString);
             } else if ((match = line.match(/^Challenge\s+([\d\/]+)\s*\((\d{1,3}(?:,?\d{3})*)\s*XP\)(?:\s*Proficiency Bonus\s*([+-]\d+))?/i))) {
                this.importNPC.challenge = match[1];
                this.importNPC.experience = match[2]; // Keep comma
@@ -342,7 +386,7 @@ window.importer = {
                currentItem = null;
             }
 
-            // --- NEW LINE-JOINING LOGIC (Based on User's Idea) ---
+            // --- NEW LINE-JOINING LOGIC ---
             if (currentItem && !currentItem.name.toLowerCase().startsWith('innate spellcasting') && currentItem.name.toLowerCase() !== 'spellcasting') {
                let nextLineRaw = peekLine(currentLineIndex);
                while (nextLineRaw !== null) {
@@ -380,50 +424,18 @@ window.importer = {
             // --- END NEW LINE-JOINING LOGIC ---
          }
          else if (currentSection === 'actions') {
-            const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
             // *** FIXED: Regex now requires action to start with an uppercase letter ***
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
-            if (spellcastingHeaderMatch) {
-                currentItem = null; // Spellcasting block always ends the previous item
-                // ... (rest of spellcasting parsing) ...
-                this.importNPC.hasSpellcasting = true;
-                this.importNPC.spellcastingPlacement = 'actions';
-                let boilerplate = spellcastingHeaderMatch[1];
-                const castingInfoMatch = boilerplate.match(/using (\w+) .* \(spell save DC (\d+)\)/i);
-                if (castingInfoMatch) {
-                    this.importNPC.actionCastingAbility = castingInfoMatch[1].toLowerCase();
-                    this.importNPC.actionCastingDC = parseInt(castingInfoMatch[2], 10);
-                }
-                let spellListIndex = 0;
-                this.importNPC.actionCastingSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.actionCastingSpells));
-                while (spellListIndex < this.importNPC.actionCastingSpells.length) {
-                    currentLineIndex++;
-                    let spellLine = getLine(currentLineIndex);
-                    const spellListMatch = spellLine ? spellLine.match(/^(.*?):\s*(.*)/) : null;
-                    if (spellListMatch && (spellListMatch[1].toLowerCase() === 'at will' || spellListMatch[1].match(/^\d+\s*\/\s*day(?:\s+each)?/i))) {
-                           this.importNPC.actionCastingSpells[spellListIndex].freq = spellListMatch[1].trim();
-                           const spellNames = spellListMatch[2].split(',')
-                               .map(spell => spell.replace(/<\/?i>/g, '').replace(/\*/g, '').trim().toLowerCase())
-                               .filter(spell => spell);
-                           this.importNPC.actionCastingSpells[spellListIndex].list = spellNames.join(', ');
-                        spellListIndex++;
-                    } else {
-                        currentLineIndex--;
-                        break;
-                    }
-                }
-                currentLineIndex++; // Move past the last processed line
-                continue; // Go to next line
-            }
-            else if (standardAttackMatch) {
+            if (standardAttackMatch) {
                // Standard attacks always start a new item
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() }; // Use full line
                this.importNPC.actions.actions.push(currentItem);
             }
             else if (actionMatch) {
                // Regular Name. Desc pattern starts a new item
+               // This will now catch "Spellcasting." as a standard action
                currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
                this.importNPC.actions.actions.push(currentItem);
             }
@@ -487,10 +499,11 @@ window.importer = {
             }
             // --- END NEW LINE-JOINING LOGIC (Actions) ---
          }
+         
          // --- START NEW BLOCKS ---
          else if (currentSection === 'bonusActions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -535,7 +548,7 @@ window.importer = {
          }
          else if (currentSection === 'reactions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -580,7 +593,7 @@ window.importer = {
          }
          else if (currentSection === 'lairActions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -705,12 +718,14 @@ window.importer = {
       // --- Post-Processing ---
       this.parseInnateSpellcastingTrait();
       this.parseTraitSpellcastingTrait();
+      this.parseActionSpellcasting();
 
       ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
            this.importNPC[`${ability}Bonus`] = window.app.calculateAbilityBonus(this.importNPC[ability]);
        });
-      this.inferSavesAndSkills(); // This now fixes adjustments
-      window.app.calculateAllStats.call({ activeNPC: this.importNPC }); // This now uses fixed adjustments
+
+      this.inferSavesAndSkills(); 
+      window.app.calculateAllStats.call({ activeNPC: this.importNPC }); 
 
       this.updateImportViewport();
    },
@@ -937,6 +952,77 @@ window.importer = {
       this.importNPC.traits.splice(traitIndex, 1); // Remove the processed trait
    },
 
+   // --- Parse Action Spellcasting from Action Description ---
+   parseActionSpellcasting() {
+      if (!this.importNPC.actions || !this.importNPC.actions.actions) return;
+
+      // Find the "Spellcasting" action (case-insensitive)
+      const actionIndex = this.importNPC.actions.actions.findIndex(a => a.name.toLowerCase() === 'spellcasting');
+      if (actionIndex === -1) return;
+
+      const action = this.importNPC.actions.actions[actionIndex];
+      const desc = action.desc || '';
+
+      this.importNPC.hasSpellcasting = true;
+      this.importNPC.spellcastingPlacement = 'actions';
+
+      // Parse Ability and DC
+      const abilityDcRegex = /using (\w+) as the spellcasting ability \(spell save DC (\d+)\)/i;
+      const abilityDcMatch = desc.match(abilityDcRegex);
+      if (abilityDcMatch) {
+         this.importNPC.actionCastingAbility = abilityDcMatch[1].toLowerCase();
+         this.importNPC.actionCastingDC = parseInt(abilityDcMatch[2], 10);
+      }
+
+      // Parse Components
+      const componentsRegex = /requiring (.*?) and/i;
+      const componentsMatch = desc.match(componentsRegex);
+      if (componentsMatch) {
+          this.importNPC.actionCastingComponents = componentsMatch[1].trim();
+      }
+
+      // Extract Spells Block
+      const spellsStartIndex = desc.indexOf(':');
+      if (spellsStartIndex === -1) {
+          console.warn("Could not find start of action spell list.");
+          // Still remove the action as it has been converted (partially)
+          this.importNPC.actions.actions.splice(actionIndex, 1);
+          return; 
+      }
+      
+      const spellsBlock = desc.substring(spellsStartIndex + 1).trim();
+
+      // Parse Spells
+      // Regex matches "Freq: List" patterns, handling multi-line lists
+      const spellGroupRegex = /(At will|(?:\d+\s*\/\s*day(?:\s+each)?)):\s*([\s\S]*?)(?=(\s*(?:At will|(?:\d+\s*\/\s*day(?:\s+each)?)):)|$)/gi;
+      
+      let match;
+      let spellListIndex = 0;
+      // Initialize with defaults to ensure structure
+      this.importNPC.actionCastingSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.actionCastingSpells));
+
+      while ((match = spellGroupRegex.exec(spellsBlock)) !== null && spellListIndex < this.importNPC.actionCastingSpells.length) {
+          const freq = match[1].trim();
+          const spellsRaw = match[2].trim();
+
+          this.importNPC.actionCastingSpells[spellListIndex].freq = freq;
+          const spellNames = spellsRaw.split(',')
+              .map(spell => spell.replace(/<\/?i>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/\*/g, '').trim().toLowerCase())
+              .filter(spell => spell);
+          this.importNPC.actionCastingSpells[spellListIndex].list = spellNames.join(', ');
+          spellListIndex++;
+      }
+      
+      // Clear remaining slots if any
+      for (let i = spellListIndex; i < this.importNPC.actionCastingSpells.length; i++) {
+         this.importNPC.actionCastingSpells[i].freq = "";
+         this.importNPC.actionCastingSpells[i].list = "";
+      }
+
+      // Remove the original "Spellcasting" action from the list
+      this.importNPC.actions.actions.splice(actionIndex, 1);
+   },
+   
    // --- Parsing Helper Functions ---
 
    parseSpeed(line) {
@@ -1070,7 +1156,7 @@ window.importer = {
        this.importNPC.senseDarkvision = 0;
        this.importNPC.senseTremorsense = 0;
        this.importNPC.senseTruesight = 0;
-       this.importNPC.passivePerception = 10; // Default
+       // Removed default: this.importNPC.passivePerception = 10; 
 
       let consumedNextLine = false;
       let fullSensesString = sensesLine.replace(/^Senses\s*/i, '').trim();
@@ -1087,6 +1173,7 @@ window.importer = {
             this.importNPC.passivePerception = parseInt(passiveMatch[1], 10);
             fullSensesString = fullSensesString.replace(/,?\s*passive Perception\s+\d+/i, '').trim();
          } else {
+             // Do nothing; leave as undefined so calculation takes over
          }
       }
 
@@ -1145,6 +1232,23 @@ window.importer = {
        let cantSpeak = false;
        if (langLower.includes("understands") && langLower.includes("but can't speak")) {
           cantSpeak = true;
+
+          // --- NEW: Extract the languages before removing the phrase ---
+          const match = languagesString.match(/understands\s+(.*?)\s+but can't speak/i);
+          if (match && match[1]) {
+             let langs = match[1];
+             // Normalize "and" to comma for easier splitting
+             langs = langs.replace(/\s+and\s+/gi, ',');
+             
+             const extracted = langs.split(',').map(s => s.trim()).filter(s => s);
+             extracted.forEach(lang => {
+                if (!this.importNPC.selectedLanguages.includes(lang)) {
+                   this.importNPC.selectedLanguages.push(lang);
+                }
+             });
+          }
+          // -------------------------------------------------------------
+
           if (langLower.includes("languages known in life") || langLower.includes("languages it knew in life")) {
              this.importNPC.specialLanguageOption = 6;
           } else if (langLower.includes("creator's languages")) {
@@ -1164,7 +1268,10 @@ window.importer = {
                this.importNPC.hasTelepathy = true;
                this.importNPC.telepathyRange = parseInt(telepathyMatch[1], 10);
            } else if (part && part !== '—' && part !== '-') {
-               this.importNPC.selectedLanguages.push(part);
+               // Add if not already present
+               if (!this.importNPC.selectedLanguages.includes(part)) {
+                   this.importNPC.selectedLanguages.push(part);
+               }
            }
        });
 
@@ -1681,7 +1788,3 @@ window.importer = {
       importViewportElement.innerHTML = generatedHtml;
    }
 };
-
-// Ensure init is called when the DOM is ready (if not already handled in main.js)
-// document.addEventListener('DOMContentLoaded', () => window.importer.init());
-// ^^ This might be redundant if main.js calls importer.init() after ui.init()

@@ -140,16 +140,20 @@ window.fgExporter = {
          const definitionXml = this._generateDefinitionXml(settings);
          zip.file("definition.xml", definitionXml);
 
-         // Process Images and build a map of final filenames
-         // This modifies the 'zip' object directly by adding files
-         const imageMap = await this._processAndZipImages(zip, activeBestiary.npcs);
-         
          // Add Thumbnail (if exists)
          if (settings.coverImage) {
-             const thumbData = this._dataURLtoBlob(settings.coverImage);
-             zip.file("thumbnail.png", thumbData);
+             try {
+                 const thumbData = this._dataURLtoBlob(settings.coverImage);
+                 zip.file("thumbnail.png", thumbData);
+             } catch (e) {
+                 console.error("Failed to add thumbnail:", e);
+             }
          }
 
+         // Process Images and build a map of final filenames
+         // Key will be the NPC's unique ID string to ensure matching
+         const imageMap = await this._processAndZipImages(zip, activeBestiary.npcs, settings);
+         
          // Generate Main XML (db.xml or client.xml) passing the imageMap
          const xmlOutput = this._generateDbXml(activeBestiary, settings, imageMap);
          const mainXmlFilename = settings.isGmOnly ? "db.xml" : "client.xml";
@@ -179,8 +183,8 @@ window.fgExporter = {
     * Iterates through NPCs, processes their images, handles filename collisions,
     * adds them to the zip, and returns a map of paths for the XML generator.
     */
-   async _processAndZipImages(zip, npcs) {
-      const imageMap = new Map(); // Key: npc object, Value: { image: path, token: path, cameraToken: path }
+   async _processAndZipImages(zip, npcs, settings) {
+      const imageMap = new Map(); // Key: npcId string, Value: { image: path, token: path, cameraToken: path }
       
       // Sets to track used filenames in each folder to prevent collisions
       const usedImageNames = new Set();
@@ -189,67 +193,91 @@ window.fgExporter = {
       const imagesFolder = zip.folder("images");
       const tokensFolder = zip.folder("tokens");
 
-      // Helper to get extension from data URL
-      const getExtension = (dataUrl) => {
-         const match = dataUrl.match(/^data:image\/(\w+);base64,/);
-         return match ? match[1] : 'png'; // Default to png
-      };
+      // Re-create the sorted structure to ensure IDs match the XML generation loop exactly
+      const groups = [...new Set(npcs.map(npc => npc.fg_group || settings.title))];
+      groups.sort((a, b) => a.localeCompare(b));
+      
+      let npcCounter = 1;
 
-      // Helper to generate a unique filename
-      const getUniqueFilename = (baseName, extension, usedSet) => {
-         let counter = 0;
-         let filename = `${baseName}.${extension}`;
-         
-         while (usedSet.has(filename.toLowerCase())) {
-             counter++;
-             const suffix = counter < 10 ? `0${counter}` : `${counter}`; // 01, 02...
-             filename = `${baseName}${suffix}.${extension}`;
+      for (const groupName of groups) {
+         const npcsInGroup = npcs.filter(npc => (npc.fg_group || settings.title) === groupName);
+         // Sort NPCs alphabetically within their group to match XML generation order
+         npcsInGroup.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+         for (const npc of npcsInGroup) {
+            const npcId = `id-${npcCounter.toString().padStart(5, '0')}`;
+            npcCounter++;
+
+            const paths = {
+               image: null,
+               token: null,
+               cameraToken: null
+            };
+
+            const cleanName = this._sanitizeFilename(npc.name || "Unnamed");
+
+            // Helper to get extension from data URL
+            const getExtension = (dataUrl) => {
+               const match = dataUrl.match(/^data:image\/(\w+);base64,/);
+               return match ? match[1] : 'png'; // Default to png
+            };
+
+            // Helper to generate a unique filename
+            const getUniqueFilename = (baseName, extension, usedSet) => {
+               let counter = 0;
+               let filename = `${baseName}.${extension}`;
+               while (usedSet.has(filename.toLowerCase())) {
+                   counter++;
+                   const suffix = counter < 10 ? `0${counter}` : `${counter}`; // 01, 02...
+                   filename = `${baseName}${suffix}.${extension}`;
+               }
+               usedSet.add(filename.toLowerCase());
+               return filename;
+            };
+
+            // 1. Main NPC Image
+            if (npc.image) {
+               try {
+                   const ext = getExtension(npc.image);
+                   const filename = getUniqueFilename(cleanName, ext, usedImageNames);
+                   const blob = this._dataURLtoBlob(npc.image);
+                   imagesFolder.file(filename, blob);
+                   paths.image = `images/${filename}`;
+               } catch (e) {
+                   console.error(`Failed to process image for ${npc.name}:`, e);
+               }
+            }
+
+            // 2. Camera Token (Also goes in 'images' folder)
+            if (npc.cameraToken) {
+               try {
+                   const ext = getExtension(npc.cameraToken);
+                   const baseName = `${cleanName} front`;
+                   const filename = getUniqueFilename(baseName, ext, usedImageNames); // Checks same set as main images
+                   const blob = this._dataURLtoBlob(npc.cameraToken);
+                   imagesFolder.file(filename, blob);
+                   paths.cameraToken = `images/${filename}`;
+               } catch (e) {
+                   console.error(`Failed to process camera token for ${npc.name}:`, e);
+               }
+            }
+
+            // 3. Token (Goes in 'tokens' folder)
+            if (npc.token) {
+               try {
+                   const ext = getExtension(npc.token);
+                   const baseName = `${cleanName} token`;
+                   const filename = getUniqueFilename(baseName, ext, usedTokenNames); // Different set
+                   const blob = this._dataURLtoBlob(npc.token);
+                   tokensFolder.file(filename, blob);
+                   paths.token = `tokens/${filename}`;
+               } catch (e) {
+                   console.error(`Failed to process token for ${npc.name}:`, e);
+               }
+            }
+
+            imageMap.set(npcId, paths); // Store using the ID string
          }
-         usedSet.add(filename.toLowerCase());
-         return filename;
-      };
-
-      for (let i = 0; i < npcs.length; i++) {
-         const npc = npcs[i];
-         
-         const paths = {
-            image: null,
-            token: null,
-            cameraToken: null
-         };
-
-         const cleanName = this._sanitizeFilename(npc.name || "Unnamed");
-
-         // 1. Main NPC Image
-         if (npc.image) {
-             const ext = getExtension(npc.image);
-             const filename = getUniqueFilename(cleanName, ext, usedImageNames);
-             const blob = this._dataURLtoBlob(npc.image);
-             imagesFolder.file(filename, blob);
-             paths.image = `images/${filename}`;
-         }
-
-         // 2. Camera Token (Also goes in 'images' folder)
-         if (npc.cameraToken) {
-             const ext = getExtension(npc.cameraToken);
-             const baseName = `${cleanName} front`;
-             const filename = getUniqueFilename(baseName, ext, usedImageNames); // Checks same set as main images
-             const blob = this._dataURLtoBlob(npc.cameraToken);
-             imagesFolder.file(filename, blob);
-             paths.cameraToken = `images/${filename}`;
-         }
-
-         // 3. Token (Goes in 'tokens' folder)
-         if (npc.token) {
-             const ext = getExtension(npc.token);
-             const baseName = `${cleanName} token`;
-             const filename = getUniqueFilename(baseName, ext, usedTokenNames); // Different set
-             const blob = this._dataURLtoBlob(npc.token);
-             tokensFolder.file(filename, blob);
-             paths.token = `tokens/${filename}`;
-         }
-
-         imageMap.set(npc, paths);
       }
 
       return imageMap;
@@ -318,6 +346,9 @@ window.fgExporter = {
       cleaned = cleaned.replaceAll("</li>", "</li>\n");
       cleaned = cleaned.replaceAll("</list>", "</list>\n");
 
+      // Step 5: Replace Non-Breaking Spaces with regular spaces
+      cleaned = cleaned.replace(/\u00A0/g, ' ').replace(/&nbsp;/g, ' ');
+
       return cleaned;
    },
 
@@ -381,6 +412,87 @@ window.fgExporter = {
       }
    },
 
+   /**
+    * [TEMPORARY TEST FUNCTION]
+    * Repurposes the Import Modal to display a string.
+    * @param {string} outputText The text to display.
+    */
+   showExportOutputForTesting(outputText) {
+      const {
+         importModal,
+         importPaneRaw,
+         importPaneFiltered,
+         importTextArea,
+         importFilterSelect,
+         importCancelBtn,
+         importConfirmBtn,
+         importToggleViewBtn,
+         importClearBtn
+      } = window.ui;
+
+      if (!importModal || !importPaneFiltered || !importTextArea) {
+         console.error("Cannot show test output: Import modal elements not found.");
+         window.app.showAlert(outputText); // Fallback to alert
+         return;
+      }
+
+      // 1. Open the modal
+      window.app.openModal('import-modal');
+
+      // 2. Change the title
+      const modalTitle = document.getElementById('import-modal')?.querySelector('h3');
+      if (modalTitle) {
+         const filename = window.app.activeBestiary.metadata.fgGMonly ? 'db.xml' : 'client.xml';
+         modalTitle.textContent = `Export Preview (${filename})`;
+      }
+
+      // 3. Hide all the import-specific UI
+      if (importPaneRaw) importPaneRaw.classList.add('hidden');
+      if (importFilterSelect) importFilterSelect.parentElement.parentElement.classList.add('hidden');
+      if (importConfirmBtn) importConfirmBtn.classList.add('hidden');
+      if (importToggleViewBtn) importToggleViewBtn.classList.add('hidden');
+      if (importClearBtn) importClearBtn.classList.add('hidden');
+      
+      // 4. Repurpose the 'Filtered' pane
+      if (importPaneFiltered) {
+         importPaneFiltered.classList.remove('hidden');
+         if (importPaneFiltered.parentElement) {
+            importPaneFiltered.parentElement.classList.remove('w-1/2');
+            importPaneFiltered.parentElement.classList.add('w-full');
+         }
+         const filteredLabel = importPaneFiltered.querySelector('label');
+         if (filteredLabel) filteredLabel.textContent = "XML Output (Read-Only)";
+      }
+      
+      // 5. Hide the preview viewport
+      const viewportPane = document.getElementById('import-viewport')?.parentElement;
+      if (viewportPane) viewportPane.classList.add('hidden');
+
+      // 6. Set the text and update the 'Cancel' button
+      importTextArea.value = outputText;
+      importTextArea.scrollTop = 0; // Scroll to top
+      if (importCancelBtn) importCancelBtn.textContent = "Close";
+      
+      // 7. Re-bind cancel button to close modal and reset modal title/buttons
+      importCancelBtn.onclick = () => {
+         window.app.closeModal('import-modal');
+         // Reset modal to its original import state
+         if (modalTitle) modalTitle.textContent = "Import NPC from Text";
+         if (importPaneFiltered.parentElement) {
+            importPaneFiltered.parentElement.classList.add('w-1/2');
+            importPaneFiltered.parentElement.classList.remove('w-full');
+         }
+         if (viewportPane) viewportPane.classList.remove('hidden');
+         if (importFilterSelect) importFilterSelect.parentElement.parentElement.classList.remove('hidden');
+         if (importConfirmBtn) importConfirmBtn.classList.remove('hidden');
+         if (importToggleViewBtn) importToggleViewBtn.classList.remove('hidden');
+         if (importClearBtn) importClearBtn.classList.remove('hidden');
+         if (importCancelBtn) importCancelBtn.textContent = "Cancel";
+         // Re-bind original listener (from importer.js)
+         if (importCancelBtn) importCancelBtn.onclick = () => window.importer.closeImportModal();
+      };
+   },
+   
    /**
     * Sets up all event listeners for the FG Export Modal.
     */
@@ -476,7 +588,7 @@ window.fgExporter = {
     * @returns {string} The complete XML file as a string.
     */
    _generateDbXml(bestiary, settings, imageMap) {
-      const versionInfo = `(Version ${window.app.version || '0.18.20'})`; // Get version from main.js or default
+      const versionInfo = `(Version ${window.app.version || '0.18.33'})`; // Get version from main.js or default
       
       let xml = `<?xml version="1.0" encoding="utf-8"?>\n`; // Single newline is correct.
       xml += `<root version="4.8" dataversion="20241002" release="8.1|CoreRPG:7">\n`;
@@ -571,8 +683,8 @@ window.fgExporter = {
             const npcId = `id-${npcCounter.toString().padStart(5, '0')}`;
             npcCounter++;
             
-            // Retrieve pre-calculated image paths
-            const imagePaths = imageMap ? (imageMap.get(npc) || {}) : {};
+            // Retrieve pre-calculated image paths using ID key
+            const imagePaths = imageMap ? (imageMap.get(npcId) || {}) : {};
 
             xml += this._indent(4) + `<${npcId}>\n`;
             
@@ -665,9 +777,10 @@ window.fgExporter = {
             const tokPath = imagePaths.token || this._getImagePath(npc, 'token', settings.moduleName);
             const camPath = imagePaths.cameraToken || this._getImagePath(npc, 'cameraToken', settings.moduleName);
 
-            if (npc.image && imgPath) xml += this._buildTag('picture', 'token', imgPath, 5);
-            if (npc.token && tokPath) xml += this._buildTag('token', 'token', tokPath, 5);
-            if (npc.cameraToken && camPath) xml += this._buildTag('token3Dflat', 'token', camPath, 5);
+            // *** FIXED: Pass 't' instead of 'token' for the type argument ***
+            if (npc.image && imgPath) xml += this._buildTag('picture', 't', imgPath, 5);
+            if (npc.token && tokPath) xml += this._buildTag('token', 't', tokPath, 5);
+            if (npc.cameraToken && camPath) xml += this._buildTag('token3Dflat', 't', camPath, 5);
 
             // --- Description ---
             if (npc.description) {
@@ -875,7 +988,8 @@ window.fgExporter = {
     */
    _generateActionListXML(listName, items, indentLevel, npc, sortMultiattackFirst = false, boilerplate = "") {
       // *** FIX: Check for empty or non-existent items array ***
-      if ((!items || items.length === 0) && !boilerplate) {
+      // MODIFIED: Only check if items exist. Ignore boilerplate for the "skip" decision.
+      if (!items || items.length === 0) {
          // FG requires an empty tag if the block is expected (like <traits> or <actions>)
          // But for optional blocks (bonusactions, reactions), we can return empty string.
          if (listName === 'traits' || listName === 'actions') {
@@ -903,6 +1017,7 @@ window.fgExporter = {
       let xml = this._indent(indentLevel) + `<${listName}>\n`;
       let idCounter = 1;
       
+      // Add boilerplate only if we are actually generating the block (which implies items exist)
       if (boilerplate) {
          const boilerplateId = `id-${idCounter.toString().padStart(5, '0')}`;
          idCounter++;
@@ -1025,7 +1140,7 @@ window.fgExporter = {
           const spellName = match[1].trim();
           const asterisk = match[2];
           if (spellName) {
-              result.push(`<i>${spellName.toLowerCase()}</i>${asterisk}`);
+              result.push(`${spellName.toLowerCase()}${asterisk}`);
           }
       }
       return result.join(', ');
@@ -1102,8 +1217,7 @@ window.fgExporter = {
    },
    
    /**
-    * Gets the relative image path for the export (DEPRECATED - handled by pre-calc now).
-    * KEPT FOR FALLBACK but primary logic is in _generateReferenceSection loop.
+    * Gets the relative image path for the export.
     * @param {object} npc The NPC object.
     * @param {string} key "image", "token", or "cameraToken".
     * @param {string} moduleName The cleaned module name.

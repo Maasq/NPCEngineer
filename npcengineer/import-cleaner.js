@@ -50,6 +50,8 @@ function cleanImportText(inputText) {
       { find: /Hit:/gi, replace: 'Hit~##~' },
       { find: /\/Day:/g, replace: '/day~##~' },
       { find: /\/day:/g, replace: '/day~##~' },
+      // UPDATED: Protection for Spell Save DC colon including the closing parenthesis
+      { find: /spell save DC (\d+)\):/gi, replace: 'spell save DC $1)~##~' },
    ];
 
    // Apply protection

@@ -183,35 +183,35 @@ function calculateConditionImmunitiesString(npc) {
 function calculateLanguagesString(npc) {
    if (!npc) return '—';
 
+   // Get the list of selected languages, sorted
+   const selected = Array.isArray(npc.selectedLanguages) ? [...npc.selectedLanguages].sort((a,b) => a.localeCompare(b)) : [];
+   const selectedStr = selected.length > 0 ? selected.join(', ') : "—";
+
    const specialMap = {
       1: "understands all languages but speaks none",
       2: "all languages",
       3: "the languages it knew in life",
-      4: "understands the languages selected but can't speak",
-      5: "understands its creator's languages but can't speak",
-      6: "understands the languages it knew in life but can't speak"
+      // Dynamic options: Insert the selected languages string
+      4: `understands ${selectedStr} but can't speak`,
+      5: `understands ${selectedStr} but can't speak`, // (Adjust if needed for creator's languages)
+      6: `understands ${selectedStr} but can't speak`
    };
 
    const specialText = specialMap[npc.specialLanguageOption] || null;
-   const selected = Array.isArray(npc.selectedLanguages) ? [...npc.selectedLanguages].sort((a,b) => a.localeCompare(b)) : [];
-   const telepathy = npc.hasTelepathy ? `telepathy ${npc.telepathyRange || 60} ft.` : null; // Default range if unspecified
+   const telepathy = npc.hasTelepathy ? `telepathy ${npc.telepathyRange || 60} ft.` : null;
 
-   let mainPart = '—'; // Default if nothing else applies
+   let mainPart = '—';
    if (specialText) {
       mainPart = specialText;
    } else if (selected.length > 0) {
-      mainPart = selected.join(', ');
+      mainPart = selectedStr;
    }
 
    // Combine main part and telepathy
    if (telepathy) {
-      if (mainPart === '—' || npc.specialLanguageOption === 1 || npc.specialLanguageOption === 4 || npc.specialLanguageOption === 5 || npc.specialLanguageOption === 6) {
-         // If no spoken languages or can't speak, just list telepathy
-         return telepathy;
-      } else {
-         // Otherwise, append telepathy
-         return `${mainPart}, ${telepathy}`;
-      }
+      // If there's a main part (even if it's just "—"), append telepathy
+      if (mainPart === '—') return telepathy;
+      return `${mainPart}, ${telepathy}`;
    } else {
       return mainPart;
    }
@@ -288,8 +288,9 @@ function calculateAllSkills() {
          (isExp ? profBonus : 0) + // Expertise adds proficiency bonus again
          adjust;
 
-      // Add skill to the string only if proficient, expert, or adjusted, AND total is not 0
-      if ((isProf || isExp || adjust !== 0) && total !== 0) {
+      // Add skill to the string only if proficient, expert, or manually adjusted.
+      // Removed the '&& total !== 0' check so +0 skills display if proficient.
+      if (isProf || isExp || adjust !== 0) {
           skillsArray.push(`${skill.name} ${total >= 0 ? '+' : ''}${total}`);
       }
    });
