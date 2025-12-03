@@ -144,6 +144,18 @@ window.importer = {
       if (!this.htmlLoaded) return;
       
       this.importNPC = JSON.parse(JSON.stringify(window.app.defaultNPC));
+      this.importNPC.passivePerception = undefined;
+
+      // --- NEW: Initialize Adjustments to undefined ---
+      // This allows inferSavesAndSkills to distinguish between "explicit 0" and "not found".
+      ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
+         this.importNPC[`${ability}SavingThrowAdjust`] = undefined;
+      });
+
+      window.app.skills.forEach(skill => {
+         this.importNPC[`skill_${skill.id}_adjust`] = undefined;
+      });
+      // ------------------------------------------------
 
       // This function correctly reads from the cleaned text area
       const cleanedText = window.ui.importTextArea ? window.ui.importTextArea.value : '';
@@ -707,12 +719,13 @@ window.importer = {
       this.parseInnateSpellcastingTrait();
       this.parseTraitSpellcastingTrait();
       this.parseActionSpellcasting();
-      
+
       ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
            this.importNPC[`${ability}Bonus`] = window.app.calculateAbilityBonus(this.importNPC[ability]);
        });
-      this.inferSavesAndSkills(); // This now fixes adjustments
-      window.app.calculateAllStats.call({ activeNPC: this.importNPC }); // This now uses fixed adjustments
+
+      this.inferSavesAndSkills(); 
+      window.app.calculateAllStats.call({ activeNPC: this.importNPC }); 
 
       this.updateImportViewport();
    },
@@ -1143,7 +1156,7 @@ window.importer = {
        this.importNPC.senseDarkvision = 0;
        this.importNPC.senseTremorsense = 0;
        this.importNPC.senseTruesight = 0;
-       this.importNPC.passivePerception = 10; // Default
+       // Removed default: this.importNPC.passivePerception = 10; 
 
       let consumedNextLine = false;
       let fullSensesString = sensesLine.replace(/^Senses\s*/i, '').trim();
@@ -1160,6 +1173,7 @@ window.importer = {
             this.importNPC.passivePerception = parseInt(passiveMatch[1], 10);
             fullSensesString = fullSensesString.replace(/,?\s*passive Perception\s+\d+/i, '').trim();
          } else {
+             // Do nothing; leave as undefined so calculation takes over
          }
       }
 

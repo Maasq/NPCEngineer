@@ -288,8 +288,9 @@ function calculateAllSkills() {
          (isExp ? profBonus : 0) + // Expertise adds proficiency bonus again
          adjust;
 
-      // Add skill to the string only if proficient, expert, or adjusted, AND total is not 0
-      if ((isProf || isExp || adjust !== 0) && total !== 0) {
+      // Add skill to the string only if proficient, expert, or manually adjusted.
+      // Removed the '&& total !== 0' check so +0 skills display if proficient.
+      if (isProf || isExp || adjust !== 0) {
           skillsArray.push(`${skill.name} ${total >= 0 ? '+' : ''}${total}`);
       }
    });
