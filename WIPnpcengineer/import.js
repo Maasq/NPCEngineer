@@ -374,7 +374,7 @@ window.importer = {
                currentItem = null;
             }
 
-            // --- NEW LINE-JOINING LOGIC (Based on User's Idea) ---
+            // --- NEW LINE-JOINING LOGIC ---
             if (currentItem && !currentItem.name.toLowerCase().startsWith('innate spellcasting') && currentItem.name.toLowerCase() !== 'spellcasting') {
                let nextLineRaw = peekLine(currentLineIndex);
                while (nextLineRaw !== null) {
@@ -412,74 +412,18 @@ window.importer = {
             // --- END NEW LINE-JOINING LOGIC ---
          }
          else if (currentSection === 'actions') {
-            const spellcastingHeaderMatch = line.match(/^Spellcasting\.\s*(.*)/i);
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
             // *** FIXED: Regex now requires action to start with an uppercase letter ***
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/);
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
-            if (spellcastingHeaderMatch) {
-                currentItem = null;
-                this.importNPC.hasSpellcasting = true;
-                this.importNPC.spellcastingPlacement = 'actions';
-                
-                // 1. Consume multi-line boilerplate (look ahead until we see a Frequency or new Action)
-                let boilerplate = spellcastingHeaderMatch[1].trim();
-                while (true) {
-                    let nextLine = peekLine(currentLineIndex);
-                    if (!nextLine) break;
-                    
-                    // Check if next line is a spell frequency (e.g. "At will:", "3/day:")
-                    const isFrequency = /^(At will|(?:\d+\s*\/\s*day(?:\s+each)?)):/i.test(nextLine.trim());
-                    if (isFrequency) break;
-                    
-                    // Check if next line looks like a new Action start (safety break)
-                    const isNewAction = /^(Melee|Ranged|Legendary|Actions|Bonus|Reactions)/i.test(nextLine.trim());
-                    if (isNewAction) break;
-
-                    // Otherwise, it's part of the description
-                    boilerplate += " " + nextLine.trim();
-                    currentLineIndex++;
-                }
-
-                // 2. Parse Ability/DC from the full boilerplate
-                const castingInfoMatch = boilerplate.match(/using (\w+) .* \(spell save DC (\d+)\)/i);
-                if (castingInfoMatch) {
-                    this.importNPC.actionCastingAbility = castingInfoMatch[1].toLowerCase();
-                    this.importNPC.actionCastingDC = parseInt(castingInfoMatch[2], 10);
-                }
-
-                // 3. Parse Spells
-                let spellListIndex = 0;
-                this.importNPC.actionCastingSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.actionCastingSpells));
-                
-                while (spellListIndex < this.importNPC.actionCastingSpells.length) {
-                    currentLineIndex++;
-                    let spellLine = getLine(currentLineIndex);
-                    const spellListMatch = spellLine ? spellLine.match(/^(.*?):\s*(.*)/) : null;
-                    
-                    if (spellListMatch && (spellListMatch[1].toLowerCase() === 'at will' || spellListMatch[1].match(/^\d+\s*\/\s*day(?:\s+each)?/i))) {
-                           this.importNPC.actionCastingSpells[spellListIndex].freq = spellListMatch[1].trim();
-                           // Remove italics tags if present in source
-                           const spellNames = spellListMatch[2].split(',')
-                               .map(spell => spell.replace(/<\/?i>/g, '').replace(/\*/g, '').trim().toLowerCase())
-                               .filter(spell => spell);
-                           this.importNPC.actionCastingSpells[spellListIndex].list = spellNames.join(', ');
-                        spellListIndex++;
-                    } else {
-                        currentLineIndex--; // Backtrack if not a match
-                        break;
-                    }
-                }
-                currentLineIndex++; 
-                continue; 
-            }
-            else if (standardAttackMatch) {
+            if (standardAttackMatch) {
                // Standard attacks always start a new item
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() }; // Use full line
                this.importNPC.actions.actions.push(currentItem);
             }
             else if (actionMatch) {
                // Regular Name. Desc pattern starts a new item
+               // This will now catch "Spellcasting." as a standard action
                currentItem = { name: actionMatch[1].trim(), desc: actionMatch[2].trim() };
                this.importNPC.actions.actions.push(currentItem);
             }
@@ -543,10 +487,11 @@ window.importer = {
             }
             // --- END NEW LINE-JOINING LOGIC (Actions) ---
          }
+         
          // --- START NEW BLOCKS ---
          else if (currentSection === 'bonusActions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -591,7 +536,7 @@ window.importer = {
          }
          else if (currentSection === 'reactions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -636,7 +581,7 @@ window.importer = {
          }
          else if (currentSection === 'lairActions') {
             const standardAttackMatch = line.match(/^(Melee Weapon Attack|Ranged Weapon Attack|Melee Spell Attack|Ranged Spell Attack):\s*(.*)/i);
-            const actionMatch = line.match(/^([A-Z][\w\s().,'’–—\/]+?)\.\s*(.*)/); // *** FIXED ***
+            const actionMatch = line.match(/^([A-Z][^.]+?)\.\s*(.*)/);
 
             if (standardAttackMatch) {
                currentItem = { name: standardAttackMatch[1].trim(), desc: line.trim() };
@@ -761,7 +706,8 @@ window.importer = {
       // --- Post-Processing ---
       this.parseInnateSpellcastingTrait();
       this.parseTraitSpellcastingTrait();
-
+      this.parseActionSpellcasting();
+      
       ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'].forEach(ability => {
            this.importNPC[`${ability}Bonus`] = window.app.calculateAbilityBonus(this.importNPC[ability]);
        });
@@ -993,6 +939,77 @@ window.importer = {
       this.importNPC.traits.splice(traitIndex, 1); // Remove the processed trait
    },
 
+   // --- Parse Action Spellcasting from Action Description ---
+   parseActionSpellcasting() {
+      if (!this.importNPC.actions || !this.importNPC.actions.actions) return;
+
+      // Find the "Spellcasting" action (case-insensitive)
+      const actionIndex = this.importNPC.actions.actions.findIndex(a => a.name.toLowerCase() === 'spellcasting');
+      if (actionIndex === -1) return;
+
+      const action = this.importNPC.actions.actions[actionIndex];
+      const desc = action.desc || '';
+
+      this.importNPC.hasSpellcasting = true;
+      this.importNPC.spellcastingPlacement = 'actions';
+
+      // Parse Ability and DC
+      const abilityDcRegex = /using (\w+) as the spellcasting ability \(spell save DC (\d+)\)/i;
+      const abilityDcMatch = desc.match(abilityDcRegex);
+      if (abilityDcMatch) {
+         this.importNPC.actionCastingAbility = abilityDcMatch[1].toLowerCase();
+         this.importNPC.actionCastingDC = parseInt(abilityDcMatch[2], 10);
+      }
+
+      // Parse Components
+      const componentsRegex = /requiring (.*?) and/i;
+      const componentsMatch = desc.match(componentsRegex);
+      if (componentsMatch) {
+          this.importNPC.actionCastingComponents = componentsMatch[1].trim();
+      }
+
+      // Extract Spells Block
+      const spellsStartIndex = desc.indexOf(':');
+      if (spellsStartIndex === -1) {
+          console.warn("Could not find start of action spell list.");
+          // Still remove the action as it has been converted (partially)
+          this.importNPC.actions.actions.splice(actionIndex, 1);
+          return; 
+      }
+      
+      const spellsBlock = desc.substring(spellsStartIndex + 1).trim();
+
+      // Parse Spells
+      // Regex matches "Freq: List" patterns, handling multi-line lists
+      const spellGroupRegex = /(At will|(?:\d+\s*\/\s*day(?:\s+each)?)):\s*([\s\S]*?)(?=(\s*(?:At will|(?:\d+\s*\/\s*day(?:\s+each)?)):)|$)/gi;
+      
+      let match;
+      let spellListIndex = 0;
+      // Initialize with defaults to ensure structure
+      this.importNPC.actionCastingSpells = JSON.parse(JSON.stringify(window.app.defaultNPC.actionCastingSpells));
+
+      while ((match = spellGroupRegex.exec(spellsBlock)) !== null && spellListIndex < this.importNPC.actionCastingSpells.length) {
+          const freq = match[1].trim();
+          const spellsRaw = match[2].trim();
+
+          this.importNPC.actionCastingSpells[spellListIndex].freq = freq;
+          const spellNames = spellsRaw.split(',')
+              .map(spell => spell.replace(/<\/?i>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').replace(/\*/g, '').trim().toLowerCase())
+              .filter(spell => spell);
+          this.importNPC.actionCastingSpells[spellListIndex].list = spellNames.join(', ');
+          spellListIndex++;
+      }
+      
+      // Clear remaining slots if any
+      for (let i = spellListIndex; i < this.importNPC.actionCastingSpells.length; i++) {
+         this.importNPC.actionCastingSpells[i].freq = "";
+         this.importNPC.actionCastingSpells[i].list = "";
+      }
+
+      // Remove the original "Spellcasting" action from the list
+      this.importNPC.actions.actions.splice(actionIndex, 1);
+   },
+   
    // --- Parsing Helper Functions ---
 
    parseSpeed(line) {
@@ -1201,6 +1218,23 @@ window.importer = {
        let cantSpeak = false;
        if (langLower.includes("understands") && langLower.includes("but can't speak")) {
           cantSpeak = true;
+
+          // --- NEW: Extract the languages before removing the phrase ---
+          const match = languagesString.match(/understands\s+(.*?)\s+but can't speak/i);
+          if (match && match[1]) {
+             let langs = match[1];
+             // Normalize "and" to comma for easier splitting
+             langs = langs.replace(/\s+and\s+/gi, ',');
+             
+             const extracted = langs.split(',').map(s => s.trim()).filter(s => s);
+             extracted.forEach(lang => {
+                if (!this.importNPC.selectedLanguages.includes(lang)) {
+                   this.importNPC.selectedLanguages.push(lang);
+                }
+             });
+          }
+          // -------------------------------------------------------------
+
           if (langLower.includes("languages known in life") || langLower.includes("languages it knew in life")) {
              this.importNPC.specialLanguageOption = 6;
           } else if (langLower.includes("creator's languages")) {
@@ -1220,7 +1254,10 @@ window.importer = {
                this.importNPC.hasTelepathy = true;
                this.importNPC.telepathyRange = parseInt(telepathyMatch[1], 10);
            } else if (part && part !== '—' && part !== '-') {
-               this.importNPC.selectedLanguages.push(part);
+               // Add if not already present
+               if (!this.importNPC.selectedLanguages.includes(part)) {
+                   this.importNPC.selectedLanguages.push(part);
+               }
            }
        });
 
