@@ -5,8 +5,8 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <meta name="author" content="Maasq" />
       <meta name="description" content="A tool for creating and managing NPCs." />
-      <meta name="version" content="0.18.48" />
-      <meta name="date" content="2025-12-03" /> 
+      <meta name="version" content="0.18.50" />
+      <meta name="date" content="2025-12-04" /> 
 
       <title>NPC Engineer</title>
       <link rel="icon" type="image/webp" href="graphics/npc engineer.webp">
@@ -1222,7 +1222,7 @@
                      <input id="npc-description" type="hidden" name="content">
                      <trix-editor input="npc-description" class="trix-content"></trix-editor>
                      <div class="flex justify-end mt-2">
-                        <button id="manage-clipboard-btn" class="btn-primary btn-xs" title="Open a clipboard manager to clean and paste text.">Manage Clipboard Text</button>
+                        <button id="manage-clipboard-btn" class="btn-primary btn-xs" title="Open a window to clean and paste text copied from another source.">Import Description</button>
                      </div>
                   </div>
                </div>
@@ -1392,7 +1392,7 @@
             </div>
          </div>
 
-         <div id="settings-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-3xl transform scale-95 hidden" onclick="event.stopPropagation()">
+         <div id="settings-modal" class="modal-content bg-white rounded-xl custom-shadow bordered-container card-font-style p-6 w-full max-w-4xl transform scale-95 hidden" onclick="event.stopPropagation()">
         <div class="flex justify-between items-center mb-4">
            <h3 class="font-bold text-slate-700">Settings</h3>
            <button title="Close" class="modal-close-btn text-gray-500 hover:text-black text-2xl leading-none">&times;</button>
@@ -1400,7 +1400,7 @@
 
         <div class="flex flex-col md:flex-row gap-6">
 
-           <div class="w-full md:w-1/2 space-y-4">
+           <div class="w-full md:w-7/12 space-y-4">
 
               <div id="bestiary-settings-group" class="space-y-2 border border-gray-300 rounded-lg p-3 pt-5 relative">
                  <h4 class="font-bold text-sm text-slate-600 absolute -top-2.5 left-4 bg-white px-1">Bestiary Default Settings</h4>
@@ -1432,6 +1432,10 @@
                  <div class="flex items-center">
                     <input type="checkbox" id="setting-disable-unload-warning" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                     <label for="setting-disable-unload-warning" class="ml-2 label-text text-xs">Disable warning prompt when closing tab with unsaved exports</label>
+                 </div>
+                 <div class="flex items-center">
+                    <input type="checkbox" id="setting-load-recent-bestiary" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="setting-load-recent-bestiary" class="ml-2 label-text text-xs">Load most recent Bestiary when NPC Engineer runs</label>
                  </div>
               </div>
            </div>

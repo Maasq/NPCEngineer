@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
    let changesMadeSinceExport = false;
    let disableUnloadWarning = false;
    let soloCardMode = false;
+   let loadRecentBestiary = false; // New Setting
    // Global Graphics Settings
    let settingConvertWebp = false;
    let settingWebpQuality = 80;
@@ -214,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
       changesMadeSinceExport,
       disableUnloadWarning,
       soloCardMode,
+      loadRecentBestiary, // New Setting
       settingConvertWebp,
       settingWebpQuality,
       settingResizePortrait,
@@ -230,6 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setDisableUnloadWarning,
       setSoloCardMode,
+      setLoadRecentBestiary, // New Setter
       setConvertWebp,
       setWebpQuality,
       setResizePortrait,
@@ -335,6 +338,9 @@ document.addEventListener("DOMContentLoaded", () => {
          const newId = await db.projects.add(newBestiary);
          newBestiary.id = newId;
          loadBestiary(newBestiary);
+         // Save as most recent
+         await saveSetting('lastLoadedBestiaryId', newId);
+         
          changesMadeSinceExport = false;
          window.ui.hideAllModals();
          window.ui.newBestiaryNameInput.value = "";
@@ -501,6 +507,12 @@ document.addEventListener("DOMContentLoaded", () => {
          const clonedBestiary = JSON.parse(JSON.stringify(bestiary));
          const healedBestiary = healBestiary(clonedBestiary);
          window.app.activeBestiary = healedBestiary;
+         
+         // Save as most recent if ID exists
+         if (healedBestiary.id) {
+             saveSetting('lastLoadedBestiaryId', healedBestiary.id);
+         }
+
          changesMadeSinceExport = false;
          sortAndSwitchToNpc(null);
          window.ui.updateUIForActiveBestiary();
@@ -616,6 +628,9 @@ document.addEventListener("DOMContentLoaded", () => {
          const newId = await db.projects.add(healedBestiary);
          healedBestiary.id = newId;
          loadBestiary(healedBestiary);
+         // Save as most recent
+         await saveSetting('lastLoadedBestiaryId', newId);
+         
          window.app.showAlert(`Bestiary "${healedBestiary.projectName}" imported successfully!`);
       } catch (err) {
          if (err.name !== "AbortError") {
@@ -1188,6 +1203,8 @@ document.addEventListener("DOMContentLoaded", () => {
          await loadAndSetSetting('soloCardMode', false, 'soloCardMode', window.ui.settingSoloCardMode);
          if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = window.app.soloCardMode;
 
+         await loadAndSetSetting('loadRecentBestiary', false, 'loadRecentBestiary', window.ui.settingLoadRecentBestiary);
+
          await loadAndSetSetting('settingConvertWebp', false, 'settingConvertWebp', window.ui.inputs.settingConvertWebp);
          await loadAndSetSetting('settingWebpQuality', 80, 'settingWebpQuality', window.ui.inputs.settingWebpQuality);
          await loadAndSetSetting('settingResizePortrait', false, 'settingResizePortrait', window.ui.inputs.settingResizePortrait);
@@ -1199,6 +1216,18 @@ document.addEventListener("DOMContentLoaded", () => {
          await loadAndSetSetting('settingCameraTokenMaxWidth', 1000, 'settingCameraTokenMaxWidth', window.ui.inputs.settingCameraTokenMaxWidth);
          await loadAndSetSetting('settingCameraTokenMaxHeight', 1000, 'settingCameraTokenMaxHeight', window.ui.inputs.settingCameraTokenMaxHeight);
 
+         // --- Auto-Load Logic ---
+         if (window.app.loadRecentBestiary) {
+             const lastIdSetting = await db.settings.get('lastLoadedBestiaryId');
+             if (lastIdSetting && lastIdSetting.value) {
+                 const lastBestiary = await db.projects.get(lastIdSetting.value);
+                 if (lastBestiary) {
+                     console.log(`Auto-loading last bestiary: ${lastBestiary.projectName}`);
+                     loadBestiary(lastBestiary);
+                 }
+             }
+         }
+
       } catch (error) {
          console.error("Error loading settings or opening DB:", error);
          if (error.name === 'OpenFailedError') window.app.showAlert("Database could not be opened...");
@@ -1207,6 +1236,7 @@ document.addEventListener("DOMContentLoaded", () => {
          
          disableUnloadWarning = false; window.app.disableUnloadWarning = false;
          soloCardMode = false; window.app.soloCardMode = false;
+         loadRecentBestiary = false; window.app.loadRecentBestiary = false;
          settingConvertWebp = false; window.app.settingConvertWebp = false;
          settingWebpQuality = 80; window.app.settingWebpQuality = 80;
          settingResizePortrait = false; window.app.settingResizePortrait = false;
@@ -1252,6 +1282,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (window.ui.menuSoloCardMode) window.ui.menuSoloCardMode.checked = isEnabled;
       // --- NEW: Enforce immediately ---
       if (window.ui.enforceSoloMode) window.ui.enforceSoloMode();
+   }
+
+   async function setLoadRecentBestiary(isEnabled) {
+      loadRecentBestiary = isEnabled;
+      await saveSetting('loadRecentBestiary', isEnabled);
    }
 
    async function setConvertWebp(isEnabled) {

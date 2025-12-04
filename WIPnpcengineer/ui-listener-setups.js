@@ -385,6 +385,9 @@ function _setupSettingsListeners() {
    if (window.ui.inputs.settingCameraTokenMaxHeight) {
       window.ui.inputs.settingCameraTokenMaxHeight.addEventListener('input', (e) => window.app.setCameraTokenMaxHeight(e.target.value));
    }
+   if (window.ui.settingLoadRecentBestiary) {
+       window.ui.settingLoadRecentBestiary.addEventListener('change', (e) => window.app.setLoadRecentBestiary(e.target.checked));
+   }
 }
 
 
