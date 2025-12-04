@@ -71,6 +71,7 @@ window.ui = {
    settingsOkBtn: null,
    bestiarySettingsGroup: null,
    settingSoloCardMode: null,
+   settingLoadRecentBestiary: null,
    manageLanguagesBtn: null,
    newLanguageNameInput: null,
    addLanguageBtn: null,
@@ -210,6 +211,7 @@ window.ui = {
       this.settingsOkBtn = document.getElementById('settings-ok-btn');
       this.bestiarySettingsGroup = document.getElementById('bestiary-settings-group');
       this.settingSoloCardMode = document.getElementById('setting-solo-card-mode');
+      this.settingLoadRecentBestiary = document.getElementById('setting-load-recent-bestiary');
       this.manageLanguagesBtn = document.getElementById('manage-languages-btn');
       this.newLanguageNameInput = document.getElementById('new-language-name');
       this.addLanguageBtn = document.getElementById('add-language-btn');

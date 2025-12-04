@@ -567,6 +567,10 @@ function _updateFormFromActiveNPC() {
       if (window.ui.menuSoloCardMode) {
          window.ui.menuSoloCardMode.checked = window.app.soloCardMode;
       }
+      if (window.ui.settingLoadRecentBestiary) {
+       window.ui.settingLoadRecentBestiary.checked = window.app.loadRecentBestiary;
+      }
+
 
       // --- NEW: Handle Solo Card Mode on NPC Load ---
       if (window.app.soloCardMode) {

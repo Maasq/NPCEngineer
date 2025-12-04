@@ -14,7 +14,7 @@ function updateViewport() {
       name, size, type, species, alignment, armorClass, hitPoints, description, saves, npcSkills,
       strength, dexterity, constitution, intelligence, wisdom, charisma,
       strengthBonus, dexterityBonus, constitutionBonus, intelligenceBonus, wisdomBonus, charismaBonus,
-      useDropCap, addDescription, addTitle, speed, challenge, experience, proficiencyBonus, traits, sortTraitsAlpha, 
+      useDropCap, addDescription, addTitle, addImageLink, speed, challenge, experience, proficiencyBonus, traits, sortTraitsAlpha, 
       actions, legendaryBoilerplate, lairBoilerplate,
       cameraToken, nonId, damageThreshold,
       // Innate Spellcasting properties
@@ -87,9 +87,10 @@ function updateViewport() {
    const titleHtml = addTitle ? `<div style="font-family: 'Questrial', sans-serif; font-size: 17pt; color: #7A200D; font-weight: bold; padding-left: 0.1cm; padding-bottom: 0.0cm; padding-top: 0.4cm;">${NPCName}</div>` : '';
    const descriptionTopPadding = addTitle ? '0.0cm' : '0.4cm';
    
-   // Removed ${dropCapClass} from the wrapper since it's now applied internally
+   const imageLinkHtml = (addImageLink && activeNPC.image) ? `<div style="font-family: 'Questrial', sans-serif; font-size: 11pt; color: #222222; padding-left: 0.1cm; padding-bottom: 0.5cm; display: flex; align-items: center;"><img src="graphics/link.webp" style="height: 18px; width: 18px; margin-left: 6px; margin-right: 4px;"> Image: ${NPCName}</div>` : '';
+   
    const descriptionBlockHtml = addDescription ?
-      `${titleHtml}<div class="npcdescrip" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${processedDescriptionHtml} </div>`
+      `${titleHtml}${imageLinkHtml}<div class="npcdescrip" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${processedDescriptionHtml} </div>`
       : '';
 
    // --- Helper function to italicize spell names ---
