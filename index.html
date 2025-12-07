@@ -5,8 +5,8 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
    <meta name="author" content="Maasq" />
    <meta name="description" content="A suite of tools for creating and managing information to be imported to Fantasy Grounds VTT." />
-   <meta name="version" content="1.01.01" />
-   <meta name="date" content="2025-11-25" />
+   <meta name="version" content="1.01.03" />
+   <meta name="date" content="2025-12-07" />
 
    <title>Engineer Suite Index</title>
    <link rel="icon" type="image/webp" href="graphics/engineer suite.webp">
@@ -44,6 +44,7 @@
                       2px 2px 4px rgba(0, 0, 0, 0.4);       
       }
 
+      /* Primary Button (Purple Gradient) */
       .btn-primary {
          display: inline-block;
          font-weight: 600;
@@ -92,6 +93,51 @@
          cursor: not-allowed;
       }
 
+      /* Dark Button (Black Gradient with Purple Text) */
+      .btn-dark {
+         background: linear-gradient(to bottom, #333333 0%, #000000 100%);
+         color: #A78BFA; /* Light Purple text */
+         font-weight: 600;
+         font-size: 0.875rem;
+         padding: 0.25rem 1rem;
+         border-radius: 0.375rem;
+         transition: opacity 0.15s ease-in-out, box-shadow 0.3s ease;
+         border: 1px solid #444444;
+         box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            3px 3px 6px rgba(0, 0, 0, 0.5);
+         cursor: pointer;
+         position: relative;
+         overflow: hidden;
+         display: inline-block;
+      }
+      .btn-dark::before {
+         content: "";
+         position: absolute;
+         top: 0; left: 0;
+         width: 100%; height: 50%;
+         background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+         border-top-left-radius: 0.375rem;
+         border-top-right-radius: 0.375rem;
+         pointer-events: none;
+      }
+      .btn-dark::after {
+         content: "";
+         position: absolute;
+         top: 0; left: -75%;
+         width: 50%; height: 100%;
+         background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+         transform: skewX(-20deg);
+         pointer-events: none;
+      }
+      .btn-dark:hover::after {
+         left: 125%;
+         transition: left 0.5s ease-in-out;
+      }
+      .btn-dark:hover {
+         opacity: 0.8;
+      }
+
       .entry-title {
          font-family: 'Chancery';
          font-size: 20pt;
@@ -129,8 +175,8 @@
       }
       
       .page-background-svg path {
-      fill: #4C1D95;
-   }
+         fill: #4C1D95;
+      }
 
    </style>
    
@@ -139,6 +185,11 @@
 <body>
    <header class="sticky top-0 z-50 pt-1 pb-12">
       <div class="relative h-32 max-w-screen-2xl mx-auto px-6">
+         
+         <div class="absolute right-6 top-4 z-40">
+            <button id="subscriber-btn" class="btn-dark">Enter Subscriber PassCode</button>
+         </div>
+
          <div
             class="absolute bg-black rounded-full custom-shadow z-10 left-1/2 -translate-x-1/2"
             style="top: 0px; width: 200px; height: 200px;"></div>
@@ -325,10 +376,78 @@
       <div></div>
    </main>
 
+   <a href="https://ko-fi.com/maasq/tip" target="_blank" 
+      class="fixed z-40 flex items-center justify-start overflow-hidden
+             bg-gradient-to-b from-[#333333] to-[#000000] text-[#B78BFA] border border-[#444444] 
+             shadow-[inset_0_1px_0_rgba(255,255,255,0.4),4px_4px_8px_rgba(0,0,0,0.4)]
+             transition-all duration-300 ease-in-out
+             w-10 hover:w-[200px] h-10 rounded-xl group"
+      style="left: 10px; top: 190px;" 
+      title="Support the developer!">
+       
+       <div class="w-10 h-10 flex items-center justify-center flex-shrink-0">
+           <img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi" class="w-5 h-5">
+       </div>
+       
+       <span class="whitespace-nowrap font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 pl-2">
+           Buy me a coffee!
+       </span>
+   </a>
+
    <script>
       // Make the listener async to use await
       document.addEventListener('DOMContentLoaded', async (event) => {
          
+         // --- Subscriber Configuration ---
+         const SUBSCRIBER_CONFIG = {
+            hash: "98fcccacb4a390b628fe0f7b54152e95e84b6ea0993caeac92cfdd012401181a",
+            version: 1
+         };
+
+         // --- Subscriber Logic ---
+         const subscriberBtn = document.getElementById('subscriber-btn');
+         if (subscriberBtn) {
+            // Check if already subscribed
+            const isSub = localStorage.getItem('isSub') === 'true';
+            if (isSub) {
+               // Optional: Change button text or hide it if already subscribed
+               subscriberBtn.textContent = "Subscriber Active";
+               subscriberBtn.disabled = true;
+               subscriberBtn.style.opacity = '0.7';
+            }
+
+            subscriberBtn.addEventListener('click', async () => {
+               const input = prompt("Enter Subscriber PassCode:");
+               if (!input) return;
+
+               try {
+                  const msgBuffer = new TextEncoder().encode(input);
+                  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                  const hashArray = Array.from(new Uint8Array(hashBuffer));
+                  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                  if (hashHex === SUBSCRIBER_CONFIG.hash) {
+                     localStorage.setItem('isSub', 'true');
+                     localStorage.setItem('engineerSuiteSubscriberVersion', SUBSCRIBER_CONFIG.version);
+                     alert("PassCode Accepted! Subscriber features enabled.");
+                     
+                     // Update button state immediately
+                     subscriberBtn.textContent = "Subscriber Active";
+                     subscriberBtn.disabled = true;
+                     subscriberBtn.style.opacity = '0.7';
+                     
+                     // Optional: Refresh page if apps need to check this on load immediately
+                     // location.reload();
+                  } else {
+                     alert("Incorrect PassCode.");
+                  }
+               } catch (err) {
+                  console.error("Hashing error:", err);
+                  alert("An error occurred while verifying the passcode.");
+               }
+            });
+         }
+
          // --- Dexie DB Setup ---
          try {
             const db = new Dexie('engineerSuiteSettings');

@@ -71,7 +71,7 @@ div.container {
    margin: auto;
    width: 10.3cm;
    box-shadow: 8px 8px 20px #472737;
-   background-image: url("graphics/statblock texture.jpg");
+   background-image: url("graphics/parchment statblock texture.jpg");
    background-color: #FDF1E6; /* Pale yellow fallback */
 }
 div.cap {
@@ -88,7 +88,7 @@ div.cap {
    border-left-color: #000000;
    border-top-color: #000000;
    border-bottom-color: #000000;
-   background-image: url("graphics/statblock cap.jpg");
+   background-image: url("graphics/parchment statblock cap.jpg");
 }
 div.npcname {
    margin: auto;
@@ -387,6 +387,14 @@ table.spell td {
 .bonus-icon {
     color: #581c87; /* Purple */
 }
+
+#viewport {
+    background-image: url("graphics/parchment viewport.jpg");
+    background-repeat: repeat;
+    background-position: top left;
+    background-size: auto;
+}
+
 /* --- Hide viewport scrollbar --- */
 #viewport {
     /* For Firefox */

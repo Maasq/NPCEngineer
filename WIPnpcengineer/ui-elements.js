@@ -26,6 +26,7 @@ window.ui = {
    menuExportNpc: null,
    menuDeleteNpc: null,
    menuSettings: null,
+   menuThemeToggle: null,
    menuExportFg: null,
    menuExportDb: null,
    menuImportDb: null,
@@ -166,6 +167,7 @@ window.ui = {
       this.menuExportNpc = document.getElementById('menu-export-npc');
       this.menuDeleteNpc = document.getElementById('menu-delete-npc');
       this.menuSettings = document.getElementById('menu-settings');
+      this.menuThemeToggle = document.getElementById('menu-theme-toggle');
       this.menuExportFg = document.getElementById('menu-export-fg');
       this.menuExportDb = document.getElementById('menu-export-db');
       this.menuImportDb = document.getElementById('menu-import-db');

@@ -1,0 +1,186 @@
+/* themes.css */
+
+/* --- Dark Mode Variables --- */
+[data-theme="dark"] {
+   --bg-app-dark: #5c5e6b;
+   --bg-header-dark: #3b6849;
+   --bg-card-dark: #2E2F39;
+   --text-main-dark: #dedce0;
+   --text-muted-dark: #a79dc0;
+   --border-dark: #334155;
+   --input-bg-dark: #1b1c22; /* Generated dark shade for inputs */
+}
+
+/* Apply to Body */
+body[data-theme="dark"] {
+   background-color: var(--bg-app-dark) !important;
+   color: var(--text-main-dark);
+}
+
+/* Apply to Main Page Header */
+body[data-theme="dark"] header {
+   background-color: var(--bg-app-dark) !important;
+}
+
+/* Apply to Cards and Modals (replacing bg-white) */
+body[data-theme="dark"] .bg-white {
+   background-color: var(--bg-card-dark) !important;
+   color: var(--text-main-dark);
+}
+
+/* Apply to Card Headers (replacing light green bg) */
+body[data-theme="dark"] .card-header {
+   background-color: var(--bg-header-dark) !important;
+   border-bottom-color: var(--border-dark) !important;
+}
+
+/* --- Text Color Overrides for Dark Mode --- */
+body[data-theme="dark"] .text-slate-700,
+body[data-theme="dark"] .text-gray-800,
+body[data-theme="dark"] .text-gray-700,
+body[data-theme="dark"] .text-gray-600,
+body[data-theme="dark"] .label-text {
+   color: var(--text-main-dark) !important;
+}
+
+body[data-theme="dark"] .text-gray-500 {
+   color: var(--text-muted-dark) !important;
+}
+
+body[data-theme="dark"] .text-red-700 {
+   color: #f87171 !important; /* Lighter red for readability on dark */
+}
+
+/* Headings in Card Headers */
+body[data-theme="dark"] .card-header h2 {
+   color: var(--text-main-dark) !important;
+}
+
+/* Borders */
+body[data-theme="dark"] .border-gray-200,
+body[data-theme="dark"] .border-gray-300,
+body[data-theme="dark"] .border-black\/20 {
+   border-color: var(--border-dark) !important;
+}
+
+/* --- Hamburger Menu --- */
+body[data-theme="dark"] #main-menu {
+   background-color: var(--bg-card-dark);
+   border: 1px solid var(--border-dark);
+}
+
+body[data-theme="dark"] .menu-item {
+   color: var(--text-main-dark) !important;
+}
+
+body[data-theme="dark"] .menu-item:hover {
+   background-color: var(--bg-header-dark) !important;
+}
+
+/* --- Lists (Bestiaries, Groups, Traits, Actions) --- */
+
+/* Modal Lists */
+body[data-theme="dark"] #bestiary-list div,
+body[data-theme="dark"] #group-list div,
+body[data-theme="dark"] #language-list-div div,
+body[data-theme="dark"] #managed-trait-list-div div {
+   border-color: var(--border-dark);
+   color: var(--text-main-dark);
+}
+body[data-theme="dark"] #bestiary-list div:hover,
+body[data-theme="dark"] #group-list div:hover,
+body[data-theme="dark"] #language-list-div div:hover,
+body[data-theme="dark"] #managed-trait-list-div div:hover {
+   background-color: var(--bg-header-dark);
+}
+
+/* Action List Items */
+body[data-theme="dark"] .action-list-item {
+   border-color: var(--border-dark);
+}
+body[data-theme="dark"] .action-list-item:hover {
+   background-color: var(--bg-header-dark);
+}
+
+/* Trait List Items (Matches Actions) */
+body[data-theme="dark"] #npc-trait-list > div {
+   background-color: transparent !important;
+   border-color: var(--border-dark) !important;
+   color: var(--text-main-dark);
+}
+body[data-theme="dark"] #npc-trait-list > div:hover {
+   background-color: var(--bg-header-dark) !important;
+}
+
+/* Sub-text in lists */
+body[data-theme="dark"] .text-gray-600,
+body[data-theme="dark"] p.text-xs {
+    color: var(--text-muted-dark);
+}
+
+/* --- Inputs and Forms --- */
+
+/* General Input Styling (Dark) */
+body[data-theme="dark"] input:not([type='checkbox']):not([type='radio']):not(#npc-name),
+body[data-theme="dark"] select,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] .info-input, 
+body[data-theme="dark"] .info-select,
+body[data-theme="dark"] .language-listbox {
+   background-color: var(--input-bg-dark) !important;
+   color: var(--text-main-dark) !important;
+   border-color: var(--border-dark) !important;
+}
+
+/* Fix dropdown options visibility */
+body[data-theme="dark"] option {
+    background-color: var(--bg-card-dark);
+    color: var(--text-main-dark);
+}
+
+/* --- Trix Editor (Dark Mode) --- */
+body[data-theme="dark"] trix-toolbar {
+    background-color: var(--bg-header-dark) !important;
+    border-bottom: 1px solid var(--border-dark);
+}
+body[data-theme="dark"] .trix-content {
+    background-color: var(--bg-card-dark) !important;
+    color: var(--text-main-dark) !important;
+    border-color: var(--border-dark) !important;
+}
+
+/* --- Icons --- */
+body[data-theme="dark"] button svg.text-black {
+    color: var(--text-main-dark) !important;
+}
+body[data-theme="dark"] button svg.text-gray-600 {
+    color: var(--text-muted-dark);
+}
+body[data-theme="dark"] button:hover svg.text-gray-600 {
+    color: var(--text-main-dark);
+}
+
+/* Header Bestiary Buttons */
+body[data-theme="dark"] #bestiary-buttons button {
+   color: var(--text-main-dark) !important;
+}
+
+/* --- Miscellaneous --- */
+
+/* Stat Block Preview (Viewport) - Keep Light */
+body[data-theme="dark"] #viewport {
+    color: #000000; 
+}
+
+/* Stat Headers in Cards (STR, DEX, etc) - Lighter Red */
+body[data-theme="dark"] .stat-header {
+    color: #fca5a5; 
+}
+
+/* Modal Close Buttons */
+body[data-theme="dark"] .modal-close-btn {
+   color: var(--text-muted-dark);
+}
+body[data-theme="dark"] .modal-close-btn:hover {
+   color: #ffffff;
+}

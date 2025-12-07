@@ -74,6 +74,16 @@ function _enforceSoloMode() {
    }
 }
 
+function _applyTheme(themeName) {
+   // Set the data attribute on the body for CSS to target
+   document.body.setAttribute('data-theme', themeName);
+
+   // Update the menu button text to show the *opposing* option
+   if (window.ui.menuThemeToggle) {
+      window.ui.menuThemeToggle.textContent = themeName === 'dark' ? 'Light Mode' : 'Dark Mode';
+   }
+}
+
 // --- NEW FG Export Modal Function ---
 function _openFgExportModal() {
    // This function is now defined in export-fg.js and attached to window.fgExporter
@@ -1653,6 +1663,7 @@ if (window.ui) {
    window.ui.openFgExportModal = _openFgExportModal;
    window.ui.populateDamageTypes = _populateDamageTypes;
    window.ui.updateCameraTokenDisplay = _updateCameraTokenDisplay;
+   window.ui.applyTheme = _applyTheme;
 } else {
    console.error("window.ui object not found! Ensure ui-elements.js loads before ui-updates.js.");
 }
