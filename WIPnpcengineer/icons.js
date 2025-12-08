@@ -339,7 +339,7 @@ const svgSprite = `
 	<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="currentColor" font-size="350" font-family="sans-serif" font-weight="bold">B</text>
         </symbol>
         <symbol id="divider-swoosh" viewBox="0 0 200 5" preserveAspectRatio="none">
-            <polyline points="0,0 200,2.5 0,5" fill="#922610"></polyline>
+            <polyline points="0,0 200,2.5 0,5"></polyline>
         </symbol>
     </svg>
 `;

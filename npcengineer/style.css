@@ -66,104 +66,97 @@ body { /* A simple style for our application font */
    font-size: 10pt; /* Set font size for input fields */
 }
 
-/* --- Viewport Styles --- */
+/* --- Viewport Styles (Theming) --- */
+
+/* Default Viewport Variables (Parchment) */
+:root {
+   --vp-viewport-bg: url("graphics/parchment viewport.jpg"); /* Backing image */
+   --vp-bg-image: url("graphics/parchment statblock texture.jpg"); /* Statblock texture */
+   --vp-cap-image: url("graphics/parchment statblock cap.jpg");
+   --vp-bg-color: #FDF1E6;
+   
+   --vp-text-color: #000000;
+   --vp-name-color: #7A200D;
+   --vp-type-color: #000000;
+   --vp-header-text-color: #7A200D; /* Attributes, AC, HP labels */
+   
+   --vp-line-color: #BA4E3B; /* Borders and straight dividers */
+   --vp-divider-fill: #922610; /* The swoosh divider SVG fill */
+   
+   --vp-action-header-color: #7A200D;
+   --vp-action-line-color: #BA4E3B;
+   --vp-whoosh-fill: #7A200D; /* The action underliner fill */
+   
+   --vp-drop-cap-color: #7A200D;
+   --vp-box-shadow: 8px 8px 20px #472737;
+}
+
 div.container {
    margin: auto;
    width: 10.3cm;
-   box-shadow: 8px 8px 20px #472737;
-   background-image: url("graphics/statblock texture.jpg");
-   background-color: #FDF1E6; /* Pale yellow fallback */
+   box-shadow: var(--vp-box-shadow);
+   background-image: var(--vp-bg-image);
+   background-color: var(--vp-bg-color);
+   color: var(--vp-text-color);
 }
 div.cap {
    margin: auto;
    height: 0.2cm;
    width: 10.3cm;
-   background: #e0851d; /* App title green color */
+   background: #e0851d;
    border-style: solid;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-top-width: 1px;
-   border-bottom-width: 1px;
-   border-right-color: #000000;
-   border-left-color: #000000;
-   border-top-color: #000000;
-   border-bottom-color: #000000;
-   background-image: url("graphics/statblock cap.jpg");
+   border-width: 1px;
+   border-color: #000000;
+   background-image: var(--vp-cap-image);
 }
 div.npcname {
    margin: auto;
    width: 10.3cm;
    background: rgba(0, 0, 0, 0.0);
-   color: #7A200D;
+   color: var(--vp-name-color);
    font-family: "Cormorant SC", serif;
    font-size: 21pt;
-   border-left-style: solid;
-   border-right-style: solid;
-   border-top-style: none;
-   border-bottom-style: none;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-right-color: #BA4E3B;
-   border-left-color: #BA4E3B;
+   border-left: 1px solid var(--vp-line-color);
+   border-right: 1px solid var(--vp-line-color);
    padding: 0cm 0.15cm 0cm 0.15cm;
 }
 div.npctype {
    margin: auto;
    width: 10.3cm;
    background: rgba(0, 0, 0, 0.0);
-   color: #000000;
+   color: var(--vp-type-color);
    font-family: "Questrial", sans-serif;
    font-size: 9pt;
-   border-left-style: solid;
-   border-right-style: solid;
-   border-top-style: none;
-   border-bottom-style: none;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-right-color: #BA4E3B;
-   border-left-color: #BA4E3B;
+   border-left: 1px solid var(--vp-line-color);
+   border-right: 1px solid var(--vp-line-color);
    padding: 0cm 0.15cm 0cm 0.15cm;
 }
 div.npctop {
    margin: auto;
    width: 10.3cm;
    background: rgba(0, 0, 0, 0.0);
-   color: #7A200D;
+   color: var(--vp-header-text-color);
    font-family: "Questrial", sans-serif;
    font-size: 10.5pt;
-   border-left-style: solid;
-   border-right-style: solid;
-   border-top-style: none;
-   border-bottom-style: none;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-right-color: #BA4E3B;
-   border-left-color: #BA4E3B;
+   border-left: 1px solid var(--vp-line-color);
+   border-right: 1px solid var(--vp-line-color);
    padding: 0cm 0.15cm 0cm 0.15cm;
 }
 div.npcbottom {
    margin: auto;
    width: 10.3cm;
    background: rgba(0, 0, 0, 0.0);
-   color: #000000;
+   color: var(--vp-text-color);
    font-family: "Questrial", sans-serif;
    font-size: 10pt;
-   border-left-style: solid;
-   border-right-style: solid;
-   border-top-style: none;
-   border-bottom-style: none;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-right-color: #BA4E3B;
-   border-left-color: #BA4E3B;
+   border-left: 1px solid var(--vp-line-color);
+   border-right: 1px solid var(--vp-line-color);
    padding: 0cm 0.15cm 0cm 0.15cm;
 }
 div.npcdescrip {
    margin: auto;
-   background-color: transparent; /* Removes color */
-   background-image: none;        /* Removes image */
-    background: rgba(255, 255, 255, 0.0);
-   color: #000000;
+   background: rgba(255, 255, 255, 0.0);
+   color: var(--vp-text-color);
    font-family: "Questrial", sans-serif;
    font-size: 12pt;
    padding: 0.4cm 0.1cm 0cm 0.1cm;
@@ -173,7 +166,7 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
 }
 .heading {
    background: rgba(0, 0, 0, 0.0);
-   color: #7A200D;
+   color: var(--vp-header-text-color);
    font-size: 16pt;
    font-weight: bold;
 }
@@ -189,12 +182,12 @@ div.npcdescrip .trix-content { /* Override Trix's default padding for the viewpo
    font-family: 'Raleway', sans-serif;
    font-weight: 400;
    font-variant: small-caps;
-   color: #7A200D;
+   color: var(--vp-action-header-color);
    font-size: 18pt;
    padding-bottom: 0em;
    margin-bottom: -0.2em;
-   border-left: 1px solid #BA4E3B;
-   border-right: 1px solid #BA4E3B;
+   border-left: 1px solid var(--vp-action-line-color);
+   border-right: 1px solid var(--vp-action-line-color);
    padding-left: 0.15cm;
    padding-right: 0.15cm;
 }
@@ -258,20 +251,18 @@ div.npcdiv {
    margin: auto;
    width: 10.3cm;
    background: rgba(0, 0, 0, 0.0);
-   border-left-style: solid;
-   border-right-style: solid;
-   border-top-style: none;
-   border-bottom-style: none;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-right-color: #BA4E3B;
-   border-left-color: #BA4E3B;
+   border-left: 1px solid var(--vp-line-color);
+   border-right: 1px solid var(--vp-line-color);
    padding: 0.15cm 0.15cm 0.15cm 0.15cm;
 }
-.whoosh { /* This class is now used on an SVG polyline, styled via attributes */ }
+/* Style for the divider SVG fill */
+div.npcdiv svg {
+    fill: var(--vp-divider-fill);
+}
+
 table.attr {
    background: rgba(0, 0, 0, 0.0);
-   color: #7A200D;
+   color: var(--vp-header-text-color);
    font-family: "Lato", sans-serif;
    font-size: 11pt;
    border-style: none;
@@ -283,16 +274,15 @@ div.npcdiv2 {
    margin: auto;
    width: 10.3cm;
    background: rgba(0, 0, 0, 0.0);
-   border-left-style: solid;
-   border-right-style: solid;
-   border-top-style: none;
-   border-bottom-style: none;
-   border-right-width: 1px;
-   border-left-width: 1px;
-   border-right-color: #BA4E3B;
-   border-left-color: #BA4E3B;
+   border-left: 1px solid var(--vp-action-line-color);
+   border-right: 1px solid var(--vp-action-line-color);
    padding: 0cm 0.15cm 0.2cm 0.15cm;
 }
+/* Style for the action whoosh SVG fill */
+div.npcdiv2 svg .whoosh {
+    fill: var(--vp-whoosh-fill);
+}
+
 table.spell {
    background: #FDF1E6;
    color: #000000;
@@ -342,7 +332,7 @@ table.spell td {
    line-height: 0.8;
    padding-top: 4px; /* Adjust vertical alignment */
    padding-right: 4px;
-   color: #7A200D;
+   color: var(--vp-drop-cap-color);
 }
 .language-listbox option:checked {
     background-color: #8A8AA3;
@@ -387,6 +377,14 @@ table.spell td {
 .bonus-icon {
     color: #581c87; /* Purple */
 }
+
+#viewport {
+    background-image: var(--vp-viewport-bg);
+    background-repeat: repeat;
+    background-position: top left;
+    background-size: auto;
+}
+
 /* --- Hide viewport scrollbar --- */
 #viewport {
     /* For Firefox */
@@ -698,7 +696,7 @@ table.spell td {
 /* Style for Headings (h1) */
 .trix-content h1,
 .npcdescrip h1 {
-   color: #7A200D;
+   color: var(--vp-header-text-color);
    font-size: 16pt;
     font-family: "Questrial", serif !important;
     font-weight: bold !important;
@@ -950,4 +948,13 @@ trix-toolbar .trix-button-group--file-tools {
 #fg-cover-clear-btn:hover {
    background-color: #9fd650;
    color: black;
+}
+
+/* Viewport specific color override for the title added via JS */
+.viewport-title {
+    color: var(--vp-name-color) !important;
+}
+/* Viewport specific color override for the image link */
+.viewport-image-link {
+    color: var(--vp-text-color) !important;
 }

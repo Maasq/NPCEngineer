@@ -388,6 +388,33 @@ function _setupSettingsListeners() {
    if (window.ui.settingLoadRecentBestiary) {
        window.ui.settingLoadRecentBestiary.addEventListener('change', (e) => window.app.setLoadRecentBestiary(e.target.checked));
    }
+   if (window.ui.menuThemeToggle) {
+      window.ui.menuThemeToggle.addEventListener('click', (e) => {
+         e.preventDefault();
+         if (window.app.toggleTheme) {
+            window.app.toggleTheme();
+         }
+         // Close the menu after selection
+         if (window.ui.mainMenu) window.ui.mainMenu.classList.add('hidden');
+      });
+   }
+   const viewportThemes = [
+      { element: window.ui.menuViewportParchment, theme: 'parchment' },
+      { element: window.ui.menuViewportDarkParchment, theme: 'dark-parchment' },
+      { element: window.ui.menuViewportFrost, theme: 'frost' }
+   ];
+
+   viewportThemes.forEach(({ element, theme }) => {
+      if (element) {
+         element.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.app.setViewportTheme) {
+               window.app.setViewportTheme(theme);
+            }
+            if (window.ui.mainMenu) window.ui.mainMenu.classList.add('hidden');
+         });
+      }
+   });
 }
 
 

@@ -77,6 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
    let settingCameraTokenMaxWidth = 1000;
    let settingCameraTokenMaxHeight = 1000;
    let appTheme = 'light';
+   let viewportTheme = 'parchment';
 
    const baseDefaultNPC = {
       name: "", size: "", type: "", species: "", alignment: "",
@@ -229,6 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
       settingCameraTokenMaxWidth,
       settingCameraTokenMaxHeight,
       appTheme,
+      viewportTheme,
       currentlyEditingAction,
       boilerplateTarget,
       confirmCallback,
@@ -247,6 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setCameraTokenMaxWidth,
       setCameraTokenMaxHeight,
       toggleTheme,
+      setViewportTheme,
       markFirstUseComplete,
       exportFullDatabase,
       importFullDatabase,
@@ -1222,6 +1225,8 @@ document.addEventListener("DOMContentLoaded", () => {
          
          await loadAndSetSetting('appTheme', 'light', 'appTheme', null);
          if (window.ui.applyTheme) window.ui.applyTheme(window.app.appTheme);
+         await loadAndSetSetting('viewportTheme', 'parchment', 'viewportTheme', null);
+         if (window.ui.applyViewportTheme) window.ui.applyViewportTheme(window.app.viewportTheme);
 
          // --- Auto-Load Logic ---
          if (window.app.loadRecentBestiary) {
@@ -1348,7 +1353,11 @@ document.addEventListener("DOMContentLoaded", () => {
       await saveSetting('appTheme', appTheme);
       if (window.ui.applyTheme) window.ui.applyTheme(appTheme);
    }
-
+   async function setViewportTheme(themeName) {
+      viewportTheme = themeName;
+      await saveSetting('viewportTheme', viewportTheme);
+      if (window.ui.applyViewportTheme) window.ui.applyViewportTheme(themeName);
+   }
 
    window.addEventListener('beforeunload', (event) => {
       if (changesMadeSinceExport && !disableUnloadWarning) {

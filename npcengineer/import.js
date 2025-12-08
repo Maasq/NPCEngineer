@@ -1211,8 +1211,9 @@ window.importer = {
       this.importNPC.specialLanguageOption = 0;
 
       const langLower = languagesString.toLowerCase();
+      // MODIFIED: Treat standalone dash as empty/none (Option 0) instead of "all languages" (Option 1)
       if (langLower === '—' || langLower === '-') {
-          this.importNPC.specialLanguageOption = 1;
+          this.importNPC.specialLanguageOption = 0; // Changed from 1 to 0
           return;
        }
        if (langLower === 'the languages it knew in life') {

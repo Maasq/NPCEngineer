@@ -76,6 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
    let settingResizeCameraToken = false;
    let settingCameraTokenMaxWidth = 1000;
    let settingCameraTokenMaxHeight = 1000;
+   let appTheme = 'light';
+   let viewportTheme = 'parchment';
 
    const baseDefaultNPC = {
       name: "", size: "", type: "", species: "", alignment: "",
@@ -196,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
    // Make variables and functions available to other scripts
    Object.assign(window.app, {
       db,
+      isSub: localStorage.getItem('isSub') === 'true',
       damageTypes,
       standardLanguages,
       exoticLanguages,
@@ -226,6 +229,8 @@ document.addEventListener("DOMContentLoaded", () => {
       settingResizeCameraToken,
       settingCameraTokenMaxWidth,
       settingCameraTokenMaxHeight,
+      appTheme,
+      viewportTheme,
       currentlyEditingAction,
       boilerplateTarget,
       confirmCallback,
@@ -243,6 +248,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setResizeCameraToken,
       setCameraTokenMaxWidth,
       setCameraTokenMaxHeight,
+      toggleTheme,
+      setViewportTheme,
       markFirstUseComplete,
       exportFullDatabase,
       importFullDatabase,
@@ -1215,6 +1222,11 @@ document.addEventListener("DOMContentLoaded", () => {
          await loadAndSetSetting('settingResizeCameraToken', false, 'settingResizeCameraToken', window.ui.inputs.settingResizeCameraToken);
          await loadAndSetSetting('settingCameraTokenMaxWidth', 1000, 'settingCameraTokenMaxWidth', window.ui.inputs.settingCameraTokenMaxWidth);
          await loadAndSetSetting('settingCameraTokenMaxHeight', 1000, 'settingCameraTokenMaxHeight', window.ui.inputs.settingCameraTokenMaxHeight);
+         
+         await loadAndSetSetting('appTheme', 'light', 'appTheme', null);
+         if (window.ui.applyTheme) window.ui.applyTheme(window.app.appTheme);
+         await loadAndSetSetting('viewportTheme', 'parchment', 'viewportTheme', null);
+         if (window.ui.applyViewportTheme) window.ui.applyViewportTheme(window.app.viewportTheme);
 
          // --- Auto-Load Logic ---
          if (window.app.loadRecentBestiary) {
@@ -1336,7 +1348,16 @@ document.addEventListener("DOMContentLoaded", () => {
       settingCameraTokenMaxHeight = numValue;
       await saveSetting('settingCameraTokenMaxHeight', numValue);
    }
-
+   async function toggleTheme() {
+      appTheme = appTheme === 'light' ? 'dark' : 'light';
+      await saveSetting('appTheme', appTheme);
+      if (window.ui.applyTheme) window.ui.applyTheme(appTheme);
+   }
+   async function setViewportTheme(themeName) {
+      viewportTheme = themeName;
+      await saveSetting('viewportTheme', viewportTheme);
+      if (window.ui.applyViewportTheme) window.ui.applyViewportTheme(themeName);
+   }
 
    window.addEventListener('beforeunload', (event) => {
       if (changesMadeSinceExport && !disableUnloadWarning) {

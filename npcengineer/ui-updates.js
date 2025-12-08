@@ -2,11 +2,6 @@
 
 // --- Define Update Functions (private scope) ---
 
-// NOTE: Calculation logic moved to updateActiveNPCFromForm in main.js
-// function _updateInnateCalculatedFields() { ... }
-// function _updateTraitCalculatedFields() { ... }
-// function _updateActionCalculatedFields() { ... }
-
 // --- NEW Card Open Helper Function ---
 function _openCardAndHandleSoloMode(cardId) {
    const targetCard = document.getElementById(cardId);
@@ -70,6 +65,42 @@ function _enforceSoloMode() {
             card.style.paddingTop = '0';
             card.style.paddingBottom = '0';
          });
+      }
+   }
+}
+
+function _applyTheme(themeName) {
+   // Set the data attribute on the body for CSS to target
+   document.body.setAttribute('data-theme', themeName);
+
+   // Update the menu button text to show the *opposing* option
+   if (window.ui.menuThemeToggle) {
+      window.ui.menuThemeToggle.textContent = themeName === 'dark' ? 'Light Mode' : 'Dark Mode';
+   }
+}
+
+function _applyViewportTheme(themeName) {
+   // 1. Apply attribute to viewport
+   if (window.ui.viewport) {
+      window.ui.viewport.setAttribute('data-viewport-theme', themeName);
+   }
+
+   // 2. Update Menu Indicators
+   const themeMap = {
+      'parchment': { el: window.ui.menuViewportParchment, label: 'Parchment' },
+      'dark-parchment': { el: window.ui.menuViewportDarkParchment, label: 'Dark Parchment' },
+      'frost': { el: window.ui.menuViewportFrost, label: 'Frost' }
+   };
+
+   for (const [key, data] of Object.entries(themeMap)) {
+      if (data.el) {
+         if (key === themeName) {
+            data.el.textContent = `✓ ${data.label}`;
+            data.el.classList.add('font-bold');
+         } else {
+            data.el.textContent = data.label;
+            data.el.classList.remove('font-bold');
+         }
       }
    }
 }
@@ -1653,6 +1684,8 @@ if (window.ui) {
    window.ui.openFgExportModal = _openFgExportModal;
    window.ui.populateDamageTypes = _populateDamageTypes;
    window.ui.updateCameraTokenDisplay = _updateCameraTokenDisplay;
+   window.ui.applyTheme = _applyTheme;
+   window.ui.applyViewportTheme = _applyViewportTheme;
 } else {
    console.error("window.ui object not found! Ensure ui-elements.js loads before ui-updates.js.");
 }

@@ -1,3 +1,4 @@
+/* viewport.js */
 window.viewport = {
    updateViewport
 };
@@ -57,10 +58,9 @@ function updateViewport() {
    const NPCchabo = charismaBonus !== undefined ? (charismaBonus >= 0 ? `+${charismaBonus}` : charismaBonus) : "+0";
    const NPCprofBonus = proficiencyBonus !== undefined ? `+${proficiencyBonus}` : '+2';
 
-   // --- NEW DROP CAP LOGIC ---
+   // --- DROP CAP LOGIC ---
    let processedDescriptionHtml = NPCDescriptionHTML;
    
-   // Only process if drop cap is requested and description exists
    if (useDropCap && addDescription && NPCDescriptionHTML) {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = NPCDescriptionHTML;
@@ -70,7 +70,7 @@ function updateViewport() {
 
       for (const child of children) {
          const tag = child.tagName.toLowerCase();
-         // Skip quotes and headers, looking for the first paragraph-like block
+         // Skip quotes and headers
          if (tag !== 'blockquote' && tag !== 'h1' && tag !== 'h2' && tag !== 'h3') {
             targetElement = child;
             break;
@@ -82,12 +82,12 @@ function updateViewport() {
          processedDescriptionHtml = tempDiv.innerHTML;
       }
    }
-   // --- END DROP CAP LOGIC ---
 
-   const titleHtml = addTitle ? `<div style="font-family: 'Questrial', sans-serif; font-size: 17pt; color: #7A200D; font-weight: bold; padding-left: 0.1cm; padding-bottom: 0.0cm; padding-top: 0.4cm;">${NPCName}</div>` : '';
+   // --- Theming Updates ---
+   const titleHtml = addTitle ? `<div class="viewport-title" style="font-family: 'Questrial', sans-serif; font-size: 17pt; color: var(--vp-name-color); font-weight: bold; padding-left: 0.1cm; padding-bottom: 0.0cm; padding-top: 0.4cm;">${NPCName}</div>` : '';
    const descriptionTopPadding = addTitle ? '0.0cm' : '0.4cm';
    
-   const imageLinkHtml = (addImageLink && activeNPC.image) ? `<div style="font-family: 'Questrial', sans-serif; font-size: 11pt; color: #222222; padding-left: 0.1cm; padding-bottom: 0.5cm; display: flex; align-items: center;"><img src="graphics/link.webp" style="height: 18px; width: 18px; margin-left: 6px; margin-right: 4px;"> Image: ${NPCName}</div>` : '';
+   const imageLinkHtml = (addImageLink && activeNPC.image) ? `<div class="viewport-image-link" style="font-family: 'Questrial', sans-serif; font-size: 11pt; color: var(--vp-text-color); padding-left: 0.1cm; padding-bottom: 0.5cm; display: flex; align-items: center;"><img src="graphics/link.webp" style="height: 18px; width: 18px; margin-left: 6px; margin-right: 4px;"> Image: ${NPCName}</div>` : '';
    
    const descriptionBlockHtml = addDescription ?
       `${titleHtml}${imageLinkHtml}<div class="npcdescrip" style="padding: ${descriptionTopPadding} 0.1cm 0cm 0.1cm;"> ${processedDescriptionHtml} </div>`
@@ -110,7 +110,7 @@ function updateViewport() {
    }
 
 
-   // --- Build Trait/Spellcasting Sections (as individual items for sorting) ---
+   // --- Build Trait/Spellcasting Sections ---
    let combinedTraitsList = [];
 
    // Build Innate Spellcasting Trait Block
@@ -129,14 +129,14 @@ function updateViewport() {
          .filter(spell => spell?.freq && spell?.list)
          .map(spell => {
             const formattedList = formatSpellList(spell.list);
-            return `<div style="color: black; padding-bottom: 0.25em;">${spell.freq}: ${formattedList}</div>`;
+            return `<div style="color: var(--vp-text-color); padding-bottom: 0.25em;">${spell.freq}: ${formattedList}</div>`;
          })
          .join('');
 
       const innateTraitHtml = `
-         <div class="npctop" style="padding-bottom: 0.5em; color: black;">
+         <div class="npctop" style="padding-bottom: 0.5em; color: var(--vp-text-color);">
             <i><b>${innateTitle}.</b></i> ${boilerplate}
-            ${spellListHtml || '<div style="color: black; padding-bottom: 0.25em;">None</div>'}
+            ${spellListHtml || '<div style="color: var(--vp-text-color); padding-bottom: 0.25em;">None</div>'}
          </div>
       `;
       combinedTraitsList.push({ name: innateTitle, html: innateTraitHtml });
@@ -161,7 +161,7 @@ function updateViewport() {
       const safeTraitSlots = Array.isArray(traitCastingSlots) ? traitCastingSlots : [];
 
       if (safeTraitList[0]) {
-         spellListHtml += `<div style="color: black; padding-bottom: 0.25em;">Cantrips (at will): ${formatSpellList(safeTraitList[0])}</div>`;
+         spellListHtml += `<div style="color: var(--vp-text-color); padding-bottom: 0.25em;">Cantrips (at will): ${formatSpellList(safeTraitList[0])}</div>`;
       }
 
       for (let i = 1; i <= 9; i++) {
@@ -170,16 +170,16 @@ function updateViewport() {
          if (spells && slots > 0) {
             const levelSuffix = i === 1 ? 'st' : i === 2 ? 'nd' : i === 3 ? 'rd' : 'th';
             const slotText = `${slots} slot${slots > 1 ? 's' : ''}`;
-            spellListHtml += `<div style="color: black; padding-bottom: 0.25em;">${i}${levelSuffix} level (${slotText}): ${formatSpellList(spells)}</div>`;
+            spellListHtml += `<div style="color: var(--vp-text-color); padding-bottom: 0.25em;">${i}${levelSuffix} level (${slotText}): ${formatSpellList(spells)}</div>`;
          }
       }
 
-      const markedSpellsHtml = traitCastingMarked ? `<div style="color: black; padding-bottom: 0.25em; padding-top: 0.25em;">${traitCastingMarked}</div>` : '';
+      const markedSpellsHtml = traitCastingMarked ? `<div style="color: var(--vp-text-color); padding-bottom: 0.25em; padding-top: 0.25em;">${traitCastingMarked}</div>` : '';
 
       const traitSpellcastingHtml = `
-         <div class="npctop" style="padding-bottom: 0.5em; color: black;">
+         <div class="npctop" style="padding-bottom: 0.5em; color: var(--vp-text-color);">
             <i><b>${traitSpellcastingTitle}.</b></i> ${boilerplate}
-            ${spellListHtml || '<div style="color: black; padding-bottom: 0.25em;">None</div>'}
+            ${spellListHtml || '<div style="color: var(--vp-text-color); padding-bottom: 0.25em;">None</div>'}
             ${markedSpellsHtml}
          </div>
       `;
@@ -191,7 +191,7 @@ function updateViewport() {
       traits.forEach(trait => {
          if (!trait) return;
          const processedDescription = window.app.processTraitString(trait.desc || '', activeNPC);
-         const traitHtml = `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${trait.name || 'Unnamed Trait'}.</b></i> ${processedDescription}</div>`;
+         const traitHtml = `<div class="npctop" style="padding-bottom: 0.5em; color: var(--vp-text-color);"><i><b>${trait.name || 'Unnamed Trait'}.</b></i> ${processedDescription}</div>`;
          combinedTraitsList.push({ name: trait.name || 'Unnamed Trait', html: traitHtml });
       });
    }
@@ -216,14 +216,14 @@ function updateViewport() {
          .filter(spell => spell?.freq && spell?.list)
          .map(spell => {
             const formattedList = formatSpellList(spell.list);
-            return `<div style="color: black; padding-bottom: 0.25em; padding-left: 1em;">${spell.freq}: ${formattedList}</div>`;
+            return `<div style="color: var(--vp-text-color); padding-bottom: 0.25em; padding-left: 1em;">${spell.freq}: ${formattedList}</div>`;
          })
          .join('');
 
       const actionSpellcastingHtml = `
-         <div class="npctop" style="padding-bottom: 0.5em; color: black;">
+         <div class="npctop" style="padding-bottom: 0.5em; color: var(--vp-text-color);">
             <i><b>${actionTitle}.</b></i> ${boilerplate}
-            ${spellListHtml || '<div style="color: black; padding-bottom: 0.25em; padding-left: 1em;">None</div>'}
+            ${spellListHtml || '<div style="color: var(--vp-text-color); padding-bottom: 0.25em; padding-left: 1em;">None</div>'}
          </div>
       `;
       actionSpellcastingBlockItem = { name: actionTitle, desc: boilerplate + (spellListHtml ? '...' : ''), html: actionSpellcastingHtml };
@@ -261,16 +261,16 @@ function updateViewport() {
             return action.html;
          }
          const processedDesc = window.app.processTraitString(action.desc || '', activeNPC);
-         return `<div class="npctop" style="padding-bottom: 0.5em; color: black;"><i><b>${action.name || 'Unnamed Action'}.</b></i> ${processedDesc}</div>`;
+         return `<div class="npctop" style="padding-bottom: 0.5em; color: var(--vp-text-color);"><i><b>${action.name || 'Unnamed Action'}.</b></i> ${processedDesc}</div>`;
       }).join('');
 
-      const boilerplateHtml = boilerplate ? `<div class="npctop" style="padding-bottom: 0.5em; color: black;">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
+      const boilerplateHtml = boilerplate ? `<div class="npctop" style="padding-bottom: 0.5em; color: var(--vp-text-color);">${window.app.processTraitString(boilerplate, activeNPC)}</div>` : '';
 
       return `
          <div class="action-header">${title}</div>
          <div class="npcdiv2">
             <svg viewBox="0 0 200 1" preserveAspectRatio="none" width="100%" height="1">
-               <polyline points="0,0 200,0 200,1 0,1" fill="#7A200D" class="whoosh"></polyline>
+               <polyline points="0,0 200,0 200,1 0,1" class="whoosh"></polyline>
             </svg>
          </div>
          ${boilerplateHtml}
